@@ -46,3 +46,13 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid 
 .note-ro { margin: 8px 0 0; font-size: 0.9rem; font-style: italic; }
 .empty { color: var(--ink-2); }
 footer { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; color: var(--ink-2); font-size: 0.85rem; padding-bottom: 32px; }
+.nav { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; max-width: 60rem; margin: 0 auto; padding: 16px; border-bottom: 1px solid var(--rule); }
+.nav strong { margin-right: 12px; }
+.nav a { color: var(--ink-2); text-decoration: none; font-weight: 600; font-size: .92rem; padding-bottom: 4px; }
+.nav a[aria-current] { color: var(--accent); border-bottom: 2px solid var(--accent); }
+.search { flex: 1 1 16rem; min-width: 0; font: inherit; padding: 6px 10px; border: 1px solid var(--rule); border-radius: 8px; }
+.chip.startup { background: var(--check-bg); color: var(--check); }
+.who { margin: 6px 0 0; font-size: 0.9rem; font-weight: 600; }
+.watchflag { margin: 6px 0 0; font-size: 0.9rem; font-weight: 600; color: var(--check); }
+.ext { margin: 8px 0 0; font-size: 0.88rem; }
+.ext a { color: var(--accent); }
