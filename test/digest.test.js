@@ -40,6 +40,19 @@ test('closing within 10 days: watching, or undecided and fits', () => {
   assert.deepEqual(d.sections.closing.map(x => x.id), [1, 3]);
 });
 
+test('closing section respects relevance: undecided must pass relevant(), watching does not', () => {
+  const soon = { regn_close: '2026-10-12' };
+  const d = buildDigest({
+    competitions: [
+      c(1, { ...soon, tier: 'other' }),
+      c(2, { ...soon, is_case: false }),
+      c(3, { ...soon, tier: 'other' }),
+    ],
+    decisions: { 3: { status: 'watching' } }, status: fresh, state: { sent_ids: [1, 2, 3] }, now,
+  });
+  assert.deepEqual(d.sections.closing.map(x => x.id), [3]);
+});
+
 test('clashes against entering competitions', () => {
   const d = buildDigest({
     competitions: [c(1), c(2, { regn_close: '2026-11-05' }), c(3, { regn_close: '2027-01-01', comp_end: '2027-01-02' })],

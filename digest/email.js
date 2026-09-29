@@ -24,7 +24,7 @@ export function buildDigest({ competitions, decisions, status, state, now }) {
     if (!c.regn_close) return false;
     const d = dayDiff(today, c.regn_close);
     const st = statusOf(c);
-    return d >= 0 && d <= 10 && (st === 'watching' || (st === 'undecided' && c.verdict?.level === 'fits'));
+    return d >= 0 && d <= 10 && (st === 'watching' || (st === 'undecided' && relevant(c) && c.verdict?.level === 'fits'));
   });
   const entering = competitions.filter(c => statusOf(c) === 'entering');
   const clashing = open
