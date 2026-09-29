@@ -9,6 +9,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { fetchAll } from './unstop.js';
 import { tier, verdict } from './classify.js';
 import { merge, appendArchive } from './merge.js';
+import { curatedRecords, oppdeskRecords } from './intl.js';
+import { fetchOppDesk } from './oppdesk.js';
 import { todayIST } from '../dates.js';
 import { unstopId } from '../urls.js';
 
@@ -42,8 +44,19 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
       keywords: read('keywords.json', []),
       ...deps,
     });
+    const today = todayIST(now);
+    records.push(...curatedRecords(read('international.json', []), read('intl-dates.json', {}), today));
+    try {
+      const posts = await fetchOppDesk({ getJson: deps.getJson, pause: deps.pause, today });
+      records.push(...oppdeskRecords(posts, today));
+    } catch (e) {
+      // Optional source: keep what we had so merge does not close it.
+      warnings.push(`Opportunity Desk: ${e.message}`);
+      records.push(...existing.filter(r => r.source === 'oppdesk'));
+    }
     for (const r of records) {
-      if (r.carried_over) continue; // stored tier and verdict kept as-is
+      // Carried-over, curated and Opportunity Desk records keep their own tier and verdict.
+      if (r.carried_over || r.source) continue;
       try {
         r.tier = tier(r, lists);
         r.verdict = verdict(r, team);
@@ -53,7 +66,7 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
         warnings.push(`classify ${r.id}: ${e.message}`);
       }
     }
-    const { next, pruned } = merge(existing.map(publishable), records.map(publishable), decisions, todayIST(now));
+    const { next, pruned } = merge(existing.map(publishable), records.map(publishable), decisions, today);
     const archive = read('archive.json', []);
     write('competitions.json', next);
     if (pruned.length) write('archive.json', appendArchive(Array.isArray(archive) ? archive : [], pruned));

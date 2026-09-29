@@ -138,3 +138,49 @@ test('a pruned record lands in archive.json once, slim', async () => {
   assert.equal(await main({ dataDir: dir, now, deps: { getJson, pause: async () => {} } }), 0);
   assert.equal(read(dir, 'archive.json').length, 1);
 });
+
+const intlRow = { id: 'intl-z', name: 'Z Case Cup', url: 'https://z.example/', watch_url: 'https://z.example/', host: 'Z School',
+  kind: 'case', entry: 'invite', who_applies: 'school', indian_ug: 'unclear', indian_ug_note: 'n', application_months: null,
+  finals_months: [3], team_size: '4', fee: null, last_edition: null, verified: true };
+const odPost = { id: 901, link: 'https://opportunitydesk.org/2026/09/20/z-case/', title: { rendered: 'Z Global Case Competition' },
+  content: { rendered: '<p>Mail a@b.org</p><p>Deadline: December 1, 2026</p>' }, date: '2026-09-20T00:00:00' };
+const router = ({ od = async () => [odPost] } = {}) => async url =>
+  (url.startsWith('https://opportunitydesk.org/') ? od(url) : { data: { data: [item], last_page: 1 } });
+
+test('curated and Opportunity Desk records are added as international, unclassified', async () => {
+  const dir = dataDir({ 'international.json': [intlRow], 'intl-dates.json': { 'intl-z': { regn_close: '2026-11-20', comp_end: '2027-03-10', confirmed_on: '2026-09-29' } } });
+  const code = await main({ dataDir: dir, now, deps: { getJson: router(), pause: async () => {} } });
+  assert.equal(code, 0);
+  const comps = read(dir, 'competitions.json');
+  const z = comps.find(c => c.id === 'intl-z');
+  assert.equal(z.tier, 'international');
+  assert.equal(z.source, 'curated');
+  assert.deepEqual(z.verdict, { level: 'check', reasons: ['IIM Sirmaur must apply for an invitation'] });
+  assert.equal(z.regn_close, '2026-11-20');
+  assert.equal(z.first_seen, '2026-09-29');
+  const od = comps.find(c => c.id === 'od-901');
+  assert.equal(od.tier, 'international');
+  assert.equal(od.verdict.level, 'check');
+  assert.doesNotMatch(fs.readFileSync(path.join(dir, 'competitions.json'), 'utf8'), /a@b\.org/);
+  assert.deepEqual(read(dir, 'status.json').warnings, []);
+});
+
+test('an Opportunity Desk failure is a warning and keeps the previous od- records', async () => {
+  const prevOd = { id: 'od-5', source: 'oppdesk', title: 'Prev Case', host: 'Opportunity Desk listing', tier: 'international',
+    url: 'https://opportunitydesk.org/p/5/', regn_close: '2026-12-01', verdict: { level: 'check', reasons: ['verify eligibility on the post'] },
+    first_seen: '2026-09-01', closed_on: null, is_case: true };
+  const dir = dataDir({ 'competitions.json': [prevOd] });
+  const getJson = router({ od: async () => { throw new Error('HTTP 503 for od'); } });
+  const code = await main({ dataDir: dir, now, deps: { getJson, pause: async () => {} } });
+  assert.equal(code, 0);
+  const kept = read(dir, 'competitions.json').find(c => c.id === 'od-5');
+  assert.equal(kept.closed_on, null);
+  assert.equal(kept.tier, 'international');
+  assert.equal(kept.first_seen, '2026-09-01');
+  assert.ok(read(dir, 'status.json').warnings.some(w => /Opportunity Desk/.test(w) && /503/.test(w)));
+});
+
+test('a malformed international.json does not fail the run', async () => {
+  const dir = dataDir({ 'international.json': { nope: 1 } });
+  assert.equal(await main({ dataDir: dir, now, deps: { getJson: router(), pause: async () => {} } }), 0);
+});
