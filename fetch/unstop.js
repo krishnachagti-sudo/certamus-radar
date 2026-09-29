@@ -53,6 +53,18 @@ export function stripHtml(html) {
 
 const MODES = ['offline', 'hybrid', 'online'];
 
+// A quiz/hackathon type or title, or a title naming a written-only format,
+// rules out "case" regardless of subtype or the true-side title match.
+const CASE_FALSE_TITLE = /\bquiz\b|call for (articles|papers)|article writing|essay|\bprompt\b/i;
+const CASE_TRUE_TITLE = /\bcase|consult|strateg|teardown|war room|\bL\.?I\.?M\.?E\b|crucible/i;
+
+function isCase(src, title) {
+  if (src.type === 'quizzes' || src.type === 'hackathons') return false;
+  if (CASE_FALSE_TITLE.test(title)) return false;
+  if (src.subtype === 'case_competition') return true;
+  return CASE_TRUE_TITLE.test(title);
+}
+
 // `src` is a search item or a detail competition (same field names, except
 // isPaid vs paid); both shapes carry a `details` HTML field.
 export function normalise(src) {
@@ -81,6 +93,8 @@ export function normalise(src) {
     eligibility,
     details_text: stripHtml(src.details),
     details_fetched: typeof src.details === 'string',
+    format: src.subtype || src.type || null,
+    is_case: isCase(src, src.title || ''),
   };
 }
 
@@ -89,8 +103,20 @@ const validItem = it => it && it.id && it.title && it.organisation && it.regnReq
 export async function fetchAll(existingById, manualIds, opts) {
   const getJson = opts.getJson || defaultGetJson;
   const pause = opts.pause || defaultPause;
+  const backoff = opts.backoff ?? 3000;
   const warnings = [];
   manualIds = [...new Set(manualIds)];
+
+  // One retry for search requests only: a single transient failure (a 503,
+  // a timeout) must not fail the whole run. Detail calls are not retried.
+  const getSearch = async url => {
+    try {
+      return await getJson(url);
+    } catch {
+      if (backoff > 0) await new Promise(r => setTimeout(r, backoff));
+      return await getJson(url);
+    }
+  };
 
   const items = new Map();
   for (const term of opts.keywords) {
@@ -98,7 +124,7 @@ export async function fetchAll(existingById, manualIds, opts) {
     for (let page = 1; page <= MAX_PAGES; page++) {
       let body;
       try {
-        body = await getJson(searchUrl(term, page));
+        body = await getSearch(searchUrl(term, page));
       } finally {
         await pause();
       }

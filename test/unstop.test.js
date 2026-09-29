@@ -174,3 +174,54 @@ test('a malformed item is skipped with a warning', async () => {
   assert.deepEqual(records.map(r => r.id), [1]);
   assert.equal(warnings.length, 1);
 });
+
+test('is_case: case_competition subtype is true', () => {
+  const r = normalise(item(1, { subtype: 'case_competition', title: 'Anything' }));
+  assert.equal(r.is_case, true);
+  assert.equal(r.format, 'case_competition');
+});
+
+test('is_case: "CaseBlitz 2026" with no subtype is true', () => {
+  const r = normalise(item(1, { title: 'CaseBlitz 2026', subtype: undefined }));
+  assert.equal(r.is_case, true);
+});
+
+test('is_case: type quizzes is false', () => {
+  const r = normalise(item(1, { type: 'quizzes', title: 'Case Quiz 2026' }));
+  assert.equal(r.is_case, false);
+  assert.equal(r.format, 'quizzes');
+});
+
+test('is_case: "Call for Articles: X" is false', () => {
+  const r = normalise(item(1, { title: 'Call for Articles: X', subtype: undefined }));
+  assert.equal(r.is_case, false);
+});
+
+test('is_case: "Consulting Consortium 2026" with subtype general_competition is true', () => {
+  const r = normalise(item(1, { title: 'Consulting Consortium 2026', subtype: 'general_competition' }));
+  assert.equal(r.is_case, true);
+  assert.equal(r.format, 'general_competition');
+});
+
+test('a search that fails once and then succeeds gives records', async () => {
+  let calls = 0;
+  const getJson = async url => {
+    if (url.includes('search-result')) {
+      calls++;
+      if (calls === 1) throw new Error('fail once');
+      return { data: { data: [item(1)], last_page: 1 } };
+    }
+    throw new Error(`unrouted ${url}`);
+  };
+  const { records } = await fetchAll(new Map(), [], { keywords: ['case'], getJson, pause: async () => {}, backoff: 0 });
+  assert.deepEqual(records.map(r => r.id), [1]);
+  assert.equal(calls, 2);
+});
+
+test('a search that fails twice rejects', async () => {
+  const getJson = async () => { throw new Error('down'); };
+  await assert.rejects(
+    fetchAll(new Map(), [], { keywords: ['case'], getJson, pause: async () => {}, backoff: 0 }),
+    /down/
+  );
+});
