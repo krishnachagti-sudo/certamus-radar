@@ -1,5 +1,7 @@
-// Unstop's public JSON (undocumented; verified 2026-09-29). Search pages give
-// the listing fields; the detail page is a superset that adds the body text.
+// Unstop's public JSON (undocumented; verified 2026-09-29). Search items carry
+// the same `details` HTML as the detail endpoint, so a search-built record is
+// already complete; the detail endpoint is only needed for manually added ids
+// that don't come back from search.
 import { istDate } from '../dates.js';
 
 const BASE = 'https://unstop.com/api/public';
@@ -22,16 +24,29 @@ export function stripHtml(html) {
   return String(html || '')
     .replace(/<(br|\/p|\/li|\/div|\/h\d)[^>]*>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&#39;|&rsquo;/g, "'").replace(/&quot;/g, '"')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&#39;|&rsquo;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(Number(dec)))
     .replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n+/g, '\n').trim();
 }
 
+const MODES = ['offline', 'hybrid', 'online'];
+
 // `src` is a search item or a detail competition (same field names, except
-// isPaid vs paid). `detail` is the detail competition, or null if not fetched.
-export function normalise(src, detail) {
+// isPaid vs paid); both shapes carry a `details` HTML field.
+export function normalise(src) {
   const r = src.regnRequirements || {};
   let eligibility = null;
-  try { eligibility = r.eligibility ? JSON.parse(r.eligibility) : null; } catch { eligibility = null; }
+  if (r.eligibility && typeof r.eligibility === 'object') {
+    eligibility = r.eligibility;
+  } else if (typeof r.eligibility === 'string') {
+    try { eligibility = JSON.parse(r.eligibility); } catch { eligibility = null; }
+  }
   const num = x => (Number.isFinite(Number(x)) && x !== null && x !== '' ? Number(x) : null);
   return {
     id: src.id,
@@ -43,16 +58,16 @@ export function normalise(src, detail) {
     title: src.title || '',
     host: src.organisation?.name || '',
     regn_close: istDate(r.end_regn_dt || src.end_date),
-    comp_end: istDate(detail?.end_date || src.end_date),
-    mode: src.region === 'offline' ? 'offline' : 'online',
-    fee: Boolean(src.isPaid ?? src.paid),
+    comp_end: istDate(src.end_date),
+    mode: MODES.includes(src.region) ? src.region : 'online',
+    fee: src.isPaid === true || Number(src.isPaid ?? src.paid) > 0,
     team_min: num(r.min_team_size),
     team_max: num(r.max_team_size),
     prize_total: (src.prizes || []).reduce((s, p) => s + (Number(p?.cash) || 0), 0),
     eligible_filters: (src.filters || []).filter(f => f.type === 'eligible').map(f => f.name),
     eligibility,
-    details_text: detail ? stripHtml(detail.details) : '',
-    details_fetched: Boolean(detail),
+    details_text: stripHtml(src.details),
+    details_fetched: typeof src.details === 'string',
   };
 }
 
@@ -61,23 +76,33 @@ const validItem = it => it && it.id && it.title && it.organisation && it.regnReq
 export async function fetchAll(existingById, manualIds, opts) {
   const getJson = opts.getJson || defaultGetJson;
   const pause = opts.pause || defaultPause;
-  const wantDetail = opts.wantDetail || (() => true);
   const warnings = [];
+  manualIds = [...new Set(manualIds)];
 
   const items = new Map();
   for (const term of opts.keywords) {
     for (let page = 1; page <= MAX_PAGES; page++) {
-      const body = await getJson(searchUrl(term, page));
-      await pause();
+      let body;
+      try {
+        body = await getJson(searchUrl(term, page));
+      } finally {
+        await pause();
+      }
       const list = body?.data?.data;
       if (!Array.isArray(list)) throw new Error(`Unstop search shape changed (term "${term}")`);
       for (const it of list) {
         if (validItem(it)) items.set(it.id, it);
         else warnings.push(`skipped malformed item ${it?.id ?? '?'}`);
       }
+      const rawLastPage = body.data.last_page;
+      if (list.length > 0 && (rawLastPage === undefined || rawLastPage === null)) {
+        warnings.push(`no last_page for ${term}; stopped at page ${page}`);
+        break;
+      }
       // Unstop pages can come back short (29 of 30) with more pages left, so
       // page by last_page, never by page length. Verified 2026-09-29.
-      const lastPage = Number(body.data.last_page) || page;
+      const lastPage = Number(rawLastPage) || page;
+      if (lastPage > MAX_PAGES) warnings.push(`last_page ${lastPage} exceeds MAX_PAGES for ${term}`);
       if (list.length === 0 || page >= lastPage) break;
     }
   }
@@ -86,39 +111,27 @@ export async function fetchAll(existingById, manualIds, opts) {
   const detail = async id => {
     try {
       const body = await getJson(detailUrl(id));
-      await pause();
       const c = body?.data?.competition;
       if (!c || !c.id) throw new Error('detail shape changed');
       return c;
     } catch (e) {
       warnings.push(`detail ${id}: ${e.message}`);
       return null;
+    } finally {
+      await pause();
     }
   };
 
   const records = [];
   for (const it of items.values()) {
-    const prev = existingById.get(it.id);
-    const changed = !prev
-      || prev.unstop_updated_at !== (it.updated_at || null)
-      || prev.end_date_raw !== (it.end_date || null)
-      || prev.regn_end_raw !== (it.regnRequirements?.end_regn_dt || null);
-    const want = manualIds.includes(it.id) || (wantDetail(it) && (changed || !prev?.details_fetched));
-    const d = want ? await detail(it.id) : null;
-    const rec = normalise(it, d);
-    if (!d && prev) {
-      rec.details_text = prev.details_text || '';
-      rec.details_fetched = Boolean(prev.details_fetched);
-      rec.comp_end = prev.comp_end || rec.comp_end;
-    }
-    records.push(rec);
+    records.push(normalise(it));
   }
 
   for (const id of manualIds) {
     if (items.has(id)) continue;
     const d = await detail(id);
-    if (d) records.push(normalise(d, d));
-    else if (existingById.has(id)) records.push(existingById.get(id));
+    if (d) records.push(normalise(d));
+    else if (existingById.has(id)) records.push({ ...existingById.get(id) });
   }
 
   for (const r of records) r.pinned = manualIds.includes(r.id);

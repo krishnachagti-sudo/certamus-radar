@@ -10,7 +10,7 @@ const item = (id, over = {}) => ({
   organisation: { name: 'Indian Institute of Management (IIM), Raipur' },
   regnRequirements: { min_team_size: 2, max_team_size: 4, end_regn_dt: '2026-11-09T21:25:00+05:30', eligibility: '{"others":["all"]}' },
   filters: [{ name: 'All', type: 'eligible' }], prizes: [{ cash: 1000 }], isPaid: false, region: 'online',
-  seo_url: `https://unstop.com/competitions/comp--${id}`, ...over,
+  seo_url: `https://unstop.com/competitions/comp--${id}`, details: '<p>Open to all.</p>', ...over,
 });
 const detailOf = (it, html = '<p>Open to all.</p>') => ({ data: { competition: { ...it, isPaid: undefined, paid: 0, details: html } } });
 
@@ -30,15 +30,19 @@ function fakeHttp(routes) {
     },
   };
 }
-const opts = (http, over = {}) => ({ keywords: ['case'], getJson: http.getJson, pause: async () => {}, wantDetail: () => true, ...over });
+const opts = (http, over = {}) => ({ keywords: ['case'], getJson: http.getJson, pause: async () => {}, ...over });
 
 test('stripHtml keeps text and line breaks', () => {
   assert.equal(stripHtml('<p>Open&nbsp;to <b>all</b></p><p>Teams &amp; solo</p>'), 'Open to all\nTeams & solo');
 });
 
+test('stripHtml decodes numeric entities', () => {
+  assert.equal(stripHtml('&#8377;100 &#x20B9;200'), '₹100 ₹200');
+});
+
 test('normalise builds a record from the real detail payload alone', () => {
   const c = detailFixture.data.competition;
-  const r = normalise(c, c);
+  const r = normalise(c);
   assert.equal(r.id, 1759741);
   assert.match(r.title, /Ops-Essentia/);
   assert.equal(r.host, 'Indian Institute of Management (IIM), Raipur');
@@ -53,51 +57,60 @@ test('normalise builds a record from the real detail payload alone', () => {
   assert.ok(r.eligibility && typeof r.eligibility === 'object');
 });
 
-test('new ids get a detail call, unchanged ones carry forward', async () => {
+test('search items build their own record with zero detail calls', async () => {
   const it = item(1);
-  const http = fakeHttp([['search-result', { data: { data: [it] } }], ['competition/1', detailOf(it)]]);
-  const first = await fetchAll(new Map(), [], opts(http));
-  assert.equal(first.records[0].details_text, 'Open to all.');
-  assert.equal(http.calls.filter(u => u.includes('competition/1')).length, 1);
+  const http = fakeHttp([['search-result', { data: { data: [it], last_page: 1 } }]]);
+  const { records } = await fetchAll(new Map(), [], opts(http));
+  assert.equal(records[0].details_text, 'Open to all.');
+  assert.equal(records[0].details_fetched, true);
+  assert.equal(http.calls.filter(u => u.includes('competition/')).length, 0);
+});
 
-  const prev = new Map([[1, first.records[0]]]);
-  const again = await fetchAll(prev, [], opts(http));
-  assert.equal(http.calls.filter(u => u.includes('competition/1')).length, 1, 'no second detail call');
-  assert.equal(again.records[0].details_text, 'Open to all.');
+test('hybrid region maps to mode hybrid', async () => {
+  const it = item(1, { region: 'hybrid' });
+  const http = fakeHttp([['search-result', { data: { data: [it], last_page: 1 } }]]);
+  const { records } = await fetchAll(new Map(), [], opts(http));
+  assert.equal(records[0].mode, 'hybrid');
+});
 
-  const moved = item(1, { regnRequirements: { ...it.regnRequirements, end_regn_dt: '2026-11-20T21:25:00+05:30' } });
-  const http2 = fakeHttp([['search-result', { data: { data: [moved] } }], ['competition/1', detailOf(moved)]]);
-  await fetchAll(prev, [], opts(http2));
-  assert.equal(http2.calls.filter(u => u.includes('competition/1')).length, 1, 'deadline change refetches');
+test('eligibility given as an object passes through', async () => {
+  const elig = { others: ['all'] };
+  const base = item(1);
+  const it = { ...base, regnRequirements: { ...base.regnRequirements, eligibility: elig } };
+  const http = fakeHttp([['search-result', { data: { data: [it], last_page: 1 } }]]);
+  const { records } = await fetchAll(new Map(), [], opts(http));
+  assert.deepEqual(records[0].eligibility, elig);
+});
 
-  for (const over of [{ updated_at: '2026-09-27T10:00:00+05:30' }, { end_date: '2026-11-30T21:25:00+05:30' }]) {
-    const edited = item(1, over);
-    const h = fakeHttp([['search-result', { data: { data: [edited] } }], ['competition/1', detailOf(edited)]]);
-    await fetchAll(prev, [], opts(h));
-    assert.equal(h.calls.filter(u => u.includes('competition/1')).length, 1, `${Object.keys(over)[0]} change refetches`);
-  }
+test('manual id present in search is pinned and makes no detail call', async () => {
+  const it = item(1);
+  const http = fakeHttp([['search-result', { data: { data: [it], last_page: 1 } }]]);
+  const { records } = await fetchAll(new Map(), [1], opts(http));
+  assert.equal(records[0].pinned, true);
+  assert.equal(http.calls.filter(u => u.includes('competition/')).length, 0);
+});
+
+test('duplicate manual ids produce one record and one detail call', async () => {
+  const m = item(9);
+  const http = fakeHttp([['search-result', { data: { data: [item(1)], last_page: 1 } }], ['competition/9', detailOf(m)]]);
+  const { records } = await fetchAll(new Map(), [9, 9], opts(http));
+  assert.equal(records.filter(r => r.id === 9).length, 1);
+  assert.equal(http.calls.filter(u => u.includes('competition/9')).length, 1);
 });
 
 test('pages by last_page, not by a short page', async () => {
   const http = fakeHttp([
     ['page=1&', { data: { data: [item(1)], last_page: 2 } }],
     ['page=2&', { data: { data: [item(2)], last_page: 2 } }],
-    ['competition/', { data: { competition: { id: 1, details: '' } } }],
   ]);
-  const { records } = await fetchAll(new Map(), [], opts(http, { wantDetail: () => false }));
+  const { records } = await fetchAll(new Map(), [], opts(http));
   assert.deepEqual(records.map(r => r.id).sort(), [1, 2]);
   assert.equal(http.calls.filter(u => u.includes('search-result')).length, 2);
 });
 
-test('wantDetail=false skips the detail call', async () => {
-  const http = fakeHttp([['search-result', { data: { data: [item(1)] } }]]);
-  const { records } = await fetchAll(new Map(), [], opts(http, { wantDetail: () => false }));
-  assert.equal(records[0].details_fetched, false);
-});
-
 test('manual ids missing from search are built from detail and pinned', async () => {
   const m = item(9);
-  const http = fakeHttp([['search-result', { data: { data: [item(1)] } }], ['competition/1', detailOf(item(1))], ['competition/9', detailOf(m)]]);
+  const http = fakeHttp([['search-result', { data: { data: [item(1)], last_page: 1 } }], ['competition/9', detailOf(m)]]);
   const { records } = await fetchAll(new Map(), [9], opts(http));
   const r9 = records.find(r => r.id === 9);
   assert.equal(r9.pinned, true);
@@ -107,17 +120,12 @@ test('manual ids missing from search are built from detail and pinned', async ()
 
 test('a failing manual detail keeps the stored record and warns', async () => {
   const stored = { id: 9, title: 'Kept', pinned: true };
-  const http = fakeHttp([['search-result', { data: { data: [item(1)] } }], ['competition/1', detailOf(item(1))], ['competition/9', new Error('404')]]);
+  const http = fakeHttp([['search-result', { data: { data: [item(1)], last_page: 1 } }], ['competition/9', new Error('404')]]);
   const { records, warnings } = await fetchAll(new Map([[9, stored]]), [9], opts(http));
-  assert.equal(records.find(r => r.id === 9).title, 'Kept');
+  const r9 = records.find(r => r.id === 9);
+  assert.equal(r9.title, 'Kept');
+  assert.notEqual(r9, stored, 'pushes a copy, not the stored object itself');
   assert.match(warnings.join(' '), /9/);
-});
-
-test('a failing detail call does not throw', async () => {
-  const http = fakeHttp([['search-result', { data: { data: [item(1)] } }], ['competition/1', new Error('500')]]);
-  const { records, warnings } = await fetchAll(new Map(), [], opts(http));
-  assert.equal(records[0].details_fetched, false);
-  assert.equal(warnings.length, 1);
 });
 
 test('search shape change and empty results throw', async () => {
@@ -126,7 +134,7 @@ test('search shape change and empty results throw', async () => {
 });
 
 test('a malformed item is skipped with a warning', async () => {
-  const http = fakeHttp([['search-result', { data: { data: [item(1), { id: 2 }] } }], ['competition/1', detailOf(item(1))]]);
+  const http = fakeHttp([['search-result', { data: { data: [item(1), { id: 2 }], last_page: 1 } }]]);
   const { records, warnings } = await fetchAll(new Map(), [], opts(http));
   assert.deepEqual(records.map(r => r.id), [1]);
   assert.equal(warnings.length, 1);
