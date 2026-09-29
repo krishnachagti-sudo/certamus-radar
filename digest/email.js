@@ -3,14 +3,17 @@
 import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { clashes } from '../clash.js';
-import { dayDiff, todayIST } from '../dates.js';
+import { dayDiff, istDate, todayIST } from '../dates.js';
 
 const BOARD_URL = 'https://krishnachagti-sudo.github.io/certamus-radar/';
-const TIER = { iit: 'IIT', iim: 'IIM', bschool: 'B-school', corporate: 'Corporate', other: 'Other' };
+const TIER = { iit: 'IIT', iim: 'IIM', bschool: 'B-school', corporate: 'Corporate', international: 'International', other: 'Other' };
+const REGISTERED_DAYS = 14;
 const STALE_HOURS = 36;
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const monthNames = ms => ms.map(m => MONTH_NAMES[m - 1]).filter(Boolean).join('/');
 const esc = s => String(s ?? '').replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 
-export function buildDigest({ competitions, decisions, status, state, now }) {
+export function buildDigest({ competitions, decisions, status, state, now, watch = {} }) {
   const today = todayIST(now);
   const statusOf = c => decisions[c.id]?.status || 'undecided';
   const open = competitions.filter(c => !c.closed_on);
@@ -18,7 +21,10 @@ export function buildDigest({ competitions, decisions, status, state, now }) {
   const relevant = c => c.pinned || (c.tier !== 'other' && c.is_case !== false && c.verdict?.level !== 'out');
   const sent = state?.sent_ids ? new Set(state.sent_ids) : null;
 
-  const fresh = open.filter(c => relevant(c) && statusOf(c) !== 'skipped'
+  const registeredOf = c => decisions[c.id]?.registered === true;
+  const committedOf = c => statusOf(c) === 'entering' || registeredOf(c);
+  // Curated rows are standing entries, not new listings: they get their own section.
+  const fresh = open.filter(c => c.source !== 'curated' && relevant(c) && statusOf(c) !== 'skipped'
     && (sent ? !sent.has(c.id) : dayDiff(c.first_seen, today) <= 7));
   const closing = open.filter(c => {
     if (!c.regn_close) return false;
@@ -26,11 +32,30 @@ export function buildDigest({ competitions, decisions, status, state, now }) {
     const st = statusOf(c);
     return d >= 0 && d <= 10 && (st === 'watching' || (st === 'undecided' && relevant(c) && c.verdict?.level === 'fits'));
   });
-  const entering = competitions.filter(c => statusOf(c) === 'entering');
+  const committed = competitions.filter(committedOf);
   const clashing = open
-    .filter(c => statusOf(c) !== 'skipped' && (relevant(c) || statusOf(c) === 'entering'))
-    .map(c => ({ c, with: clashes(c, entering, today) }))
+    .filter(c => statusOf(c) !== 'skipped' && (relevant(c) || committedOf(c)))
+    .map(c => ({ c, with: clashes(c, committed, today) }))
     .filter(x => x.with.length);
+
+  const closingIds = new Set(closing.map(c => String(c.id)));
+  const registered = competitions.filter(c => registeredOf(c) && !closingIds.has(String(c.id))
+    && [c.regn_close, c.comp_end].some(d => d && dayDiff(today, d) >= 0 && dayDiff(today, d) <= REGISTERED_DAYS));
+
+  const month = Number(today.slice(5, 7));
+  const months = [month, (month % 12) + 1];
+  const direct = c => c.intl?.who_applies === 'team' && c.intl?.indian_ug === 'yes';
+  const international = competitions
+    .filter(c => c.source === 'curated' && statusOf(c) !== 'skipped' && c.verdict?.level !== 'out'
+      && (c.expected?.application_months || []).some(m => months.includes(m)))
+    .sort((a, b) => Number(direct(b)) - Number(direct(a)));
+
+  const lastSentDay = state?.last_sent ? istDate(state.last_sent) : null;
+  const byId = new Map(competitions.map(c => [String(c.id), c]));
+  const watchChanged = Object.entries(watch && typeof watch === 'object' ? watch : {})
+    .filter(([id, w]) => byId.has(id) && w?.changed_on
+      && (lastSentDay ? w.changed_on > lastSentDay : dayDiff(w.changed_on, today) <= 7))
+    .map(([id, w]) => ({ id, c: byId.get(id), changed_on: w.changed_on }));
 
   const lastOk = status?.last_ok ? Date.parse(status.last_ok) : 0;
   const stale = Boolean(status?.last_error) || !lastOk || (now - lastOk) / 3.6e6 > STALE_HOURS;
@@ -43,6 +68,11 @@ export function buildDigest({ competitions, decisions, status, state, now }) {
     ['New since last digest', fresh.map(line)],
     ['Closing within 10 days', closing.map(line)],
     ['Clashes', clashing.map(x => `${x.c.title} clashes with ${x.with.join(', ')}`)],
+    ['Registered: coming up', registered.map(c => `${c.title} (${c.host}), closes ${c.regn_close || 'n/a'}, ends ${c.comp_end || 'n/a'}`)],
+    ['International', [
+      ...international.map(c => `${c.title} (${c.host}), applications usually ${monthNames(c.expected.application_months)}: ${direct(c) ? 'Your team applies' : c.verdict?.reasons?.[0] || 'check eligibility'}`),
+      ...watchChanged.map(x => `${x.c.title}: Official page changed on ${x.changed_on}, new edition?`),
+    ]],
   ].filter(([, rows]) => rows.length);
 
   const counts = `${fresh.length} new, ${closing.length} closing, ${clashing.length} clash${clashing.length === 1 ? '' : 'es'}`;
@@ -57,7 +87,7 @@ export function buildDigest({ competitions, decisions, status, state, now }) {
 
   return {
     subject, text, html,
-    sections: { fresh, closing, clashing },
+    sections: { fresh, closing, clashing, registered, international, watchChanged },
     nextState: { last_sent: now.toISOString(), sent_ids: competitions.map(c => c.id) },
   };
 }
@@ -70,6 +100,7 @@ async function main() {
   const d = buildDigest({
     competitions: read('competitions.json', []), decisions: read('decisions.json', {}),
     status: read('status.json', {}), state: read('digest-state.json', null), now: new Date(),
+    watch: read('watch.json', {}),
   });
   if (!process.argv.includes('--send')) {
     console.log(`${d.subject}\n\n${d.text}`);

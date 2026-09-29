@@ -72,3 +72,73 @@ test('nothing new still sends a one-liner', () => {
   assert.match(d.subject, /nothing new/i);
   assert.ok(d.text.length > 0);
 });
+
+test('clashes count registered competitions as committed', () => {
+  const d = buildDigest({
+    competitions: [c(1), c(2, { regn_close: '2026-11-05' })],
+    decisions: { 1: { status: 'watching', registered: true } }, status: fresh, state: { sent_ids: [1, 2] }, now,
+  });
+  assert.deepEqual(d.sections.clashing.map(x => [x.c.id, x.with]), [[2, ['C1']]]);
+});
+
+test('Registered: coming up = registered with a date in the next 14 days, not already closing', () => {
+  const d = buildDigest({
+    competitions: [
+      c(1, { regn_close: '2026-10-12' }),                       // registered, fits, closing -> in Closing only
+      c(2, { regn_close: '2026-10-01', comp_end: '2026-10-18' }), // registered, comp_end in 13 days
+      c(3, { regn_close: '2026-10-30', comp_end: '2026-11-10' }), // registered, too far
+      c(4, { regn_close: '2026-10-15' }),                       // not registered
+      c(5, { regn_close: '2026-10-19', verdict: { level: 'check', reasons: ['x'] } }), // registered, day 14
+    ],
+    decisions: { 1: { registered: true }, 2: { registered: true }, 3: { registered: true }, 5: { status: 'skipped', registered: true } },
+    status: fresh, state: { sent_ids: [1, 2, 3, 4, 5] }, now,
+  });
+  assert.deepEqual(d.sections.closing.map(x => x.id), [1, 4]);
+  assert.deepEqual(d.sections.registered.map(x => x.id), [2, 5]);
+  assert.match(d.text, /Registered: coming up/);
+});
+
+const intl = (id, over = {}) => c(id, {
+  tier: 'international', source: 'curated', regn_close: null, comp_end: null, host: 'Abroad U',
+  expected: { application_months: [10], finals_months: [2] },
+  intl: { who_applies: 'school', indian_ug: 'unclear' }, verdict: { level: 'check', reasons: ['IIM Sirmaur must apply for an invitation'] }, ...over,
+});
+
+test('International: curated items applying this or next month, directly enterable first', () => {
+  const d = buildDigest({
+    competitions: [
+      intl('intl-a'),
+      intl('intl-b', { expected: { application_months: [11], finals_months: null }, intl: { who_applies: 'team', indian_ug: 'yes' }, verdict: { level: 'fits', reasons: [] } }),
+      intl('intl-c', { expected: { application_months: [3], finals_months: null } }),
+      intl('intl-d', { expected: { application_months: null, finals_months: [10] } }),
+      intl('intl-e', { verdict: { level: 'out', reasons: ['x'] } }),
+      intl('intl-f'),
+    ],
+    decisions: { 'intl-f': { status: 'skipped' } }, status: fresh, state: { sent_ids: [] }, now,
+  });
+  assert.deepEqual(d.sections.international.map(x => x.id), ['intl-b', 'intl-a']);
+  assert.match(d.text, /International/);
+  assert.match(d.text, /Your team applies/);
+  assert.match(d.text, /IIM Sirmaur must apply/);
+});
+
+test('curated items are not listed as new (they have their own section)', () => {
+  const d = buildDigest({ competitions: [intl('intl-a'), c(2, { tier: 'international', source: 'oppdesk', id: 'od-2' })],
+    decisions: {}, status: fresh, state: { sent_ids: [] }, now });
+  assert.deepEqual(d.sections.fresh.map(x => x.id), ['od-2']);
+});
+
+test('International also lists watched pages changed since the last digest', () => {
+  const d = buildDigest({
+    competitions: [intl('intl-a', { expected: { application_months: [5], finals_months: null } }), intl('intl-b', { expected: { application_months: [5], finals_months: null } })],
+    decisions: {}, status: fresh, state: { sent_ids: [], last_sent: '2026-09-28T02:30:00Z' }, now,
+    watch: { 'intl-a': { changed_on: '2026-10-05' }, 'intl-b': { changed_on: '2026-09-28' }, 'intl-gone': { changed_on: '2026-10-05' } },
+  });
+  assert.deepEqual(d.sections.watchChanged.map(x => x.id), ['intl-a']);
+  assert.match(d.text, /Official page changed on 2026-10-05, new edition\?/);
+});
+
+test('digest labels the international tier', () => {
+  const d = buildDigest({ competitions: [c('od-9', { tier: 'international', source: 'oppdesk' })], decisions: {}, status: fresh, state: { sent_ids: [] }, now });
+  assert.match(d.text, /\(International, /);
+});
