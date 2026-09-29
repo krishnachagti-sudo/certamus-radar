@@ -23,14 +23,55 @@ Board: https://krishnachagti-sudo.github.io/certamus-radar/
   (Agenda is the default under 760px). Shows anything Watching, Entering or
   Registered, plus dashed "expected" markers for curated international
   competitions with no confirmed dates yet.
-- **Hosts & archive** (`hosts.html`) — every host seen (live, archived and
-  curated international), searchable and tier-filterable, with a Jan–Dec
+- **Hosts & archive** (`hosts.html`) — every host seen (live, archived,
+  curated international and fest watchlist), searchable and tier-filterable, with a Jan–Dec
   month strip and the latest title; and a searchable list of closed
   competitions, newest first.
 
 A shared nav appears on all five pages.
 
 ## What gets fetched
+
+### Sources
+
+Unstop covers about 75–80% of what the team would enter; the other four
+sources fill the gaps it can't see. Every non-Unstop record carries a
+`source` and its own tier and verdict (classify is not run on it), and a
+failure in any of them is a warning in `status.json`, never a failed run:
+that source's previous records pass through unchanged.
+
+| Source | Where | Tier | What it adds |
+|---|---|---|---|
+| **Unstop full scan** | `fetch/unstop.js`, public JSON API | by host (below) | every open competition, classified |
+| **Curated international** | `data/international.json`, hand-edited | `international` | 25 flagship international competitions (see "International competitions") |
+| **Opportunity Desk** | `fetch/oppdesk.js`, WordPress API | `international` | posts whose title reads as a case competition, deadline parsed from the body |
+| **InsideIIM** | `fetch/insideiim.js`, one fetch of `insideiim.com/competitions` | `corporate` | corporate competitions run through InsideIIM (Cummins, Reckitt, Axis...) |
+| **Fest watchlist** | `data/fests.json`, hand-edited | the row's own (`iit` / `iim`) | fests that register on their own site, not Unstop: IIT Bombay E-Summit, IIT Delhi BECon, IIM Calcutta Intaglio, IIT Kharagpur Kshitij |
+
+**InsideIIM.** robots.txt allows `/` and disallows `/api/`, so the fetcher
+reads only the competitions page, once per run, and parses the Next.js
+flight payload embedded in the HTML. It keeps `ACTIVE` listings whose
+deadline has not passed (InsideIIM leaves closed rounds `ACTIVE` for
+months). Ids are `iim-<InsideIIM id>`; links go to the listing's page on
+insidekampus.com, InsideIIM's own competitions site (or the listing's
+insideiim.com page for external ones). A per-campus round ("Reckitt DARE
+2026 - IIM Bangalore") gets host "Reckitt – IIM Bangalore". Verdict: *fits*
+if the campus list names IIM Sirmaur or the eligibility says open to all;
+*check* ("Campus-restricted: check whether IIM Sirmaur is an eligible
+campus") if it names other campuses only; otherwise *check* ("Eligibility on
+InsideIIM"). Descriptions and eligibility text are read for two flags and
+never stored.
+
+**Fest watchlist.** `data/fests.json` has the same row shape as
+`data/international.json` plus a `tier`; ids start `fest-`. The rows become
+`source: 'curated'` records, so they sit on the main Board list under IIT or
+IIM with the same "expected" dates and "Official page changed" flag as the
+curated international items, and the weekly watcher hashes their pages
+too. Months are filled only when verified from the page (none were on
+2026-09-30: three of the four pages are script-rendered and show little
+more than their title). A missing `fests.json` just means no fest rows.
+
+### Unstop
 
 **Full scan.** Each run pages through *every* open Unstop competition
 (`/api/public/opportunity/search-result?opportunity=competitions&oppstatus=open&per_page=30&page=N`),
@@ -106,7 +147,7 @@ two sources:
 ### Weekly official-page watcher
 
 A weekly Action (`fetch/watch.js`, Mondays 05:00 IST) fetches each curated
-competition's official watch page, strips it down to text and hashes it. A
+competition's official watch page (international and fest watchlist alike), strips it down to text and hashes it. A
 changed hash shows **"Official page changed on \<date>, new edition?"** on
 the card (and in the digest, when it is built by hand) — a
 prompt to go check the page by hand, not an automatic date update.
@@ -152,7 +193,7 @@ conflict:
 | Supabase `decisions` (status, Registered, note) | the board, All case comps and Competition pages (edit link) |
 | Supabase `manual` (hand-added Unstop links) | the board's Add form (edit link) |
 | Supabase `intl_dates` (confirmed international dates) | the Competition page's "Set dates" (edit link) |
-| `data/international.json` | hand-edited only; nothing writes it |
+| `data/international.json`, `data/fests.json` | hand-edited only; nothing writes them |
 | `data/digest-state.json` | the digest job |
 
 The fetch and digest jobs only read the Supabase tables. If Supabase is
@@ -229,8 +270,9 @@ their fallbacks.
 
 `data/team.json` (size, graduating years), `data/national.json`,
 `data/bschools.json` and `data/corporates.json` (case-insensitive regexes on
-the host name that decide the tier), `data/international.json` (the curated international list, hand-
-edited). Edit, commit, and the next fetch applies them. `fetch/unstop.js`'s
+the host name that decide the tier), `data/international.json` (the curated international list) and
+`data/fests.json` (the fest watchlist; each row names its tier), both
+hand-edited. Edit, commit, and the next fetch applies them. `fetch/unstop.js`'s
 `formatKind` rules decide case / business / other.
 
 ## Develop
