@@ -121,6 +121,16 @@ async function main() {
     status: read('status.json', {}), state: read('digest-state.json', null), now: new Date(),
     watch: read('watch.json', {}), warnings: warning ? [warning] : [],
   });
+  // --publish: GitHub builds the digest and publishes it on the site; a weekly
+  // Claude task (Krishna's Gmail connector) reads data/digest-latest.json and
+  // sends it, so no mail credentials live in the repo.
+  if (process.argv.includes('--publish')) {
+    const out = { built_at: new Date().toISOString(), subject: d.subject, text: d.text, html: d.html };
+    fs.writeFileSync(new URL('digest-latest.json', dir), JSON.stringify(out, null, 2) + '\n');
+    fs.writeFileSync(new URL('digest-state.json', dir), JSON.stringify(d.nextState, null, 2) + '\n');
+    console.log(`published: ${d.subject}`);
+    return;
+  }
   if (!process.argv.includes('--send')) {
     console.log(`${d.subject}\n\n${d.text}`);
     return;

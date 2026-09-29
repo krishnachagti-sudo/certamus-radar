@@ -117,10 +117,12 @@ emails.
 
 ## Setup (once)
 
-1. Repo secrets (Settings → Secrets and variables → Actions):
-   `GMAIL_USER` (the sending Gmail address), `GMAIL_APP_PASSWORD`
-   (Google Account → Security → App passwords), optional `DIGEST_TO`
-   (defaults to `GMAIL_USER`).
+1. Monday email: the `digest` workflow (Mon 08:00 IST) publishes the digest
+   to `data/digest-latest.json`; a weekly Claude scheduled task (Mon 08:30
+   IST, on the owner's Mac) reads it and sends it from the owner's Gmail via
+   the Gmail connector. No mail credentials live in the repo. (Fallback:
+   `node digest/email.js --send` with `GMAIL_USER` / `GMAIL_APP_PASSWORD`
+   still works if SMTP is ever preferred.)
 2. Pages: Settings → Pages → Build and deployment → **Deploy from a branch**,
    branch `main`, folder `/ (root)`.
 3. Editing: see below.

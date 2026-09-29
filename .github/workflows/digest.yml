@@ -10,18 +10,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: npm }
-      - run: npm ci --no-audit --no-fund
-      - run: node digest/email.js --send
-        env:
-          GMAIL_USER: ${{ secrets.GMAIL_USER }}
-          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-          DIGEST_TO: ${{ secrets.DIGEST_TO }}
+        with: { node-version: 22 }
+      - run: node digest/email.js --publish
       - name: Record what was announced
         run: |
           git config user.name "certamus-radar-bot"
           git config user.email "certamus-radar-bot@users.noreply.github.com"
-          git add data/digest-state.json
+          git add data/digest-state.json data/digest-latest.json
           git diff --cached --quiet && exit 0
           git commit -m "data: digest $(date -u +%F)"
           for i in 1 2 3; do git pull --rebase -q || { git rebase --abort; false; } && git push -q && exit 0; sleep 5; done
