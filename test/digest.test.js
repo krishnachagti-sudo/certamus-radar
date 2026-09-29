@@ -142,3 +142,9 @@ test('digest labels the international tier', () => {
   const d = buildDigest({ competitions: [c('od-9', { tier: 'international', source: 'oppdesk' })], decisions: {}, status: fresh, state: { sent_ids: [] }, now });
   assert.match(d.text, /\(International, /);
 });
+
+test('International leaves out startup contests (not cases), as the rest of the digest does', () => {
+  const d = buildDigest({ competitions: [intl('intl-a'), intl('intl-s', { is_case: false, kind: 'startup' })],
+    decisions: {}, status: fresh, state: { sent_ids: [] }, now });
+  assert.deepEqual(d.sections.international.map(x => x.id), ['intl-a']);
+});
