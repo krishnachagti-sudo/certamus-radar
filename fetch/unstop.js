@@ -175,7 +175,9 @@ export async function fetchAll(existingById, manualIds, opts) {
     if (items.has(id)) continue;
     const d = await detail(id);
     if (d) records.push(normalise(d));
-    else if (existingById.has(id)) records.push({ ...existingById.get(id) });
+    // The stored record has no body text (it is never published), so it can't
+    // be reclassified: run.js carries its tier and verdict over as-is.
+    else if (existingById.has(id)) records.push({ ...existingById.get(id), carried_over: true });
   }
 
   for (const r of records) r.pinned = manualIds.includes(r.id);

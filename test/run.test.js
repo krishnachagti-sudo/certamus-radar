@@ -83,3 +83,41 @@ test('failure leaves competitions untouched and records the error', async () => 
   assert.equal(st.last_run, now.toISOString());
   assert.match(st.last_error, /shape/);
 });
+
+test('published competitions.json carries no listing body text or contact details', async () => {
+  const dir = dataDir({
+    'competitions.json': [{ id: 77, title: 'Old', regn_close: '2026-12-01', first_seen: '2026-09-01', closed_on: null,
+      details_text: 'Old body, mail old@example.org or 9123456789', eligibility: { others: ['all'] } }],
+  });
+  const leaky = { ...item, details: '<p>All students. Call Riya 9876543210 or riya@example.edu</p>' };
+  const getJson = async url => ({ data: { data: [leaky], last_page: 1 } });
+  const code = await main({ dataDir: dir, now, deps: { getJson, pause: async () => {} } });
+  assert.equal(code, 0);
+  const raw = fs.readFileSync(path.join(dir, 'competitions.json'), 'utf8');
+  const comps = JSON.parse(raw);
+  for (const c of comps) {
+    assert.equal('details_text' in c, false);
+    assert.equal('eligibility' in c, false);
+  }
+  assert.doesNotMatch(raw, /\b[6-9]\d{9}\b/);
+  assert.doesNotMatch(raw, /[\w.+-]+@[\w-]+\.[\w.]+/);
+  // classification still ran on the body before it was dropped
+  assert.equal(comps.find(c => c.id === 1).verdict.level, 'fits');
+});
+
+test('a carried-over manual record keeps its stored tier and verdict', async () => {
+  const stored = { id: 55, title: 'Kept', host: 'Acme', tier: 'iim', pinned: true, details_fetched: true,
+    verdict: { level: 'fits', reasons: [] }, regn_close: '2026-12-01', first_seen: '2026-09-01', closed_on: null };
+  const dir = dataDir({ 'competitions.json': [stored], 'manual.json': [{ url: 'https://unstop.com/competitions/kept-55' }] });
+  const getJson = async url => {
+    if (url.includes('/competition/55')) throw new Error('HTTP 500');
+    return { data: { data: [item], last_page: 1 } };
+  };
+  const code = await main({ dataDir: dir, now, deps: { getJson, pause: async () => {} } });
+  assert.equal(code, 0);
+  const kept = read(dir, 'competitions.json').find(c => c.id === 55);
+  assert.equal(kept.tier, 'iim');
+  assert.deepEqual(kept.verdict, { level: 'fits', reasons: [] });
+  assert.equal(kept.pinned, true);
+  assert.equal('carried_over' in kept, false);
+});

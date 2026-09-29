@@ -1,5 +1,8 @@
 // Daily job: fetch → classify → merge → write. On any search failure the
 // competitions file is left alone, so a bad day never blanks the board.
+// Listing body text (details_text) and the raw eligibility blob are used only
+// for classification here and never written: the body text carries
+// organisers' personal phone numbers and emails, and the file is public.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -8,6 +11,13 @@ import { tier, verdict } from './classify.js';
 import { merge } from './merge.js';
 import { todayIST } from '../dates.js';
 import { unstopId } from '../urls.js';
+
+const PRIVATE_FIELDS = ['details_text', 'eligibility', 'carried_over'];
+const publishable = r => {
+  const out = { ...r };
+  for (const k of PRIVATE_FIELDS) delete out[k];
+  return out;
+};
 
 const DEFAULT_DIR = fileURLToPath(new URL('../data/', import.meta.url));
 
@@ -33,6 +43,7 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
       ...deps,
     });
     for (const r of records) {
+      if (r.carried_over) continue; // stored tier and verdict kept as-is
       try {
         r.tier = tier(r, lists);
         r.verdict = verdict(r, team);
@@ -42,7 +53,7 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
         warnings.push(`classify ${r.id}: ${e.message}`);
       }
     }
-    write('competitions.json', merge(existing, records, decisions, todayIST(now)));
+    write('competitions.json', merge(existing.map(publishable), records.map(publishable), decisions, todayIST(now)));
     write('status.json', { last_run: stamp, last_ok: stamp, last_error: null, warnings });
     console.log(`ok: ${records.length} fetched, ${warnings.length} warnings`);
     return 0;
