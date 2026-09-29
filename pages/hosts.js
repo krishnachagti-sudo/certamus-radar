@@ -1,5 +1,5 @@
 // Hosts & archive (hosts.html). Read-only: a row per host (live + archive +
-// curated international), and a searchable list of closed competitions.
+// curated international and fest watchlist), and a searchable list of closed competitions.
 import { dayDiff, todayIST } from '../dates.js';
 import { TIERS, pagesJson } from '../lib/data.js';
 import { esc, compHref } from '../lib/card.js';
@@ -20,15 +20,17 @@ const state = {
 
 async function load() {
   state.error = null;
-  [state.comps, state.archive, state.curated, state.status] = await Promise.all([
+  let intl, fests;
+  [state.comps, state.archive, intl, fests, state.status] = await Promise.all([
     pagesJson('competitions.json', []),
     pagesJson('archive.json', []),
     pagesJson('international.json', []),
+    pagesJson('fests.json', []),
     pagesJson('status.json', {}),
   ]);
   if (!Array.isArray(state.comps)) state.comps = [];
   if (!Array.isArray(state.archive)) state.archive = [];
-  if (!Array.isArray(state.curated)) state.curated = [];
+  state.curated = [...(Array.isArray(intl) ? intl : []), ...(Array.isArray(fests) ? fests : [])];
   render();
 }
 

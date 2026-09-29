@@ -47,10 +47,12 @@ async function keyRejected() {
 
 async function load() {
   state.error = null;
-  [state.comps, state.archive, state.intl, state.watch, state.status] = await Promise.all([
+  let intl, fests;
+  [state.comps, state.archive, intl, fests, state.watch, state.status] = await Promise.all([
     pagesJson('competitions.json', []), pagesJson('archive.json', []), pagesJson('international.json', []),
-    pagesJson('watch.json', {}), pagesJson('status.json', {})]);
-  const curated = String(ID).startsWith('intl-');
+    pagesJson('fests.json', []), pagesJson('watch.json', {}), pagesJson('status.json', {})]);
+  state.intl = [...(Array.isArray(intl) ? intl : []), ...(Array.isArray(fests) ? fests : [])];
+  const curated = /^(intl|fest)-/.test(String(ID));
   await loadDecisions(state, {
     overlay: d => saver.overlay(d),
     readMore: async () => { if (curated) state.intlDates = { ...await readIntlDates(), ...localDates }; },

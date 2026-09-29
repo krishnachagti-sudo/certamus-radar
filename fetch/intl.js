@@ -25,13 +25,19 @@ function curatedVerdict(row) {
   return { level: 'fits', reasons: [] };
 }
 
+// Curated rows come from data/international.json (intl-*, tier
+// international) and data/fests.json (fest-*, the domestic fest watchlist),
+// same row shape; a row may carry its own `tier`.
+const CURATED_ID = /^(intl|fest)-/;
+const ROW_TIERS = new Set(['iit', 'iim', 'national', 'bschool', 'corporate', 'international']);
+
 // `confirmedDates` comes from the Supabase intl_dates table: { [id]: { regn_close, comp_end, confirmed_on } }.
 // `today` is accepted for symmetry with oppdeskRecords; curated rows do not age out.
 export function curatedRecords(list, confirmedDates, today) { // eslint-disable-line no-unused-vars
   const dates = confirmedDates && typeof confirmedDates === 'object' ? confirmedDates : {};
   const out = [];
   for (const row of Array.isArray(list) ? list : []) {
-    if (!row || row.verified === false || typeof row.id !== 'string' || !row.id.startsWith('intl-')) continue;
+    if (!row || row.verified === false || typeof row.id !== 'string' || !CURATED_ID.test(row.id)) continue;
     const confirmed = dates[row.id] || {};
     out.push({
       id: row.id,
@@ -39,7 +45,7 @@ export function curatedRecords(list, confirmedDates, today) { // eslint-disable-
       pinned: false,
       title: row.name || '',
       host: row.host || '',
-      tier: 'international',
+      tier: ROW_TIERS.has(row.tier) ? row.tier : 'international',
       url: httpsUrl(row.url),
       format: 'curated',
       format_kind: row.kind === 'case' ? 'case' : 'other',

@@ -11,6 +11,7 @@ import { tier, verdict } from './classify.js';
 import { merge, appendArchive } from './merge.js';
 import { curatedRecords, oppdeskRecords } from './intl.js';
 import { fetchOppDesk } from './oppdesk.js';
+import { fetchInsideIim, parseInsideIim, insideiimRecords } from './insideiim.js';
 import { defaultConfig, readTables } from './supabase.js';
 import { dayDiff, todayIST } from '../dates.js';
 import { unstopId } from '../urls.js';
@@ -67,19 +68,28 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
     const { records, warnings } = await fetchAll(new Map(existing.map(r => [r.id, r])), manualIds, fetchDeps);
     warnings.unshift(...remoteWarnings);
     const today = todayIST(now);
-    const intlFile = readStrict('international.json');
-    const curatedProblem =
-      intlFile.missing ? 'international.json missing'
-        : intlFile.error ? `international.json ${intlFile.error}`
-          : !Array.isArray(intlFile.value) ? 'international.json is not an array'
-            : remote.intlDates.error ? `confirmed dates unavailable (${remote.intlDates.error})`
-              : null;
-    if (curatedProblem) {
-      // Keep yesterday's curated records (and their dates) rather than close them.
-      warnings.push(`curated list: ${curatedProblem}; previous curated records kept`);
-      records.push(...existing.filter(r => r.source === 'curated'));
-    } else {
-      records.push(...curatedRecords(intlFile.value, remote.intlDates.value, today));
+    // Two curated lists, same row shape: international (required) and the
+    // domestic fest watchlist (optional: missing means no rows). A problem
+    // with either keeps yesterday's records from that list (and their dates)
+    // rather than closing them.
+    for (const { f, prefix, label, optional } of [
+      { f: 'international.json', prefix: 'intl-', label: 'curated list' },
+      { f: 'fests.json', prefix: 'fest-', label: 'fest watchlist', optional: true },
+    ]) {
+      const listFile = readStrict(f);
+      if (optional && listFile.missing) continue;
+      const problem =
+        listFile.missing ? `${f} missing`
+          : listFile.error ? `${f} ${listFile.error}`
+            : !Array.isArray(listFile.value) ? `${f} is not an array`
+              : remote.intlDates.error ? `confirmed dates unavailable (${remote.intlDates.error})`
+                : null;
+      if (problem) {
+        warnings.push(`${label}: ${problem}; previous ${prefix} records kept`);
+        records.push(...existing.filter(r => r.source === 'curated' && String(r.id).startsWith(prefix)));
+      } else {
+        records.push(...curatedRecords(listFile.value, remote.intlDates.value, today));
+      }
     }
     try {
       const posts = await fetchOppDesk({ getJson: deps.getJson, pause: deps.pause, today });
@@ -94,8 +104,16 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
       warnings.push(`Opportunity Desk: ${e.message}`);
       records.push(...existing.filter(r => r.source === 'oppdesk'));
     }
+    try {
+      const html = await fetchInsideIim({ getText: deps.getText, pause: deps.pause });
+      records.push(...insideiimRecords(parseInsideIim(html), today));
+    } catch (e) {
+      // Optional source: keep what we had, unchanged, so merge does not close it.
+      warnings.push(`InsideIIM: ${e.message}`);
+      records.push(...existing.filter(r => r.source === 'insideiim'));
+    }
     for (const r of records) {
-      // Carried-over, curated and Opportunity Desk records keep their own tier and verdict.
+      // Carried-over, curated, Opportunity Desk and InsideIIM records keep their own tier and verdict.
       if (r.carried_over || r.source) continue;
       try {
         r.tier = tier(r, lists);

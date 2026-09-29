@@ -176,3 +176,43 @@ test('format_kind: curated case rows are case, other kinds other; Opportunity De
     content: { rendered: '<p>Deadline: October 10, 2026</p>' } }], today);
   assert.equal(od.format_kind, 'case');
 });
+
+// ---- fest watchlist rows (data/fests.json) --------------------------------
+
+const fest = (over = {}) => row({
+  id: 'fest-esummit', name: 'IIT Bombay E-Summit', url: 'https://www.ecell.in/esummit', watch_url: 'https://www.ecell.in/esummit',
+  host: 'E-Cell, IIT Bombay', tier: 'iit', kind: 'case', entry: 'open', entry_note: null, who_applies: 'team',
+  indian_ug: 'unclear', indian_ug_note: 'Check the fest page for undergraduate eligibility',
+  application_months: null, finals_months: null, team_size: null, verified: true, ...over,
+});
+
+test('a curated row carries its own tier: fest rows land as iit/iim curated records', () => {
+  const [r] = curatedRecords([fest()], {}, today);
+  assert.equal(r.id, 'fest-esummit');
+  assert.equal(r.tier, 'iit');
+  assert.equal(r.source, 'curated');
+  assert.equal(r.format, 'curated');
+  assert.equal(r.is_case, true);
+  assert.equal(r.format_kind, 'case');
+  assert.deepEqual(r.expected, { application_months: null, finals_months: null });
+  assert.equal(r.intl.watch_url, 'https://www.ecell.in/esummit');
+  assert.deepEqual(r.verdict, { level: 'check', reasons: ['Check the fest page for undergraduate eligibility'] });
+  assert.equal(curatedRecords([fest({ id: 'fest-intaglio', tier: 'iim' })], {}, today)[0].tier, 'iim');
+});
+
+test('a missing or unknown row tier falls back to international', () => {
+  assert.equal(curatedRecords([row()], {}, today)[0].tier, 'international');
+  assert.equal(curatedRecords([row({ tier: 'other' })], {}, today)[0].tier, 'international');
+  assert.equal(curatedRecords([row({ tier: 'bogus' })], {}, today)[0].tier, 'international');
+});
+
+test('curated ids must start intl- or fest-; unverified fest rows are hidden', () => {
+  assert.equal(curatedRecords([row({ id: 'x-1' })], {}, today).length, 0);
+  assert.equal(curatedRecords([fest({ verified: false })], {}, today).length, 0);
+});
+
+test('confirmed dates apply to fest rows too', () => {
+  const [r] = curatedRecords([fest()], { 'fest-esummit': { regn_close: '2026-12-01', comp_end: '2027-01-20' } }, today);
+  assert.equal(r.regn_close, '2026-12-01');
+  assert.equal(r.comp_end, '2027-01-20');
+});

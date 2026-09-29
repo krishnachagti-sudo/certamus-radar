@@ -150,3 +150,10 @@ test('hostRows: tier order is iit, iim, national, bschool, corporate, internatio
   const rows = hostRows(tiers.map((tier, i) => live({ id: i + 1, host: `H${i}`, tier })), [], []);
   assert.deepEqual(rows.map(r => r.tier), ['iit', 'iim', 'national', 'bschool', 'corporate', 'international', 'other']);
 });
+
+test('hostRows: a curated row with its own tier keeps it (fest watchlist)', () => {
+  const rows = hostRows([], [], [curatedRow({ id: 'fest-ktj', name: 'Kshitij', host: 'IIT Kharagpur', tier: 'iit', finals_months: null })]);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].tier, 'iit');
+  assert.deepEqual(rows[0].months, []);
+});

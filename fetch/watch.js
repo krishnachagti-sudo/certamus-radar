@@ -5,16 +5,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { UA, defaultPause } from './unstop.js';
+import { defaultGetText, defaultPause } from './unstop.js';
 import { todayIST } from '../dates.js';
-
-const TIMEOUT_MS = 20000;
-
-async function defaultGetText(url) {
-  const res = await fetch(url, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(TIMEOUT_MS) });
-  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
-  return res.text();
-}
 
 // Strips <script>/<style> blocks (content and all), then every remaining
 // tag, then collapses whitespace, so cosmetic markup/script/css churn never
@@ -32,7 +24,7 @@ export function hashText(text) {
   return crypto.createHash('sha256').update(text).digest('hex');
 }
 
-// `list` is data/international.json; `prev` is the previous data/watch.json
+// `list` is data/international.json plus data/fests.json; `prev` is the previous data/watch.json
 // (`{ [id]: { hash, changed_on, last_checked, last_error } }`). Only rows
 // with `verified !== false`, a string `id` and a string `watch_url` are
 // checked. A fetch error keeps the previous hash and changed_on, records
@@ -98,7 +90,17 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
     return 1;
   }
   const prev = read('watch.json', {});
-  const next = await watchAll(listFile.value, prev, { now, ...deps });
+  // The fest watchlist is optional (missing = no rows). If it is broken, its
+  // previous entries are kept as they were instead of dropped.
+  const festFile = readList(dataDir, 'fests.json');
+  const fests = festFile.value || [];
+  const next = await watchAll([...listFile.value, ...fests], prev, { now, ...deps });
+  if (festFile.error) {
+    console.error(`watch: fests.json ${festFile.error}; previous fest- entries kept`);
+    for (const [id, v] of Object.entries(prev && typeof prev === 'object' ? prev : {})) {
+      if (id.startsWith('fest-') && !(id in next)) next[id] = v;
+    }
+  }
   fs.writeFileSync(file('watch.json'), JSON.stringify(next, null, 2) + '\n');
   const errors = Object.entries(next).filter(([, v]) => v.last_error);
   console.log(`watch: ${Object.keys(next).length} checked, ${errors.length} errors`);

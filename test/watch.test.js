@@ -151,3 +151,32 @@ test('main errors and does not write watch.json when international.json is not a
   assert.equal(code, 1);
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8')), { old: true });
 });
+
+// ---- fest watchlist (data/fests.json) --------------------------------------
+
+test('main watches fests.json rows alongside international.json', async () => {
+  const dir = tmpDataDir({ 'international.json': [row('intl-a')], 'fests.json': [row('fest-a'), row('fest-b', 'https://example.com/b', false)] });
+  const seen = [];
+  const code = await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async u => { seen.push(u); return 'text'; }, pause: async () => {} } });
+  assert.equal(code, 0);
+  const written = JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8'));
+  assert.deepEqual(Object.keys(written).sort(), ['fest-a', 'intl-a']);
+  assert.deepEqual(seen, ['https://example.com/intl-a', 'https://example.com/fest-a']);
+});
+
+test('main: a missing fests.json just means no fest rows', async () => {
+  const dir = tmpDataDir({ 'international.json': [row('intl-a')] });
+  assert.equal(await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async () => 'text', pause: async () => {} } }), 0);
+  assert.deepEqual(Object.keys(JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8'))), ['intl-a']);
+});
+
+test('main: a broken fests.json keeps the previous fest- entries and still watches international', async () => {
+  for (const bad of ['{not json', '{"a":1}']) {
+    const dir = tmpDataDir({ 'international.json': [row('intl-a')], 'fests.json': bad,
+      'watch.json': { 'fest-a': { hash: 'h1', changed_on: '2026-09-01', last_checked: '2026-09-22' }, 'intl-a': { hash: 'old', changed_on: null, last_checked: '2026-09-22' } } });
+    assert.equal(await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async () => 'text', pause: async () => {} } }), 0);
+    const written = JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8'));
+    assert.deepEqual(written['fest-a'], { hash: 'h1', changed_on: '2026-09-01', last_checked: '2026-09-22' });
+    assert.equal(written['intl-a'].hash, sha256('text'));
+  }
+});

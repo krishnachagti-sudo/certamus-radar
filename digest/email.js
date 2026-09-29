@@ -64,7 +64,7 @@ export function buildDigest({ competitions, decisions, status, state, now, watch
   const months = [month, (month % 12) + 1];
   const direct = c => c.intl?.who_applies === 'team' && c.intl?.indian_ug === 'yes';
   const international = competitions
-    .filter(c => c.source === 'curated' && c.is_case !== false && statusOf(c) !== 'skipped' && c.verdict?.level !== 'out'
+    .filter(c => c.source === 'curated' && c.tier === 'international' && c.is_case !== false && statusOf(c) !== 'skipped' && c.verdict?.level !== 'out'
       && (c.expected?.application_months || []).some(m => months.includes(m)))
     .sort((a, b) => Number(direct(b)) - Number(direct(a)));
 
