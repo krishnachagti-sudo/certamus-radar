@@ -58,3 +58,53 @@ footer { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; color: 
 .ext { margin: 8px 0 0; font-size: 0.88rem; }
 .ext a { color: var(--accent); }
 .reg-toggle { display: inline-flex; gap: 6px; align-items: center; margin-top: 8px; font-size: 0.9rem; font-weight: 600; color: var(--fits); }
+
+/* Competition page (c.html), lifted from mock B. Scoped under .comp so the
+   board's .count/.host/.note rules never leak in; values use --ink. */
+.comp { padding-top: 20px; }
+.comp .cols { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
+@media (max-width: 760px) { .comp .cols { grid-template-columns: minmax(0, 1fr); } .comp .panel { position: static; } }
+.comp .main h1 { margin: 6px 0 2px; font-size: 1.6rem; overflow-wrap: anywhere; }
+.comp .main .host { color: var(--ink-2); margin: 0 0 14px; font-size: 1rem; }
+.comp .panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 16px; position: sticky; top: 12px; min-width: 0; }
+.comp .panel h3 { margin: 0 0 8px; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+.comp .countdown { font-size: 2rem; font-weight: 700; line-height: 1.1; color: var(--ink); }
+.comp .countdown small { font-size: .8rem; color: var(--ink-2); font-weight: 600; display: block; margin-top: 2px; }
+.comp .dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 14px; font-size: .9rem; margin: 12px 0; }
+.comp .dl dt { color: var(--ink-2); }
+.comp .dl dd { margin: 0; font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+.comp .seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; margin-bottom: 8px; }
+.comp .seg span, .comp .seg button { text-align: center; padding: 6px 0; font-weight: 600; font-size: .85rem; border: 0; border-radius: 0; background: transparent; color: var(--ink); }
+.comp .seg span + span, .comp .seg button + button { border-left: 1px solid var(--rule); }
+.comp .seg .on, .comp .seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.comp .clear-row { margin: 0 0 8px; }
+.comp .clear-row button { font-size: .85rem; }
+.comp .regrow { display: flex; gap: 10px; align-items: center; padding: 10px; border-radius: 8px; background: var(--soft); color: var(--ink); font-weight: 700; margin: 8px 0 12px; }
+.comp .regrow.on, .comp div.regrow { background: var(--fits-bg); color: var(--fits); }
+.comp label.regrow { cursor: pointer; }
+.comp .regrow input { width: 18px; height: 18px; margin: 0; accent-color: var(--fits); }
+.comp .regrow .box { width: 20px; height: 20px; border-radius: 5px; background: var(--fits); color: #fff; display: grid; place-items: center; font-size: .8rem; }
+.comp .sec { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; }
+.comp .sec h2 { font-size: 1rem; margin: 0 0 8px; }
+.comp .rule { display: flex; gap: 10px; padding: 6px 0; }
+.comp .rule .ico { width: 1.4em; flex: none; text-align: center; }
+.comp .rule small { display: block; color: var(--ink-2); overflow-wrap: anywhere; }
+.comp .rule.r-unchecked b { color: var(--ink-2); font-weight: 600; }
+.comp .warn { background: var(--out-bg); color: var(--out); border-radius: 8px; padding: 8px 10px; font-weight: 600; font-size: .85rem; margin-top: 10px; overflow-wrap: anywhere; }
+.comp .watchnote { background: var(--check-bg); color: var(--check); border-radius: 8px; padding: 8px 10px; font-weight: 600; font-size: .85rem; margin-top: 10px; }
+.comp textarea { width: 100%; min-height: 80px; font: inherit; border: 1px solid var(--rule); border-radius: 8px; padding: 8px; resize: vertical; }
+.comp textarea:focus-visible, .comp input[type="date"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.comp .note-text { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.comp .muted { color: var(--ink-2); }
+.comp .big { display: block; text-align: center; background: var(--accent); color: var(--on-accent); border-radius: 8px; padding: 9px; font-weight: 700; text-decoration: none; margin-top: 12px; }
+.comp .setdates { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--rule); display: grid; gap: 8px; }
+.comp .setdates h3 { margin: 0; }
+.comp .setdates label { display: grid; gap: 2px; font-size: .85rem; color: var(--ink-2); }
+.comp .setdates input { font: inherit; padding: 5px 8px; border: 1px solid var(--rule); border-radius: 8px; color: var(--ink); }
+.comp .setdates button { justify-self: start; background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.comp .setdates button:disabled { cursor: progress; background: var(--ink-2); border-color: transparent; }
+.comp #dates-msg { margin: 0; font-size: .85rem; color: var(--ink-2); }
+.comp .notfound h1 { font-size: 1.3rem; margin: 0 0 6px; }
+.comp .notfound a { color: var(--accent); }
+.chip.archived { background: var(--ink-2); color: var(--on-accent); }
+.sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
