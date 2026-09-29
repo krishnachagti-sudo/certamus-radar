@@ -148,3 +148,15 @@ test('International leaves out startup contests (not cases), as the rest of the 
     decisions: {}, status: fresh, state: { sent_ids: [] }, now });
   assert.deepEqual(d.sections.international.map(x => x.id), ['intl-a']);
 });
+
+test('subject counts International and Registered when non-zero', () => {
+  const d = buildDigest({
+    competitions: [c(1), intl('intl-a'), c(3, { regn_close: '2026-10-18', comp_end: '2026-12-31' })],
+    decisions: { 3: { registered: true } }, status: fresh, state: { sent_ids: [3] }, now,
+  });
+  assert.equal(d.subject, 'Certamus Radar: 1 new, 0 closing, 0 clashes, 1 international, 1 registered');
+  const only = buildDigest({ competitions: [intl('intl-a')], decisions: {}, status: fresh, state: { sent_ids: [] }, now });
+  assert.equal(only.subject, 'Certamus Radar: 0 new, 0 closing, 0 clashes, 1 international');
+  const none = buildDigest({ competitions: [], decisions: {}, status: fresh, state: { sent_ids: [] }, now });
+  assert.match(none.subject, /nothing new this week/);
+});

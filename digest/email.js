@@ -75,7 +75,10 @@ export function buildDigest({ competitions, decisions, status, state, now, watch
     ]],
   ].filter(([, rows]) => rows.length);
 
-  const counts = `${fresh.length} new, ${closing.length} closing, ${clashing.length} clash${clashing.length === 1 ? '' : 'es'}`;
+  const intlCount = international.length + watchChanged.length;
+  const counts = [`${fresh.length} new`, `${closing.length} closing`, `${clashing.length} clash${clashing.length === 1 ? '' : 'es'}`,
+    intlCount ? `${intlCount} international` : null, registered.length ? `${registered.length} registered` : null]
+    .filter(Boolean).join(', ');
   const subject = `${stale ? '[stale data] ' : ''}Certamus Radar: ${blocks.length ? counts : 'nothing new this week'}`;
   const text = [staleLine, ...blocks.map(([h, rows]) => `${h}\n${rows.map(r => `- ${r}`).join('\n')}`),
     blocks.length ? null : 'Nothing new, nothing closing, no clashes.', `Board: ${BOARD_URL}`]
