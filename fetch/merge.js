@@ -3,6 +3,7 @@ import { dayDiff } from '../dates.js';
 const KEEP_DAYS = 60;
 
 function expired(rec, decisions, today) {
+  if (rec.source === 'curated') return false; // standing entries: never pruned
   if (!rec.closed_on) return false;
   const d = decisions[rec.id];
   const committed = d?.status === 'entering' || d?.registered === true;
@@ -12,8 +13,10 @@ function expired(rec, decisions, today) {
   return dayDiff(anchor, today) > KEEP_DAYS;
 }
 
-// Returns { next, pruned }: pruned records (closed long enough ago) leave the
-// live file and go to the archive (run.js appends them).
+// Returns { next, pruned }. `pruned` is what run.js appends to the archive:
+// records closed long enough ago (they leave the live file), plus curated
+// records whose confirmed regn_close has passed (they stay in the live file;
+// appendArchive keys them per edition, so each edition is archived once).
 export function merge(existing, fetched, decisions, today) {
   const prev = new Map(existing.map(r => [r.id, r]));
   const seen = new Set();
@@ -29,23 +32,31 @@ export function merge(existing, fetched, decisions, today) {
   }
   const kept = [];
   const pruned = [];
-  for (const r of next) (expired(r, decisions, today) ? pruned : kept).push(r);
+  for (const r of next) {
+    if (expired(r, decisions, today)) { pruned.push(r); continue; }
+    kept.push(r);
+    if (r.source === 'curated' && r.regn_close && dayDiff(today, r.regn_close) < 0) pruned.push(r);
+  }
   kept.sort((a, b) => (a.regn_close || '9999').localeCompare(b.regn_close || '9999'));
   return { next: kept, pruned };
 }
 
 // The archive keeps only what the Hosts page needs: never body text,
-// eligibility or verdict reasons. Append-only, deduped by id.
+// eligibility or verdict reasons. Append-only, deduped by archive_key:
+// the id, or id@regn_close for a curated edition.
 const ARCHIVE_FIELDS = ['id', 'title', 'host', 'tier', 'url', 'regn_close', 'comp_end', 'first_seen', 'closed_on', 'format', 'is_case'];
+
+export const archiveKey = r => (r.source === 'curated' && r.regn_close ? `${r.id}@${r.regn_close}` : String(r.id));
 
 export function appendArchive(archive, pruned) {
   if (!pruned.length) return archive;
-  const have = new Set(archive.map(a => String(a.id)));
+  const have = new Set(archive.map(a => a?.archive_key ?? String(a?.id)));
   const out = [...archive];
   for (const p of pruned) {
-    if (have.has(String(p.id))) continue;
-    have.add(String(p.id));
-    const slim = {};
+    const key = archiveKey(p);
+    if (have.has(key)) continue;
+    have.add(key);
+    const slim = { archive_key: key };
     for (const k of ARCHIVE_FIELDS) slim[k] = p[k] ?? null;
     out.push(slim);
   }

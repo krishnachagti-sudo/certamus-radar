@@ -68,7 +68,7 @@ test('appendArchive keeps only slim fields and dedupes by id', () => {
     format: 'case_competition', is_case: true, verdict: { level: 'fits', reasons: [] }, details_text: 'body', eligibility: {}, team_max: 4 };
   const once = appendArchive([], [rec]);
   assert.deepEqual(Object.keys(once[0]).sort(),
-    ['closed_on', 'comp_end', 'first_seen', 'format', 'host', 'id', 'is_case', 'regn_close', 'tier', 'title', 'url']);
+    ['archive_key', 'closed_on', 'comp_end', 'first_seen', 'format', 'host', 'id', 'is_case', 'regn_close', 'tier', 'title', 'url']);
   const twice = appendArchive(once, [rec, { ...rec, id: 2 }]);
   assert.deepEqual(twice.map(x => x.id), [1, 2]);
   assert.equal(appendArchive(twice, []), twice);
@@ -77,4 +77,26 @@ test('appendArchive keeps only slim fields and dedupes by id', () => {
 test('appendArchive dedupes across number and string ids', () => {
   const a = appendArchive([{ id: 1, title: 'x' }], [{ id: '1', title: 'x' }]);
   assert.equal(a.length, 1);
+});
+
+test('curated records are never pruned; each closed edition is returned for the archive', () => {
+  const cur = { ...r('intl-a', { regn_close: '2026-08-01', comp_end: '2026-08-10' }), source: 'curated', first_seen: '2026-07-01', closed_on: '2026-08-02' };
+  const { next, pruned } = mergeFull([cur], [{ ...cur }], {}, '2026-10-01'); // 61 days after closed_on
+  assert.deepEqual(next.map(x => x.id), ['intl-a']);
+  assert.deepEqual(pruned.map(x => x.id), ['intl-a']);
+  const open = mergeFull([], [{ ...r('intl-b', { regn_close: '2026-12-01' }), source: 'curated' }], {}, today);
+  assert.deepEqual(open.pruned, []);
+  const undated = mergeFull([], [{ ...r('intl-c', { regn_close: null }), source: 'curated' }], {}, today);
+  assert.deepEqual(undated.pruned, []);
+});
+
+test('appendArchive keys curated editions by id@regn_close and archives each once', () => {
+  const ed = (regn_close) => ({ id: 'intl-a', source: 'curated', title: 'A', regn_close, closed_on: regn_close });
+  let a = appendArchive([], [ed('2026-08-01')]);
+  a = appendArchive(a, [ed('2026-08-01')]);
+  a = appendArchive(a, [ed('2027-08-01')]);
+  assert.deepEqual(a.map(x => x.archive_key), ['intl-a@2026-08-01', 'intl-a@2027-08-01']);
+  const u = appendArchive([{ id: 5, title: 'old entry without key' }], [{ id: 5, title: 'x' }, { id: 6, title: 'y' }]);
+  assert.deepEqual(u.map(x => x.id), [5, 6]);
+  assert.equal(u[1].archive_key, '6');
 });

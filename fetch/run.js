@@ -11,7 +11,7 @@ import { tier, verdict } from './classify.js';
 import { merge, appendArchive } from './merge.js';
 import { curatedRecords, oppdeskRecords } from './intl.js';
 import { fetchOppDesk } from './oppdesk.js';
-import { todayIST } from '../dates.js';
+import { dayDiff, todayIST } from '../dates.js';
 import { unstopId } from '../urls.js';
 
 const PRIVATE_FIELDS = ['details_text', 'eligibility', 'carried_over'];
@@ -29,6 +29,12 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
     try { return JSON.parse(fs.readFileSync(file(f), 'utf8')); } catch { return fallback; }
   };
   const write = (f, v) => fs.writeFileSync(file(f), JSON.stringify(v, null, 2) + '\n');
+  // Tells "missing" apart from "there but broken", for files we must not clobber.
+  const readStrict = f => {
+    let raw;
+    try { raw = fs.readFileSync(file(f), 'utf8'); } catch { return { missing: true }; }
+    try { return { value: JSON.parse(raw) }; } catch (e) { return { error: `unparseable (${e.message})` }; }
+  };
 
   const team = read('team.json');
   const lists = { bschools: read('bschools.json', []), corporates: read('corporates.json', []) };
@@ -45,10 +51,31 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
       ...deps,
     });
     const today = todayIST(now);
-    records.push(...curatedRecords(read('international.json', []), read('intl-dates.json', {}), today));
+    const intlFile = readStrict('international.json');
+    const datesFile = readStrict('intl-dates.json');
+    const isObject = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+    const curatedProblem =
+      intlFile.missing ? 'international.json missing'
+        : intlFile.error ? `international.json ${intlFile.error}`
+          : !Array.isArray(intlFile.value) ? 'international.json is not an array'
+            : datesFile.error ? `intl-dates.json ${datesFile.error}`
+              : !datesFile.missing && !isObject(datesFile.value) ? 'intl-dates.json is not an object'
+                : null;
+    if (curatedProblem) {
+      // Keep yesterday's curated records (and their dates) rather than close them.
+      warnings.push(`curated list: ${curatedProblem}; previous curated records kept`);
+      records.push(...existing.filter(r => r.source === 'curated'));
+    } else {
+      records.push(...curatedRecords(intlFile.value, datesFile.missing ? {} : datesFile.value, today));
+    }
     try {
       const posts = await fetchOppDesk({ getJson: deps.getJson, pause: deps.pause, today });
-      records.push(...oppdeskRecords(posts, today));
+      const fresh = oppdeskRecords(posts, today);
+      const ids = new Set(fresh.map(r => r.id));
+      // A post older than the fetch window is still open until its deadline.
+      const stillOpen = existing.filter(r => r.source === 'oppdesk' && !ids.has(r.id)
+        && r.regn_close && dayDiff(today, r.regn_close) >= 0);
+      records.push(...fresh, ...stillOpen);
     } catch (e) {
       // Optional source: keep what we had so merge does not close it.
       warnings.push(`Opportunity Desk: ${e.message}`);
@@ -67,9 +94,16 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
       }
     }
     const { next, pruned } = merge(existing.map(publishable), records.map(publishable), decisions, today);
-    const archive = read('archive.json', []);
+    // Archive first: if the run dies between the two writes, a pruned record
+    // is archived and still live, never lost.
+    if (pruned.length) {
+      const arch = readStrict('archive.json');
+      if (arch.missing) write('archive.json', appendArchive([], pruned));
+      else if (arch.error || !Array.isArray(arch.value)) {
+        warnings.push(`archive.json ${arch.error || 'is not an array'}; archive not written this run`);
+      } else write('archive.json', appendArchive(arch.value, pruned));
+    }
     write('competitions.json', next);
-    if (pruned.length) write('archive.json', appendArchive(Array.isArray(archive) ? archive : [], pruned));
     write('status.json', { last_run: stamp, last_ok: stamp, last_error: null, warnings });
     console.log(`ok: ${records.length} fetched, ${warnings.length} warnings`);
     return 0;
