@@ -1,0 +1,23 @@
+[
+  { "name": "HUL LIME", "host": "Hindustan Unilever|\\bHUL\\b", "title": "\\bL\\.?I\\.?M\\.?E\\b" },
+  { "name": "Tata Crucible", "host": "\\bTata\\b", "title": "Tata Crucible" },
+  { "name": "Mahindra War Room", "host": "Mahindra", "title": "War Room" },
+  { "name": "Flipkart WiRED", "host": "Flipkart", "title": "WiRED" },
+  { "name": "Amazon", "host": "^Amazon" },
+  { "name": "ITC Interrobang", "host": "\\bITC\\b", "title": "Interrobang" },
+  { "name": "L'Oreal Brandstorm", "host": "L'?Or[eé]al", "title": "Brandstorm" },
+  { "name": "Asian Paints", "host": "Asian Paints" },
+  { "name": "Reckitt", "host": "Reckitt" },
+  { "name": "P&G", "host": "Procter|P&G" },
+  { "name": "Nestle", "host": "Nestl[eé]" },
+  { "name": "Aditya Birla Group", "host": "Aditya Birla" },
+  { "name": "Godrej", "host": "Godrej" },
+  { "name": "Marico", "host": "Marico" },
+  { "name": "Bajaj", "host": "Bajaj (Auto|Finserv|Allianz)" },
+  { "name": "Airtel", "host": "Airtel" },
+  { "name": "Mondelez", "host": "Mondel[eē]z" },
+  { "name": "Deloitte", "host": "Deloitte" },
+  { "name": "EY", "host": "\\bEY\\b|Ernst" },
+  { "name": "KPMG", "host": "KPMG" },
+  { "name": "Accenture", "host": "Accenture" }
+]

@@ -1,0 +1,9 @@
+[
+  { "name": "ISB", "host": "Indian School of Business|\\bISB\\b" },
+  { "name": "XLRI", "host": "XLRI|Xavier School of Management" },
+  { "name": "FMS Delhi", "host": "Faculty of Management Studies|\\bFMS\\b" },
+  { "name": "SPJIMR", "host": "SPJIMR|S\\.?\\s?P\\.?\\s?Jain" },
+  { "name": "MDI Gurgaon", "host": "Management Development Institute|\\bMDI\\b" },
+  { "name": "IIFT", "host": "Indian Institute of Foreign Trade|\\bIIFT\\b" },
+  { "name": "JBIMS", "host": "Jamnalal Bajaj|JBIMS" }
+]
