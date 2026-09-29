@@ -164,3 +164,33 @@ footer { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; color: 
   .cal .ev.deadline { border-left-width: 2px; }
   .cal .legend span:last-child { flex-basis: 100%; }
 }
+
+/* Hosts & archive page (hosts.html). Table on desktop, stacked rows under
+   760px (no horizontal scroll at 375px: labels come from data-label). */
+.hosts-sec, .archive-sec { padding-top: 8px; margin-bottom: 24px; }
+.hosts-sec h2, .archive-sec h2 { font-size: 1.1rem; margin: 0 0 8px; }
+.hosts-table { overflow-x: auto; }
+.hosts-table table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+.hosts-table th, .hosts-table td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--rule); font-size: 0.9rem; vertical-align: middle; }
+.hosts-table thead th { border-top: 0; background: var(--soft); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-2); }
+.hosts-table td a { color: var(--accent); text-decoration: none; overflow-wrap: anywhere; }
+.hosts-table td a:hover { text-decoration: underline; }
+.mstrip { display: inline-flex; gap: 2px; }
+.mcell { width: 1.2em; height: 1.2em; display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; border-radius: 3px; background: var(--soft); color: var(--ink-2); }
+.mcell.on { background: var(--accent); color: var(--on-accent); }
+.archive-note { background: var(--soft); color: var(--ink-2); border-radius: 8px; padding: 8px 10px; font-size: 0.9rem; }
+.alist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.arow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 8px 12px; }
+.arow a { color: var(--ink); font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
+.arow a:hover { text-decoration: underline; }
+.ahost { color: var(--ink-2); font-size: 0.88rem; }
+.aclosed { margin-left: auto; color: var(--ink-2); font-size: 0.85rem; }
+@media (max-width: 760px) {
+  .hosts-table thead { display: none; }
+  .hosts-table table, .hosts-table tbody, .hosts-table tr, .hosts-table td { display: block; width: 100%; }
+  .hosts-table tr { border-top: 1px solid var(--rule); padding: 8px 0; }
+  .hosts-table tr:first-child { border-top: 0; }
+  .hosts-table td { border-top: 0; padding: 3px 10px; }
+  .hosts-table td::before { content: attr(data-label) ": "; font-weight: 700; color: var(--ink-2); }
+  .aclosed { margin-left: 0; }
+}
