@@ -1,6 +1,6 @@
 name: fetch
 on:
-  schedule: [{ cron: '30 0 * * *' }]   # 06:00 IST
+  schedule: [{ cron: '30 0 * * *' }, { cron: '30 12 * * *' }]   # 06:00 and 18:00 IST
   workflow_dispatch:
 permissions: { contents: write }
 concurrency: { group: data-writes, cancel-in-progress: false }
