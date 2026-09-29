@@ -9,7 +9,7 @@ const ids = list => list.map(c => c.id);
 
 test('relevantForInbox keeps a top-tier open case that is not out, skipped or registered', () => {
   assert.equal(relevantForInbox(comp(1), {}), true);
-  for (const tier of ['iit', 'iim', 'bschool', 'corporate', 'international']) {
+  for (const tier of ['iit', 'iim', 'national', 'bschool', 'corporate', 'international']) {
     assert.equal(relevantForInbox(comp(1, { tier }), {}), true, tier);
   }
   assert.equal(relevantForInbox(comp(1, { verdict: { level: 'check' } }), {}), true);

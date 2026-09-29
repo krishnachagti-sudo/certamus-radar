@@ -30,7 +30,7 @@ function fakeHttp(routes) {
     },
   };
 }
-const opts = (http, over = {}) => ({ keywords: ['case'], getJson: http.getJson, pause: async () => {}, ...over });
+const opts = (http, over = {}) => ({ getJson: http.getJson, pause: async () => {}, ...over });
 
 test('stripHtml keeps text and line breaks', () => {
   assert.equal(stripHtml('<p>Open&nbsp;to <b>all</b></p><p>Teams &amp; solo</p>'), 'Open to all\nTeams & solo');
@@ -109,8 +109,8 @@ test('duplicate manual ids produce one record and one detail call', async () => 
 
 test('pages by last_page, not by a short page', async () => {
   const http = fakeHttp([
-    ['page=1&', { data: { data: [item(1)], last_page: 2 } }],
-    ['page=2&', { data: { data: [item(2)], last_page: 2 } }],
+    ['&page=1', { data: { data: [item(1)], last_page: 2 } }],
+    ['&page=2', { data: { data: [item(2)], last_page: 2 } }],
   ]);
   const { records } = await fetchAll(new Map(), [], opts(http));
   assert.deepEqual(records.map(r => r.id).sort(), [1, 2]);
@@ -133,14 +133,15 @@ test('a search item without details gives details_fetched false', async () => {
   assert.equal(records[0].details_fetched, false);
 });
 
-test('the MAX_PAGES warning is pushed at most once per term', async () => {
+test('the MAX_PAGES warning is pushed once and paging stops at 60', async () => {
   const http = fakeHttp([
-    ['page=1&', { data: { data: [item(1)], last_page: 99 } }],
+    ['&page=1', { data: { data: [item(1)], last_page: 99 } }],
     ['page=', { data: { data: [item(2)], last_page: 99 } }],
   ]);
   const { warnings } = await fetchAll(new Map(), [], opts(http));
   const maxPageWarnings = warnings.filter(w => w.includes('exceeds MAX_PAGES'));
   assert.equal(maxPageWarnings.length, 1);
+  assert.equal(http.calls.filter(u => u.includes('search-result')).length, 60);
 });
 
 test('manual ids missing from search are built from detail and pinned', async () => {
@@ -223,7 +224,7 @@ test('a search that fails once and then succeeds gives records', async () => {
     }
     throw new Error(`unrouted ${url}`);
   };
-  const { records } = await fetchAll(new Map(), [], { keywords: ['case'], getJson, pause: async () => {}, backoff: 0 });
+  const { records } = await fetchAll(new Map(), [], { getJson, pause: async () => {}, backoff: 0 });
   assert.deepEqual(records.map(r => r.id), [1]);
   assert.equal(calls, 2);
 });
@@ -231,7 +232,7 @@ test('a search that fails once and then succeeds gives records', async () => {
 test('a search that fails twice rejects', async () => {
   const getJson = async () => { throw new Error('down'); };
   await assert.rejects(
-    fetchAll(new Map(), [], { keywords: ['case'], getJson, pause: async () => {}, backoff: 0 }),
+    fetchAll(new Map(), [], { getJson, pause: async () => {}, backoff: 0 }),
     /down/
   );
 });
@@ -254,4 +255,134 @@ test('an item with a non-integer id is skipped as malformed', async () => {
   const { records, warnings } = await fetchAll(new Map(), [], opts(http));
   assert.deepEqual(records.map(r => r.id), [1]);
   assert.equal(warnings.filter(w => w.startsWith('skipped malformed')).length, 2);
+});
+
+// ---- full scan -------------------------------------------------------------
+
+test('full scan: one unfiltered search of all open competitions, no search term', async () => {
+  const http = fakeHttp([['search-result', { data: { data: [item(1)], last_page: 1 } }]]);
+  await fetchAll(new Map(), [], opts(http));
+  const url = new URL(http.calls[0]);
+  assert.equal(url.origin + url.pathname, 'https://unstop.com/api/public/opportunity/search-result');
+  assert.equal(url.searchParams.get('opportunity'), 'competitions');
+  assert.equal(url.searchParams.get('oppstatus'), 'open');
+  assert.equal(url.searchParams.get('per_page'), '30');
+  assert.equal(url.searchParams.get('page'), '1');
+  assert.equal(url.searchParams.has('searchTerm'), false);
+});
+
+test('full scan: walks every page up to last_page (23 pages today), pausing after each', async () => {
+  let pauses = 0;
+  const http = fakeHttp([['search-result', null]]);
+  const getJson = async u => {
+    http.calls.push(u);
+    const page = Number(new URL(u).searchParams.get('page'));
+    return { data: { data: [item(page)], last_page: 23 } };
+  };
+  const { records } = await fetchAll(new Map(), [], { getJson, pause: async () => { pauses++; } });
+  assert.equal(http.calls.length, 23);
+  assert.equal(records.length, 23);
+  assert.equal(pauses, 23);
+  assert.deepEqual(http.calls.map(u => new URL(u).searchParams.get('page')), Array.from({ length: 23 }, (_, i) => String(i + 1)));
+});
+
+test('full scan: an item repeated on two pages is one record', async () => {
+  const http = fakeHttp([
+    ['&page=1', { data: { data: [item(1), item(2)], last_page: 2 } }],
+    ['&page=2', { data: { data: [item(2), item(3)], last_page: 2 } }],
+  ]);
+  const { records } = await fetchAll(new Map(), [], opts(http));
+  assert.deepEqual(records.map(r => r.id).sort(), [1, 2, 3]);
+});
+
+test('full scan: a keywords option is ignored (one scan, not one per term)', async () => {
+  const http = fakeHttp([['search-result', { data: { data: [item(1)], last_page: 1 } }]]);
+  await fetchAll(new Map(), [], opts(http, { keywords: ['case', 'strategy'] }));
+  assert.equal(http.calls.length, 1);
+});
+
+// ---- format_kind -----------------------------------------------------------
+
+const kind = over => normalise(item(1, { type: 'competitions', subtype: 'general_competition', ...over }));
+const kindOf = over => kind({ ...IITB, ...over }).format_kind;
+const XLRI = { organisation: { name: 'Xavier School of Management (XLRI)' } };
+const NITU = { organisation: { name: 'National Institute of Technology (NIT), Uttarakhand' } };
+const IITB = { organisation: { name: 'Indian Institute of Technology (IIT), Bombay' } };
+
+test('format_kind case: case_competition subtype, whatever the title', () => {
+  assert.equal(kindOf({ subtype: 'case_competition', title: 'Thrive - The Sustainability Solutions Challenge' }), 'case');
+  assert.equal(kindOf({ subtype: 'case_competition', title: 'Strike or Yield - Industrial Relations Flagship Event 2026', ...XLRI }), 'case');
+});
+
+test('format_kind case: case/consult/strategy/teardown/war room/LIME/crucible titles', () => {
+  for (const title of ['CaseWave - Beyond the Case', 'Strategikon - Consulting Flagship Event 2026', 'Strategy-Wiz',
+    'Product Teardown 2026', 'The War Room 2026', 'HUL L.I.M.E. Season 17', 'Tata Crucible 2026']) {
+    assert.equal(kindOf({ title }), 'case', title);
+  }
+});
+
+test('format_kind business: business-event titles', () => {
+  for (const title of ['B-Plan', 'Elevator Pitch Night', 'The Grand Pitch Season 5', 'Sankalp Ideathon', 'Bid & Build',
+    'Bid It Like Beckham 2026', 'BrandStorm Marketing Mela', 'Pirates of the Portfolio: A Finance & Investment Competition',
+    'War of Wits - HR Flagship', 'Ops Olympus: Operations Challenge', 'Policy Dilemma', 'Product Management Sprint',
+    'Analytics Challenge 2026', 'Stock Analysis - October 2026', 'Trading Arena', 'EraPreneur: Building Beyond Time',
+    'Entrepreneurship Summit Challenge', 'Thrive - The Sustainability Solutions Challenge', 'The M&A Championship 4.0',
+    'Venture Vortex', 'Biz-Wars', 'Equity Auction', 'Business & People Challenge', 'Impact Tank', 'Monopoly Moves']) {
+    assert.equal(kindOf({ title }), 'business', title);
+  }
+});
+
+test('format_kind business: a flagship event at a B-school, not at a tech fest', () => {
+  assert.equal(kindOf({ title: 'Helios: Flagship Operations Event-2026', ...XLRI }), 'business');
+  assert.equal(kindOf({ title: 'Genesis Flagship', ...XLRI }), 'business');
+  assert.equal(kindOf({ title: 'Genesis Flagship', ...IITB }), 'other');
+});
+
+test('format_kind business: any other competition at a management school leans in', () => {
+  assert.equal(kindOf({ title: "Tycoon's Gambit 2026", ...XLRI }), 'business');
+  assert.equal(kindOf({ title: 'Time Turner 2026', organisation: { name: 'Indian Institute of Management (IIM), Indore' } }), 'business');
+  assert.equal(kindOf({ title: 'Time Turner 2026', ...IITB }), 'other');
+});
+
+test('format_kind business: innovation_challenge only when the title is business-flavoured', () => {
+  assert.equal(kindOf({ subtype: 'innovation_challenge', title: 'B-Plan', ...IITB }), 'business');
+  assert.equal(kindOf({ subtype: 'innovation_challenge', title: 'Maze Runner', ...IITB }), 'other');
+  assert.equal(kindOf({ subtype: 'innovation_challenge', title: 'TinkerCase 4.0', ...IITB }), 'other');
+});
+
+test('format_kind other: quizzes, hackathons and coding challenges by type/subtype', () => {
+  assert.equal(kindOf({ type: 'quizzes', subtype: null, title: 'Business Quiz' }), 'other');
+  assert.equal(kindOf({ type: 'quizzes', subtype: 'general_competition', title: 'Back To The Roots-2026', ...XLRI }), 'other');
+  assert.equal(kindOf({ type: 'hackathons', subtype: 'online_coding_challenge', title: 'FinTech Pitch Hack' }), 'other');
+  assert.equal(kindOf({ type: 'hackathons', subtype: 'general_competition', title: 'Marketing Hack', ...XLRI }), 'other');
+  assert.equal(kindOf({ subtype: 'online_coding_challenge', title: 'Strategy Hack' }), 'other');
+});
+
+test('format_kind other: tech-fest and non-business titles, even at a B-school', () => {
+  for (const title of ['Robo Soccer - Flagship', 'RoboWars', 'Steel War - ROBOWARS', 'OLL Robotics Championship',
+    'Hackathon - Flagship', 'The Golden Hour - A Voice AI Hackathon', 'Code Auditor', 'Cipher Chase — Capture the Flag',
+    "Tenet'26 CTF", 'Game Jam', 'Gold Pass', 'General Event Pass', 'School Student Pass', 'Platinum Pass',
+    'Commercio Artikel - Article Writing Competition', 'Dhyuti - Call for Articles', 'Essay Writing on Finance',
+    'Pandemonium - 2026 (Quiz on Empowerment)', 'Annual International Mathematics Olympiad (AIMO) 2026',
+    'Ignite - Startup Discovery & Entrepreneurship Bootcamp', 'From Tokens to Transformers : A Course on GenAI',
+    'Dance Battle', 'Photography Contest', 'Cricket League', 'BGMI Esports Showdown', 'Research Poster Presentation Competition',
+    'Students\' Research Conclave 4.0', 'Udaan RC Plane Challenge', 'Nirmiti CADathon', 'ThetaShift: Spherical Bot Making Competition']) {
+    assert.equal(kindOf({ title, ...XLRI }), 'other', title);
+  }
+  assert.equal(kindOf({ title: 'Robo Soccer - Flagship', ...NITU }), 'other');
+});
+
+test('format_kind other: a plain tech title at an IIT', () => {
+  assert.equal(kindOf({ title: 'Eggstravaganza', ...IITB }), 'other');
+  assert.equal(kindOf({ title: 'UAV-X: Resilient BVLOS Swarm Challenge', ...IITB }), 'other');
+});
+
+test('format_kind other: an article-writing title beats the case_competition subtype', () => {
+  assert.equal(kindOf({ subtype: 'case_competition', title: 'Fintellect 2026 - An Article Writing Competition' }), 'other');
+});
+
+test('is_case means "belongs on the main list": case and business are true, other false', () => {
+  assert.equal(kind({ subtype: 'case_competition', title: 'X' }).is_case, true);
+  assert.equal(kind({ title: 'B-Plan' }).is_case, true);
+  assert.equal(kind({ title: 'Gold Pass' }).is_case, false);
 });

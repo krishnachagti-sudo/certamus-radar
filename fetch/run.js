@@ -39,7 +39,7 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
 
   const { supabase = defaultConfig(), ...fetchDeps } = deps;
   const team = read('team.json');
-  const lists = { bschools: read('bschools.json', []), corporates: read('corporates.json', []) };
+  const lists = { national: read('national.json', []), bschools: read('bschools.json', []), corporates: read('corporates.json', []) };
   const existing = read('competitions.json', []);
   const status = read('status.json', {});
   const stamp = now.toISOString();
@@ -64,10 +64,7 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
   const manualIds = (Array.isArray(manualRaw) ? manualRaw : []).map(m => unstopId(m?.url ?? '')).filter(Boolean);
 
   try {
-    const { records, warnings } = await fetchAll(new Map(existing.map(r => [r.id, r])), manualIds, {
-      keywords: read('keywords.json', []),
-      ...fetchDeps,
-    });
+    const { records, warnings } = await fetchAll(new Map(existing.map(r => [r.id, r])), manualIds, fetchDeps);
     warnings.unshift(...remoteWarnings);
     const today = todayIST(now);
     const intlFile = readStrict('international.json');

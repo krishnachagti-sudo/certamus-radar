@@ -193,3 +193,12 @@ test('loadDecisions falls back to the file, else empty, with a warning; never th
   const unset = await loadDecisions({ url: '', anonKey: '' }, () => undefined);
   assert.match(unset.warning, /not configured/);
 });
+
+test('digest lines label the national and B-school / top college tiers', () => {
+  const d = buildDigest({
+    competitions: [c(1, { tier: 'national', host: 'NIT Calicut' }), c(2, { tier: 'bschool', host: 'SRCC' })],
+    decisions: {}, status: fresh, state: { sent_ids: [] }, now,
+  });
+  assert.match(d.text, /C1 \(NIT \/ IIIT \/ national institutes, NIT Calicut\)/);
+  assert.match(d.text, /C2 \(B-school \/ top college, SRCC\)/);
+});

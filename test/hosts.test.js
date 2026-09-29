@@ -144,3 +144,9 @@ test('archiveList: empty inputs produce an empty list', () => {
   assert.deepEqual(archiveList([], []), []);
   assert.deepEqual(archiveList(undefined, undefined), []);
 });
+
+test('hostRows: tier order is iit, iim, national, bschool, corporate, international, other', () => {
+  const tiers = ['other', 'international', 'corporate', 'bschool', 'national', 'iim', 'iit'];
+  const rows = hostRows(tiers.map((tier, i) => live({ id: i + 1, host: `H${i}`, tier })), [], []);
+  assert.deepEqual(rows.map(r => r.tier), ['iit', 'iim', 'national', 'bschool', 'corporate', 'international', 'other']);
+});

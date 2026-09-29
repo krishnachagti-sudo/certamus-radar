@@ -6,11 +6,13 @@ import { istDate } from '../dates.js';
 
 const BASE = 'https://unstop.com/api/public';
 const PER_PAGE = 30;
-const MAX_PAGES = 10;
+// A full scan of every open competition: 673 listings on 23 pages on
+// 2026-09-30. 60 pages leaves room for the busy season.
+const MAX_PAGES = 60;
 export const UA = 'CertamusRadar/1.0 (+https://github.com/krishnachagti-sudo/certamus-radar)';
 
-const searchUrl = (term, page) =>
-  `${BASE}/opportunity/search-result?opportunity=competitions&oppstatus=open&searchTerm=${encodeURIComponent(term)}&page=${page}&per_page=${PER_PAGE}`;
+const searchUrl = page =>
+  `${BASE}/opportunity/search-result?opportunity=competitions&oppstatus=open&per_page=${PER_PAGE}&page=${page}`;
 const detailUrl = id => `${BASE}/competition/${id}`;
 
 export async function defaultGetJson(url) {
@@ -53,22 +55,60 @@ export function stripHtml(html) {
 
 const MODES = ['offline', 'hybrid', 'online'];
 
-// A quiz/hackathon type or title, or a title naming a written-only format,
-// rules out "case" regardless of subtype or the true-side title match.
-const CASE_FALSE_TITLE = /\bquiz\b|call for (articles|papers)|article writing|essay|\bprompt\b/i;
-const CASE_TRUE_TITLE = /\bcase|consult|strateg|teardown|war room|\bL\.?I\.?M\.?E\b|crucible/i;
+// ---- format classes ----------------------------------------------------------
+// format_kind is 'case', 'business' or 'other'; is_case (kept for older
+// readers) means "belongs on the main list": format_kind !== 'other'.
+// Rules read the Unstop type/subtype, the title and, for the B-school lean,
+// the host name. Never the body text. Tuned on the 661 open listings of
+// 2026-09-30: err toward inclusion for business-ish titles at B-schools,
+// toward exclusion for tech fests' coding and robotics.
 
-// The title-only half of the rule, shared with the Opportunity Desk adapter.
+// A written-only or quiz format rules out even a case_competition subtype.
+const CASE_FALSE_TITLE = /\bquiz|call for (articles|papers)|article writing|essay|\bprompt\b/i;
+const CASE_TRUE_TITLE = /\bcase|consult|strateg|teardown|war room|\bL\.?I\.?M\.?E\b|crucible/i;
+// Tech-fest and admin formats: never business, whatever the host.
+const TECH_TITLE = new RegExp([
+  'hack(athon)?\\b', 'buildathon', '\\w+-?a-?thon\\b(?<!(ide|pitch|biz|market|sell|fin|business)-?a-?thon)',
+  'coding', '\\bcode\\b', 'programming', '\\bCTF\\b', 'capture the flag', 'game ?jam', 'game dev', 'robo',
+  '\\bbots?\\b', '\\bdrones?\\b', '\\bUAV', '\\bRC\\b', 'aeromodel', '\\bCAD\\b', 'olympiad',
+  'bootcamp', '\\bcourse\\b', 'workshop', 'webinar',
+  // Event passes: "Gold Pass", "General Event Pass", "School Student Pass".
+  '\\b(event|gold|silver|platinum|diamond|general|student|fest|day|entry|all[- ]access|combo|vip)\\s+pass(es)?\\b',
+  '\\bpass(es)?\\s*$',
+].join('|'), 'i');
+// Cultural and sports formats: out unless the title is also business-flavoured.
+const SOFT_OTHER_TITLE = /research (conclave|paper|poster)|paper presentation|poster|photo|\bfilm|dance|music|singing|cultural|\bsports?\b|cricket|football|chess|e-?sports|gaming|\bBGMI\b|valorant/i;
+const BUSINESS_TITLE = new RegExp([
+  'b-?plan', 'business', '\\bbiz', 'pitch', 'ideathon', '\\bbid(ding)?\\b', 'auction', 'marketing', '\\bbrand',
+  'financ', 'fintech', 'invest', 'portfolio', 'stock', 'trading', '\\btrader', 'equity', '\\bM&A\\b', 'merger',
+  '\\bHR\\b', 'human resource', 'industrial relations', 'operations', '\\bops\\b', 'supply chain', 'policy',
+  'product management', '\\bproduct\\b', 'analytics challenge', 'preneur', 'start-?up', 'venture',
+  'sustainability solutions', 'tycoon', 'manager', 'monopoly', 'bargain', 'negotiat', '\\bbanks?\\b', 'banking',
+  'credit', 'econom', 'valuation', '\\bsales\\b', 'shark tank', '\\btank\\b',
+].join('|'), 'i');
+// "At a B-school": a management, business or commerce school by name.
+const MGMT_HOST = /management|business|commerce|\bIIM\b|XLRI|\bIIFT\b|foreign trade|\bMICA\b|\bISB\b|\bMBA\b|\bPGDM\b/i;
+const FLAGSHIP = /flagship/i;
+
+// The title-only half of the case rule, shared with the Opportunity Desk adapter.
 export function isCaseTitle(title) {
   return !CASE_FALSE_TITLE.test(title) && CASE_TRUE_TITLE.test(title);
 }
 
-function isCase(src, title) {
-  if (src.type === 'quizzes' || src.type === 'hackathons') return false;
-  if ((src.subtype || '') === 'online_coding_challenge') return false;
-  if (CASE_FALSE_TITLE.test(title)) return false;
-  if (src.subtype === 'case_competition') return true;
-  return isCaseTitle(title);
+export function formatKind({ type, subtype, title, host }) {
+  title = title || '';
+  if (type === 'quizzes' || type === 'hackathons' || subtype === 'online_coding_challenge') return 'other';
+  if (CASE_FALSE_TITLE.test(title)) return 'other';
+  if (subtype === 'case_competition' || CASE_TRUE_TITLE.test(title)) return 'case';
+  if (TECH_TITLE.test(title)) return 'other';
+  if (BUSINESS_TITLE.test(title)) return 'business';
+  if (SOFT_OTHER_TITLE.test(title)) return 'other';
+  const bschool = MGMT_HOST.test(host || '');
+  if (bschool && FLAGSHIP.test(title)) return 'business';
+  // Any other competition at a management school leans in (innovation
+  // challenges there too); elsewhere an unnamed format stays out.
+  if (bschool) return 'business';
+  return 'other';
 }
 
 // Only an https link on unstop.com is published; anything else (javascript:,
@@ -91,6 +131,7 @@ export function normalise(src) {
   } else if (typeof r.eligibility === 'string') {
     try { eligibility = JSON.parse(r.eligibility); } catch { eligibility = null; }
   }
+  const kind = formatKind({ type: src.type, subtype: src.subtype, title: src.title, host: src.organisation?.name });
   const num = x => (Number.isFinite(Number(x)) && x !== null && x !== '' ? Number(x) : null);
   return {
     id: src.id,
@@ -110,7 +151,8 @@ export function normalise(src) {
     details_text: stripHtml(src.details),
     details_fetched: typeof src.details === 'string',
     format: src.subtype || src.type || null,
-    is_case: isCase(src, src.title || ''),
+    format_kind: kind,
+    is_case: kind !== 'other',
   };
 }
 
@@ -134,38 +176,34 @@ export async function fetchAll(existingById, manualIds, opts) {
     }
   };
 
+  // One scan of every open competition, paged by last_page. No keyword
+  // filter: real case competitions have titles with none of our words.
   const items = new Map();
-  for (const term of opts.keywords) {
-    let warnedMaxPages = false;
-    for (let page = 1; page <= MAX_PAGES; page++) {
-      let body;
-      try {
-        body = await getSearch(searchUrl(term, page));
-      } finally {
-        await pause();
-      }
-      const list = body?.data?.data;
-      if (!Array.isArray(list)) throw new Error(`Unstop search shape changed (term "${term}")`);
-      for (const it of list) {
-        if (validItem(it)) items.set(it.id, it);
-        else warnings.push(`skipped malformed item ${it?.id ?? '?'}`);
-      }
-      const rawLastPage = body.data.last_page;
-      if (list.length > 0 && (rawLastPage === undefined || rawLastPage === null)) {
-        warnings.push(`no last_page for ${term}; stopped at page ${page}`);
-        break;
-      }
-      // Unstop pages can come back short (29 of 30) with more pages left, so
-      // page by last_page, never by page length. Verified 2026-09-29.
-      const lastPage = Number(rawLastPage) || page;
-      if (lastPage > MAX_PAGES && !warnedMaxPages) {
-        warnings.push(`last_page ${lastPage} exceeds MAX_PAGES for ${term}`);
-        warnedMaxPages = true;
-      }
-      if (list.length === 0 || page >= lastPage) break;
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    let body;
+    try {
+      body = await getSearch(searchUrl(page));
+    } finally {
+      await pause();
     }
+    const list = body?.data?.data;
+    if (!Array.isArray(list)) throw new Error(`Unstop search shape changed (page ${page})`);
+    for (const it of list) {
+      if (validItem(it)) items.set(it.id, it);
+      else warnings.push(`skipped malformed item ${it?.id ?? '?'}`);
+    }
+    const rawLastPage = body.data.last_page;
+    if (list.length > 0 && (rawLastPage === undefined || rawLastPage === null)) {
+      warnings.push(`no last_page; stopped at page ${page}`);
+      break;
+    }
+    // Unstop pages can come back short (29 of 30) with more pages left, so
+    // page by last_page, never by page length. Verified 2026-09-29.
+    const lastPage = Number(rawLastPage) || page;
+    if (page === 1 && lastPage > MAX_PAGES) warnings.push(`last_page ${lastPage} exceeds MAX_PAGES ${MAX_PAGES}`);
+    if (list.length === 0 || page >= lastPage) break;
   }
-  if (items.size === 0) throw new Error('Unstop search returned no competitions for any keyword');
+  if (items.size === 0) throw new Error('Unstop search returned no competitions');
 
   const detail = async id => {
     try {

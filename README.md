@@ -1,15 +1,17 @@
 # Certamus Radar
 
-Open case competitions at IITs, IIMs, top B-schools, flagship corporates and
+Open case competitions and business events at IITs, IIMs, NITs / IIITs and
+other national institutes, top B-schools and colleges, flagship corporates and
 the international circuit, checked against the Certamus team (four IIM
 Sirmaur BMS students, graduating 2029).
 Board: https://krishnachagti-sudo.github.io/certamus-radar/
 
 ## Pages
 
-- **Board** (`index.html`) — top hosts only (IIT / IIM / B-school /
-  Corporate / International), case competitions only. Edit statuses here,
-  add an Unstop link by hand.
+- **Board** (`index.html`) — top hosts only (IIT / IIM / NIT, IIIT and
+  national institutes / B-school and top college / Corporate /
+  International), case competitions and business events only (see "What
+  gets fetched" below). Edit statuses here, add an Unstop link by hand.
 - **All case comps** (`all.html`) — every host and tier, including Other and
   startup contests (labelled "Startup contest, not a case"), with a text
   search over title and host.
@@ -27,6 +29,52 @@ Board: https://krishnachagti-sudo.github.io/certamus-radar/
   competitions, newest first.
 
 A shared nav appears on all five pages.
+
+## What gets fetched
+
+**Full scan.** Each run pages through *every* open Unstop competition
+(`/api/public/opportunity/search-result?opportunity=competitions&oppstatus=open&per_page=30&page=N`),
+following `data.last_page` (about 23 pages, ~25 requests with a 1 s pause
+each and one retry per page; `MAX_PAGES` is 60). There is no keyword
+filter: a keyword search missed real case competitions whose titles lack
+our words, such as IIM Lucknow's "Thrive - The Sustainability Solutions
+Challenge" and XLRI's "Strike or Yield".
+
+**Format classes.** `fetch/unstop.js` gives every listing a `format_kind`
+from its Unstop type/subtype, its title and (for the B-school lean) its
+host name, never its body text:
+
+- `case`: subtype `case_competition`, or a title with case / consult /
+  strategy / teardown / war room / LIME / crucible.
+- `business`: a business event: B-plan, pitch, ideathon, bid / auction,
+  marketing, finance / investment / stock / trading, HR, operations, policy,
+  product, entrepreneurship / startup / venture, sustainability solutions and
+  the like; plus any other competition at a management, business or
+  commerce school (flagship events included). Shown with a "Business event"
+  chip.
+- `other`: quizzes, hackathons and coding challenges (by type), article /
+  essay writing, robotics, CTFs, game jams, CAD / RC / drones, event
+  passes, olympiads, courses and bootcamps, research posters, and cultural
+  or sports events.
+
+Written-only formats (quiz, article, essay) beat even a `case_competition`
+subtype; tech-fest formats beat business words. `is_case` is kept for older
+readers and means "belongs on the main list": `format_kind !== 'other'`.
+The Board's "Quizzes and other formats" toggle shows the rest.
+
+**Tiers** (checked in this order, by host name):
+
+| Tier | Label | Source |
+|---|---|---|
+| `iit` | IIT | Indian Institute of Technology / `IIT` (never `IIIT`) |
+| `iim` | IIM | Indian Institute of Management / `IIM` (IIM Mumbai, ex-NITIE, stays here) |
+| `national` | NIT / IIIT / national institutes | `data/national.json`: NITs, IIITs, IISc, IISERs, BITS Pilani, ISI, DTU, NSUT, IIEST, Jadavpur, NITIE |
+| `bschool` | B-school / top college | `data/bschools.json`: ISB, XLRI, FMS, SPJIMR, MDI, IIFT, JBIMS, NMIMS, Symbiosis, IMT, XIM, TAPMI, Great Lakes, IRMA, MICA, TISS, IBS, SIMSR, Welingkar, SRCC, St. Stephen's, LSR, Hindu, Hansraj, Kirori Mal, Christ, St. Xavier's Mumbai/Kolkata |
+| `corporate` | Corporate | `data/corporates.json` |
+| `other` | Other | everything else |
+
+The Board, the "What needs attention" panel and the digest cover every
+tier except Other.
 
 ## Registered ✓
 
@@ -89,7 +137,8 @@ mistake.
   notes, add an Unstop link, Set dates) write the Supabase tables
   `decisions`, `manual` and `intl_dates` (see "Editing" below).
   The board has a "Quizzes and other formats" toggle: records carry
-  `is_case`, and quizzes, article calls and coding challenges are hidden by
+  `format_kind` and `is_case`, and `other` formats (quizzes, article calls,
+  coding challenges, robotics...) are hidden by
   default and never appear in the digest.
 
 Each piece of data has exactly one writer, so the jobs and the board never
@@ -178,11 +227,11 @@ their fallbacks.
 
 ## Tuning
 
-`data/team.json` (size, graduating years), `data/keywords.json` (search
-terms), `data/bschools.json` and `data/corporates.json` (regexes that decide
-the tier), `data/international.json` (the curated international list, hand-
+`data/team.json` (size, graduating years), `data/national.json`,
+`data/bschools.json` and `data/corporates.json` (case-insensitive regexes on
+the host name that decide the tier), `data/international.json` (the curated international list, hand-
 edited). Edit, commit, and the next fetch applies them. `fetch/unstop.js`'s
-`is_case` rule decides what counts as a case competition.
+`formatKind` rules decide case / business / other.
 
 ## Develop
 

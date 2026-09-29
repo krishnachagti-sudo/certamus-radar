@@ -3,16 +3,22 @@
 
 const IIT = /indian institute of technology|\bIIT\b/i;
 const IIM = /indian institute of management(?! (and|&) commerce)|\bIIM\b/i;
-const IS_COLLEGE = /universit|college|institute|school|\bIIT\b|\bIIM\b|\bNIT\b/i;
+const IS_COLLEGE = /universit|college|institute|school|\bIIT\b|\bIIM\b|\bNIT\b|\bIIIT\b|\bBITS\b/i;
 
+const hostIn = (list, host) => (Array.isArray(list) ? list : []).some(b => new RegExp(b.host, 'i').test(host));
+
+// Order: iit, iim, national (data/national.json), bschool (data/bschools.json),
+// corporate (data/corporates.json), other. "IIIT" never matches the IIT rule:
+// \bIIT\b needs a word boundary before the I.
 export function tier(rec, lists) {
   const host = rec.host || '';
   const title = rec.title || '';
   if (IIT.test(host)) return 'iit';
   if (IIM.test(host)) return 'iim';
-  if (lists.bschools.some(b => new RegExp(b.host, 'i').test(host))) return 'bschool';
+  if (hostIn(lists.national, host)) return 'national';
+  if (hostIn(lists.bschools, host)) return 'bschool';
   const hostIsCollege = IS_COLLEGE.test(host);
-  if (lists.corporates.some(c => {
+  if ((lists.corporates || []).some(c => {
     if (new RegExp(c.host, 'i').test(host)) return true;
     if (c.title && new RegExp(c.title, 'i').test(title) && !hostIsCollege) return true;
     return false;

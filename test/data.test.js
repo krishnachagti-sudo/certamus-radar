@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   sameId, statusOf, isRegistered, committedSet, visible, sortByDeadline,
   monthsText, expectedText, whoAppliesText, watchChanged, applyDecision,
-  decisionView, needsFullRender, matchesQuery, BOARD_TIERS,
+  decisionView, needsFullRender, matchesQuery, BOARD_TIERS, TIERS,
 } from '../lib/data.js';
 
 const today = '2026-10-01';
@@ -37,7 +37,7 @@ const base = {
 const comp = (over = {}) => ({ id: 1, title: 'Ops Case', host: 'IIM A', tier: 'iim', is_case: true, verdict: { level: 'fits' }, ...over });
 
 test('board tiers include international, not other', () => {
-  assert.deepEqual(BOARD_TIERS, ['iit', 'iim', 'bschool', 'corporate', 'international']);
+  assert.deepEqual(BOARD_TIERS, ['iit', 'iim', 'national', 'bschool', 'corporate', 'international']);
   assert.equal(visible(comp({ tier: 'international' }), base, {}), true);
   assert.equal(visible(comp({ tier: 'other' }), base, {}), false);
   assert.equal(visible(comp({ tier: 'other', pinned: true }), base, {}), true);
@@ -135,4 +135,17 @@ test('needsFullRender: entering/skipped transitions or registered change', () =>
   assert.equal(needsFullRender(v('entering'), v('entering')), false);
   assert.deepEqual(decisionView({ 3: { status: 'watching', note: 'x', registered: true } }, 3), { status: 'watching', note: 'x', registered: true });
   assert.deepEqual(decisionView({}, 3), { status: '', note: '', registered: false });
+});
+
+test('tier labels: national institutes, and the relabelled B-school / top college', () => {
+  assert.equal(TIERS.national, 'NIT / IIIT / national institutes');
+  assert.equal(TIERS.bschool, 'B-school / top college');
+  assert.deepEqual(Object.keys(TIERS), ['iit', 'iim', 'national', 'bschool', 'corporate', 'international', 'other']);
+});
+
+test('visible: a national-tier business event is on the Board by default', () => {
+  const f = { tiers: new Set(BOARD_TIERS), verdicts: new Set(['fits', 'check']), statuses: new Set(['undecided', 'watching', 'entering']),
+    registeredOnly: false, showClosed: false, showOtherFormats: false, startups: false, query: '' };
+  assert.equal(visible({ id: 1, tier: 'national', is_case: true, format_kind: 'business', verdict: { level: 'fits' } }, f, {}), true);
+  assert.equal(visible({ id: 2, tier: 'national', is_case: false, format_kind: 'other', verdict: { level: 'fits' } }, f, {}), false);
 });

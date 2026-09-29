@@ -1,0 +1,13 @@
+[
+  { "name": "NIT", "host": "\\bNITs?\\b|National Institute of Technology" },
+  { "name": "IIIT", "host": "\\bIIITs?\\b|(Indian|International|Indraprastha) Institute of Information Technology" },
+  { "name": "IISc", "host": "\\bIISc\\b|Indian Institute of Science\\b" },
+  { "name": "IISER", "host": "\\bIISERs?\\b|Indian Institute of Science Education" },
+  { "name": "BITS Pilani", "host": "\\bBITS\\b[ ,-]*(Pilani|Goa|Hyderabad|Dubai)|\\(BITS\\)|Birla Institute of Technology (and|&) Science" },
+  { "name": "ISI", "host": "\\bISI\\b|Indian Statistical Institute" },
+  { "name": "DTU", "host": "\\bDTU\\b|Delhi Technological University" },
+  { "name": "NSUT", "host": "\\bNSUT\\b|Netaji Subhas (University|Institute) of Technology" },
+  { "name": "IIEST", "host": "\\bIIEST\\b|Indian Institute of Engineering Science" },
+  { "name": "Jadavpur", "host": "Jadavpur University" },
+  { "name": "NITIE", "host": "\\bNITIE\\b|National Institute of Industrial Engineering" }
+]

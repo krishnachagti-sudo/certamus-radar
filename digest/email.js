@@ -7,7 +7,10 @@ import { dayDiff, istDate, todayIST } from '../dates.js';
 import { defaultConfig, readTables } from '../fetch/supabase.js';
 
 const BOARD_URL = 'https://krishnachagti-sudo.github.io/certamus-radar/';
-const TIER = { iit: 'IIT', iim: 'IIM', bschool: 'B-school', corporate: 'Corporate', international: 'International', other: 'Other' };
+const TIER = {
+  iit: 'IIT', iim: 'IIM', national: 'NIT / IIIT / national institutes', bschool: 'B-school / top college',
+  corporate: 'Corporate', international: 'International', other: 'Other',
+};
 const REGISTERED_DAYS = 14;
 const STALE_HOURS = 36;
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

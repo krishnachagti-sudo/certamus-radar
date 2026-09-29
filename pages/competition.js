@@ -15,7 +15,7 @@ import {
   KeyRejected, KEY_REJECTED, clearKey, createDecisionSaver, editable, readIntlDates, setIntlDates,
 } from '../lib/store.js';
 import { initEditor } from '../lib/editor.js';
-import { esc, safeHref, teamText, linkLabel, tierChipHtml, verdictChipHtml, startupChipHtml } from '../lib/card.js';
+import { esc, safeHref, teamText, linkLabel, tierChipHtml, verdictChipHtml, formatChipHtml, startupChipHtml } from '../lib/card.js';
 import { eligibilityRows } from '../lib/eligibility.js';
 import { captureFocus } from '../lib/focus.js';
 import { mountNav } from '../lib/nav.js';
@@ -200,7 +200,7 @@ function liveHtml(c) {
   const missing = c.source === 'curated' ? 'not confirmed' : 'not listed';
   return `<div class="cols">
     <div class="main">
-      <div class="chips">${tierChipHtml(c)} ${verdictChipHtml(c)} ${startupChipHtml(c)}</div>
+      <div class="chips">${tierChipHtml(c)} ${verdictChipHtml(c)} ${formatChipHtml(c)} ${startupChipHtml(c)}</div>
       <h1>${esc(c.title)}</h1>
       <p class="host">${esc(c.host)}</p>
       ${eligibilityHtml(c)}

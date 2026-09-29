@@ -167,3 +167,12 @@ test('oppdesk: a deadline within the last 30 days is kept (merge closes it)', ()
   const out = oppdeskRecords([post({ content: { rendered: '<p>Deadline: 10 September 2026</p>' } })], today);
   assert.equal(out[0].regn_close, '2026-09-10');
 });
+
+test('format_kind: curated case rows are case, other kinds other; Opportunity Desk posts are case', () => {
+  const [a, b] = curatedRecords([row(), row({ id: 'intl-y', kind: 'startup' })], {}, today);
+  assert.equal(a.format_kind, 'case');
+  assert.equal(b.format_kind, 'other');
+  const [od] = oppdeskRecords([{ id: 5, link: 'https://opportunitydesk.org/x', title: { rendered: 'Global Case Challenge' },
+    content: { rendered: '<p>Deadline: October 10, 2026</p>' } }], today);
+  assert.equal(od.format_kind, 'case');
+});

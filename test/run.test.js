@@ -9,7 +9,7 @@ function dataDir(over = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'radar-'));
   const files = {
     'team.json': { size: 4, passout_years: [2029] },
-    'keywords.json': ['case'],
+    'national.json': [{ name: 'NIT', host: '\\bNIT\\b|National Institute of Technology' }],
     'bschools.json': [],
     'corporates.json': [],
     'competitions.json': [{ id: 77, title: 'Old', regn_close: '2026-12-01', first_seen: '2026-09-01', closed_on: null }],
@@ -55,6 +55,25 @@ test('success writes classified competitions and a clean status', async () => {
   assert.equal(st.last_ok, now.toISOString());
   assert.equal(st.last_error, null);
   assert.deepEqual(st.warnings, []);
+});
+
+test('full scan: no keywords.json needed, one unfiltered search request, national tier and format_kind written', async () => {
+  const dir = dataDir();
+  const nit = { ...item, id: 2, title: 'Sankalp Ideathon', type: 'competitions', subtype: 'general_competition',
+    organisation: { name: 'National Institute of Technology (NIT), Delhi' } };
+  const calls = [];
+  const getJson = async url => { calls.push(url); return { data: { data: [item, nit], last_page: 1 } }; };
+  const code = await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {}, supabase: sb() } });
+  assert.equal(code, 0);
+  assert.equal(calls.length, 1);
+  assert.doesNotMatch(calls[0], /searchTerm/);
+  const comps = read(dir, 'competitions.json');
+  const r2 = comps.find(c => c.id === 2);
+  assert.equal(r2.tier, 'national');
+  assert.equal(r2.format_kind, 'business');
+  assert.equal(r2.is_case, true);
+  assert.equal('details_text' in r2, false);
+  assert.equal('eligibility' in r2, false);
 });
 
 test('a record that fails classification does not fail the run', async () => {

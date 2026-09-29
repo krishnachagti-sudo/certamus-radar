@@ -8,6 +8,7 @@ const dataPath = name => fileURLToPath(new URL(`../data/${name}`, import.meta.ur
 const realLists = {
   bschools: JSON.parse(readFileSync(dataPath('bschools.json'), 'utf8')),
   corporates: JSON.parse(readFileSync(dataPath('corporates.json'), 'utf8')),
+  national: JSON.parse(readFileSync(dataPath('national.json'), 'utf8')),
 };
 
 const team = { size: 4, passout_years: [2029] };
@@ -26,7 +27,7 @@ const v = over => verdict(rec(over), team);
 test('tiers', () => {
   assert.equal(tier(rec({ host: 'Indian Institute of Technology (IIT), Delhi' }), lists), 'iit');
   assert.equal(tier(rec({ host: 'Indian Institute of Management (IIM), Raipur' }), lists), 'iim');
-  assert.equal(tier(rec({ host: 'IIIT Hyderabad' }), lists), 'other');
+  assert.equal(tier(rec({ host: 'IIIT Hyderabad' }), lists), 'other', 'no national list given: other');
   assert.equal(tier(rec({ host: 'Xavier School of Management (XLRI)' }), lists), 'bschool');
   assert.equal(tier(rec({ host: 'Hindustan Unilever Limited' }), lists), 'corporate');
   assert.equal(tier(rec({ host: 'Unilever Careers', title: 'LIME Season 17' }), lists), 'corporate');
@@ -118,14 +119,15 @@ test('fits: MBA or BMS teams, semicolon separates the only-one-entry clause', ()
   assert.equal(r.level, 'fits');
 });
 
-test('tier: TISS is not a b-school match for Tata', () => {
-  assert.equal(tier(rec({ host: 'Tata Institute of Social Sciences (TISS)' }), realLists), 'other');
+test('tier: TISS is a B-school / top college, not the Tata corporate', () => {
+  assert.equal(tier(rec({ host: 'Tata Institute of Social Sciences (TISS)' }), realLists), 'bschool');
 });
 test('tier: Mahindra University is not the Mahindra corporate', () => {
   assert.equal(tier(rec({ host: 'Mahindra University' }), realLists), 'other');
 });
 test('tier: a college host is never matched by title alone', () => {
-  assert.equal(tier(rec({ host: 'NIT Trichy', title: 'Marketing War Room 2026' }), realLists), 'other');
+  assert.equal(tier(rec({ host: 'Amity University, Noida', title: 'Marketing War Room 2026' }), realLists), 'other');
+  assert.equal(tier(rec({ host: 'NIT Trichy', title: 'Marketing War Room 2026' }), realLists), 'national');
 });
 test('tier: FMS BHU is not FMS Delhi', () => {
   assert.equal(tier(rec({ host: 'Faculty of Management Studies (FMS), BHU' }), realLists), 'other');
@@ -164,4 +166,75 @@ test('out reason: readable course names, capped list, category label when "all" 
   const r = v({ eligibility: el });
   assert.equal(r.level, 'out');
   assert.match(r.reasons[0], /^open to (MBA\/Arts courses|Arts courses\/MBA) only$/);
+});
+
+// ---- national tier -----------------------------------------------------------
+const T = host => tier(rec({ host }), realLists);
+
+test('tier national: NITs, IIITs and the other national institutes', () => {
+  for (const host of [
+    'National Institute of Technology (NIT), Calicut', 'NIT Warangal', 'Entrepreneurship Club, NIT Warangal',
+    'Motilal Nehru National Institute of Technology', 'Maulana Azad National Institute of Technology (MANIT), Bhopal',
+    'Indian Institute of Information Technology (IIIT) Kottayam', 'International Institute of Information Technology (IIIT), Bangalore',
+    'Indraprastha Institute of Information Technology (IIIT), Delhi', 'IIIT Hyderabad', 'Indraprastha IIIT Delhi',
+    'Indian Institute of Science (IISc), Bangalore', 'IISc Bangalore', 'Indian Institute of Science Education and Research (IISER), Pune',
+    'IISER Kolkata', 'Birla Institute of Technology & Science (BITS) Pilani, Hyderabad Campus',
+    'Birla Institute of Technology and Science, Pilani', 'BITS Goa', 'Indian Statistical Institute, Kolkata', 'ISI Delhi',
+    'Delhi Technological University (DTU), New Delhi', 'USME, Delhi Technological University, Vivek Vihar', 'DTU',
+    'Netaji Subhas University of Technology (NSUT), Delhi', 'NSUT East Campus',
+    'Indian Institute of Engineering Science and Technology (IIEST), Shibpur', 'IIEST Shibpur',
+    'Jadavpur University, Kolkata', 'NITIE Mumbai', 'National Institute of Industrial Engineering',
+  ]) assert.equal(T(host), 'national', host);
+});
+
+test('tier national: checked after IIT and IIM', () => {
+  assert.equal(T('Indian Institute of Technology (IIT), Bombay'), 'iit');
+  assert.equal(T('IIM Mumbai (formerly NITIE)'), 'iim');
+  assert.equal(T('Indian Institute of Management Mumbai (NITIE)'), 'iim');
+});
+
+test('tier national guards: IIIT is never IIT, NIT only as a whole word', () => {
+  assert.equal(T('IIIT Hyderabad'), 'national');
+  assert.notEqual(T('Indian Institute of Information Technology, Design and Manufacturing'), 'iit');
+  for (const host of ['Unity Club', 'Community College of Unity', 'Unitech Labs', 'Nitte University', 'Knitwear Society',
+    'Jaypee Institute of Information Technology (JIIT), Noida', 'AISSMS Institute of Information Technology, Pune',
+    'Birla Institute of Technology Mesra, Noida Campus', 'National Institute of Fashion Technology (NIFT), Delhi',
+    'Vishwakarma Institute Of Information Technology (VIIT), Pune', 'Mahindra University', 'Bits and Bytes Club']) {
+    assert.equal(T(host), 'other', host);
+  }
+});
+
+// ---- extended B-school / top college list -------------------------------------
+
+test('tier bschool: the original seven are kept', () => {
+  for (const host of ['Indian School of Business (ISB)', 'Xavier School of Management (XLRI)', 'FMS Delhi', 'SPJIMR',
+    'Management Development Institute (MDI), Gurgaon', 'Indian Institute of Foreign Trade (IIFT), New Delhi', 'JBIMS Mumbai']) {
+    assert.equal(T(host), 'bschool', host);
+  }
+});
+
+test('tier bschool: added B-schools and top commerce / liberal-arts colleges', () => {
+  for (const host of [
+    'Narsee Monjee Institute of Management Studies (NMIMS), Indore', 'School of Business Management, NMIMS Mumbai',
+    'Symbiosis Institute of Business Management (SIBM), Pune', 'SIIB Pune',
+    'Symbiosis Centre for Management and Human Resource Development (SCMHRD), Pune',
+    'Symbiosis Institute of Management Studies (SIMS), Pune', 'Symbiosis Institute of International Business',
+    'Institute of Management Technology (IMT), Ghaziabad', 'IMT Nagpur',
+    'Xavier Institute of Management, Bhubaneswar (XIMB)', 'XIM University', 'TAPMI Manipal', 'T. A. Pai Management Institute',
+    'Great Lakes Institute of Management, Chennai', 'Institute of Rural Management Anand (IRMA)', 'MICA Ahmedabad',
+    'Tata Institute of Social Sciences (TISS)', 'IBS Business School Ahmedabad', 'ICFAI Business School (IBS), Hyderabad',
+    'K J Somaiya Institute of Management, Mumbai', 'SIMSR Mumbai', 'Welingkar Institute of Management',
+    'Shri Ram College of Commerce, University of Delhi', 'SRCC', "St. Stephen's College, Delhi University",
+    'Lady Shri Ram College for Women (LSR) University of Delhi (DU)', 'Hindu College, University of Delhi (DU), New Delhi',
+    'Hansraj College,University of Delhi', 'Kirori Mal College (KMC), University of Delhi, Delhi',
+    'CHRIST (Deemed to be University) Delhi NCR', 'Christ University, Bangalore',
+    "St. Xavier's College (Autonomous), Mumbai", "St. Xavier's College, Kolkata", "St Xavier's University, Kolkata",
+  ]) assert.equal(T(host), 'bschool', host);
+});
+
+test('tier bschool guards: technology arms and namesakes stay out', () => {
+  for (const host of ['Symbiosis Center for Information Technology (SCIT), Pune', 'Symbiosis Institute of Technology (SIT), Pune',
+    'K J Somaiya College of Engineering', "St. Xavier's College, Ranchi", 'Christ College, Rajkot', 'Sindhu College']) {
+    assert.equal(T(host), 'other', host);
+  }
 });
