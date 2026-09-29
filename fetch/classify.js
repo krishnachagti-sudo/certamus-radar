@@ -2,7 +2,8 @@
 // team are arguments, so nothing here reads data/.
 
 const IIT = /indian institute of technology|\bIIT\b/i;
-const IIM = /indian institute of management|\bIIM\b/i;
+const IIM = /indian institute of management(?! and commerce)|\bIIM\b/i;
+const IS_COLLEGE = /universit|college|institute|school|IIT|IIM|NIT/i;
 
 export function tier(rec, lists) {
   const host = rec.host || '';
@@ -10,7 +11,12 @@ export function tier(rec, lists) {
   if (IIT.test(host)) return 'iit';
   if (IIM.test(host)) return 'iim';
   if (lists.bschools.some(b => new RegExp(b.host, 'i').test(host))) return 'bschool';
-  if (lists.corporates.some(c => new RegExp(c.host, 'i').test(host) || (c.title && new RegExp(c.title, 'i').test(title)))) {
+  const hostIsCollege = IS_COLLEGE.test(host);
+  if (lists.corporates.some(c => {
+    if (new RegExp(c.host, 'i').test(host)) return true;
+    if (c.title && new RegExp(c.title, 'i').test(title) && !hostIsCollege) return true;
+    return false;
+  })) {
     return 'corporate';
   }
   return 'other';
@@ -23,18 +29,44 @@ const COURSE_LABEL = {
   mba1: 'MBA', mba2: 'MBA', pgdm: 'PGDM', execMba: 'Executive MBA', phdManagement: 'PhD', mcom: 'M.Com',
   btech: 'B.Tech', mtech: 'M.Tech', mca: 'MCA', mca1: 'MCA', bba: 'BBA', ipm: 'IPM', bcom: 'B.Com',
 };
+const CATEGORY_LABEL = {
+  bSchools: 'MBA', engineering: 'Engineering courses', arts: 'Arts courses', medicine: 'Medicine courses', law: 'Law courses',
+};
+// Filter labels that leave room for a BMS (commerce) undergraduate, alongside
+// the explicit Undergraduate/Management labels.
+const OPEN_FILTER_LABELS = ['Undergraduate', 'Management', 'Arts, Commerce, Sciences & Others'];
 // Hosts often tick "Undergraduate" and then say otherwise in the body.
 const DETAIL_FLAGS = [
-  /\b(MBA|PGDM)\b[^.]{0,40}\bonly\b/i,
-  /\bpost[- ]?graduates?\b[^.]{0,20}\bonly\b/i,
+  /\b(MBA|PGDM)\b[^.;]{0,40}\bonly\b/i,
+  /(?<!undergraduate and )\bpost[- ]?graduates?\b[^.;]{0,20}\bonly\b/i,
   /\bPG students only\b/i,
-  /\b(only|exclusively)\b[^.]{0,20}\bstudents of\b[^.]{0,60}/i,
-  /\bstudents of [^.]{1,60}\bonly\b/i,
+  /\b(only|exclusively)\b[^.;]{0,20}\bstudents of\b[^.;]{0,60}/i,
+  /\bstudents of [^.;]{1,60}\bonly\b/i,
+  /\b(only|exclusively)\b[^.;]{0,30}\b(MBA|PGDM|PGP|post[- ]?graduates?|PG)\b/i,
+  /\b(pursuing|enrolled in)\b[^.;]{0,20}\b(MBA|PGDM|PGP)\b/i,
 ];
 
 function courses(el, key) {
   const list = Array.isArray(el?.[key]) ? el[key] : [];
   return list.map(x => (typeof x === 'string' ? x : x?.course)).filter(Boolean);
+}
+
+// Names a populated course list for the "open to X only" reason: a list
+// containing 'all'/'allCourses' is named by its category, otherwise by the
+// specific course codes it lists. Capped at 6 names, then "and N more".
+function courseNames(el, populated) {
+  const names = [];
+  for (const key of populated) {
+    const list = courses(el, key);
+    if (list.some(c => c === 'all' || c === 'allCourses')) {
+      names.push(CATEGORY_LABEL[key] || key);
+    } else {
+      for (const c of list) names.push(COURSE_LABEL[c] || c);
+    }
+  }
+  const unique = [...new Set(names)];
+  if (unique.length <= 6) return unique.join('/');
+  return `${unique.slice(0, 6).join('/')} and ${unique.length - 6} more`;
 }
 
 export function verdict(rec, team) {
@@ -52,17 +84,17 @@ export function verdict(rec, team) {
   }
 
   const populated = COURSE_LISTS.filter(k => courses(el, k).length);
-  const othersAll = courses(el, 'others').includes('all');
+  const othersList = courses(el, 'others');
+  const othersAll = othersList.includes('all') || othersList.includes('allCourses');
   const bs = courses(el, 'bSchools');
   if (populated.length && !othersAll && !bs.some(c => BSCHOOL_OPEN.includes(c) || BSCHOOL_UG.includes(c))) {
-    const names = [...new Set(populated.flatMap(k => courses(el, k)).map(c => COURSE_LABEL[c] || c))];
-    return out(`open to ${names.join('/')} only`);
+    return out(`open to ${courseNames(el, populated)} only`);
   }
 
   const has = f => filters.includes(f);
   if (filters.length && !has('All')) {
     if (has('Postgraduate') && !has('Undergraduate')) return out('postgraduate only');
-    if (!has('Undergraduate') && !has('Management')) return out(`open to ${filters.join(', ')} only`);
+    if (!OPEN_FILTER_LABELS.some(has)) return out(`open to ${filters.join(', ')} only`);
   }
 
   const reasons = [];

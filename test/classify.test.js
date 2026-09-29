@@ -1,6 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { tier, verdict } from '../fetch/classify.js';
+
+const dataPath = name => fileURLToPath(new URL(`../data/${name}`, import.meta.url));
+const realLists = {
+  bschools: JSON.parse(readFileSync(dataPath('bschools.json'), 'utf8')),
+  corporates: JSON.parse(readFileSync(dataPath('corporates.json'), 'utf8')),
+};
 
 const team = { size: 4, passout_years: [2029] };
 const lists = {
@@ -71,4 +79,70 @@ test('check: details not fetched', () => {
 });
 test('fits: open to everyone', () => {
   assert.deepEqual(v({}), { level: 'fits', reasons: [] });
+});
+
+// --- Live-review fixes ---
+
+test('fits: Arts/Commerce/Sciences filter label is acceptable', () => {
+  assert.equal(v({ eligible_filters: ['Arts, Commerce, Sciences & Others'] }).level, 'fits');
+});
+
+test('not out: others allCourses overrides an MBA-only bSchools list', () => {
+  const el = { sector: ['students'], others: ['allCourses'], bSchools: [{ course: 'mba1' }, { course: 'mba2' }] };
+  const r = v({ eligible_filters: ['Undergraduate', 'Postgraduate', 'Management'], eligibility: el });
+  assert.notEqual(r.level, 'out');
+});
+
+test('check: only MBA students can participate', () => {
+  const r = v({ details_text: 'Only MBA students can participate.' });
+  assert.equal(r.level, 'check');
+});
+test('check: open only to MBA/PGDM students', () => {
+  const r = v({ details_text: 'Open only to MBA/PGDM students.' });
+  assert.equal(r.level, 'check');
+});
+test('check: exclusively for postgraduate students', () => {
+  const r = v({ details_text: 'Exclusively for postgraduate students.' });
+  assert.equal(r.level, 'check');
+});
+test('check: eligibility pursuing MBA or PGDM', () => {
+  const r = v({ details_text: 'Eligibility: students pursuing MBA or PGDM.' });
+  assert.equal(r.level, 'check');
+});
+test('fits: undergraduate and postgraduate students only is not postgraduate-only', () => {
+  const r = v({ details_text: 'Open to undergraduate and postgraduate students only.' });
+  assert.equal(r.level, 'fits');
+});
+test('fits: MBA or BMS teams, semicolon separates the only-one-entry clause', () => {
+  const r = v({ details_text: 'Teams may include MBA or BMS students; only one entry per team.' });
+  assert.equal(r.level, 'fits');
+});
+
+test('tier: TISS is not a b-school match for Tata', () => {
+  assert.equal(tier(rec({ host: 'Tata Institute of Social Sciences (TISS)' }), realLists), 'other');
+});
+test('tier: Mahindra University is not the Mahindra corporate', () => {
+  assert.equal(tier(rec({ host: 'Mahindra University' }), realLists), 'other');
+});
+test('tier: a college host is never matched by title alone', () => {
+  assert.equal(tier(rec({ host: 'NIT Trichy', title: 'Marketing War Room 2026' }), realLists), 'other');
+});
+test('tier: FMS BHU is not FMS Delhi', () => {
+  assert.equal(tier(rec({ host: 'Faculty of Management Studies (FMS), BHU' }), realLists), 'other');
+});
+test('tier: SP Jain School of Global Management is not SPJIMR', () => {
+  assert.equal(tier(rec({ host: 'SP Jain School of Global Management' }), realLists), 'other');
+});
+test('tier: IIM and Commerce is not an IIM', () => {
+  assert.equal(tier(rec({ host: 'Indian Institute of Management and Commerce (IIMC), Hyderabad' }), realLists), 'other');
+});
+test('tier: Tata Steel is the corporate', () => {
+  assert.equal(tier(rec({ host: 'Tata Steel' }), realLists), 'corporate');
+});
+
+test('out reason: readable course names, capped list, category label when "all" is present', () => {
+  const el = { sector: ['students'], others: [], arts: ['all'], bSchools: [{ course: 'mba1' }] };
+  const r = v({ eligibility: el });
+  assert.equal(r.level, 'out');
+  assert.match(r.reasons[0], /^open to (MBA\/Arts courses|Arts courses\/MBA) only$/);
 });
