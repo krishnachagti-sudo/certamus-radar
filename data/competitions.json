@@ -1343,17 +1343,17 @@
     "closed_on": null
   },
   {
-    "id": 1754695,
+    "id": 1754647,
     "pinned": false,
-    "url": "https://unstop.com/competitions/gyanotsav-60-budget-battle-royale-finance-rukmini-devi-institute-of-advanced-studies-rdias-delhi-1754695",
-    "title": "Gyanotsav 6.0 – Budget Battle Royale | Finance",
+    "url": "https://unstop.com/competitions/gyanotsav-60-the-ad-showdown-marketing-rukmini-devi-institute-of-advanced-studies-rdias-delhi-1754647",
+    "title": "Gyanotsav 6.0 – The Ad Showdown | Marketing",
     "host": "Rukmini Devi Institute of Advanced Studies (RDIAS), Delhi",
     "regn_close": "2026-10-06",
     "comp_end": "2026-10-06",
     "mode": "offline",
     "fee": false,
     "team_min": 2,
-    "team_max": 2,
+    "team_max": 3,
     "prize_total": 3000,
     "eligible_filters": [
       "Engineering Students",
@@ -1376,17 +1376,17 @@
     "closed_on": null
   },
   {
-    "id": 1754647,
+    "id": 1754695,
     "pinned": false,
-    "url": "https://unstop.com/competitions/gyanotsav-60-the-ad-showdown-marketing-rukmini-devi-institute-of-advanced-studies-rdias-delhi-1754647",
-    "title": "Gyanotsav 6.0 – The Ad Showdown | Marketing",
+    "url": "https://unstop.com/competitions/gyanotsav-60-budget-battle-royale-finance-rukmini-devi-institute-of-advanced-studies-rdias-delhi-1754695",
+    "title": "Gyanotsav 6.0 – Budget Battle Royale | Finance",
     "host": "Rukmini Devi Institute of Advanced Studies (RDIAS), Delhi",
     "regn_close": "2026-10-06",
     "comp_end": "2026-10-06",
     "mode": "offline",
     "fee": false,
     "team_min": 2,
-    "team_max": 3,
+    "team_max": 2,
     "prize_total": 3000,
     "eligible_filters": [
       "Engineering Students",
@@ -2790,37 +2790,6 @@
     "closed_on": null
   },
   {
-    "id": 1751186,
-    "pinned": false,
-    "url": "https://unstop.com/quiz/mind-the-product-2026-test-8-iit-guwahati-1751186",
-    "title": "Mind The Product - 2026 - Test 8",
-    "host": "Indian Institute of Technology (IIT), Guwahati",
-    "regn_close": "2026-11-30",
-    "comp_end": "2026-11-30",
-    "mode": "online",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 1,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "quizzes",
-    "is_case": false,
-    "tier": "iit",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "first_seen": "2026-09-29",
-    "closed_on": null
-  },
-  {
     "id": 1745450,
     "pinned": false,
     "url": "https://unstop.com/quiz/mind-the-product-2026-test-3-iit-guwahati-1745450",
@@ -2858,6 +2827,37 @@
     "pinned": false,
     "url": "https://unstop.com/quiz/mind-the-product-2026-test-7-iit-guwahati-1751172",
     "title": "Mind The Product 2026 - Test 7",
+    "host": "Indian Institute of Technology (IIT), Guwahati",
+    "regn_close": "2026-11-30",
+    "comp_end": "2026-11-30",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "quizzes",
+    "is_case": false,
+    "tier": "iit",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": 1751186,
+    "pinned": false,
+    "url": "https://unstop.com/quiz/mind-the-product-2026-test-8-iit-guwahati-1751186",
+    "title": "Mind The Product - 2026 - Test 8",
     "host": "Indian Institute of Technology (IIT), Guwahati",
     "regn_close": "2026-11-30",
     "comp_end": "2026-11-30",
