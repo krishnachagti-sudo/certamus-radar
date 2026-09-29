@@ -1,38 +1,5 @@
 [
   {
-    "id": 1762799,
-    "pinned": false,
-    "url": "https://unstop.com/competitions/arth-chakra-2026-barcode26-symbiosis-institute-of-management-studies-sims-pune-1762799",
-    "title": "Arth Chakra 2026",
-    "host": "Symbiosis Institute of Management Studies (SIMS), Pune",
-    "regn_close": "2026-09-29",
-    "comp_end": "2026-10-11",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 2,
-    "team_max": 3,
-    "prize_total": 8000,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "general_competition",
-    "is_case": false,
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "first_seen": "2026-09-29",
-    "closed_on": null
-  },
-  {
     "id": 1751380,
     "pinned": false,
     "url": "https://unstop.com/competitions/call-for-articles-marketing-without-the-marketer-iim-rohtak-1751380",
@@ -63,7 +30,7 @@
       "reasons": []
     },
     "first_seen": "2026-09-29",
-    "closed_on": null
+    "closed_on": "2026-09-30"
   },
   {
     "id": 1755374,
@@ -91,39 +58,6 @@
     "format": "case_competition",
     "is_case": true,
     "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "first_seen": "2026-09-29",
-    "closed_on": null
-  },
-  {
-    "id": 1759122,
-    "pinned": false,
-    "url": "https://unstop.com/competitions/produscope-2026-the-product-case-study-competition-iit-guwahati-1759122",
-    "title": "ProduScope 2026: The Product Case Study Competition",
-    "host": "Indian Institute of Technology (IIT), Guwahati",
-    "regn_close": "2026-09-30",
-    "comp_end": "2026-10-10",
-    "mode": "online",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 4,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "case_competition",
-    "is_case": true,
-    "tier": "iit",
     "verdict": {
       "level": "fits",
       "reasons": []
@@ -165,72 +99,6 @@
     "closed_on": null
   },
   {
-    "id": 1752004,
-    "pinned": false,
-    "url": "https://unstop.com/quiz/code-logic-blitz-10-lal-bahadur-shastri-institute-of-management-and-development-studies-lucknow-uttar-pradesh-1752004",
-    "title": "Code & Logic Blitz 1.0",
-    "host": "Lal Bahadur Shastri Institute of Management and Development Studies, Lucknow, Uttar Pradesh",
-    "regn_close": "2026-09-30",
-    "comp_end": "2026-10-10",
-    "mode": "online",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 1,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "quizzes",
-    "is_case": false,
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "first_seen": "2026-09-29",
-    "closed_on": null
-  },
-  {
-    "id": 1755423,
-    "pinned": false,
-    "url": "https://unstop.com/competitions/strategy-wiz-renaissance-100-motilal-nehru-national-institute-of-technology-1755423",
-    "title": "Strategy-Wiz",
-    "host": "Motilal Nehru National Institute of Technology",
-    "regn_close": "2026-09-30",
-    "comp_end": "2026-10-26",
-    "mode": "online",
-    "fee": false,
-    "team_min": 2,
-    "team_max": 4,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "case_competition",
-    "is_case": true,
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "first_seen": "2026-09-29",
-    "closed_on": null
-  },
-  {
     "id": 1756596,
     "pinned": false,
     "url": "https://unstop.com/competitions/aethera-2026-sustainability-consulting-challenge-indian-institute-of-technology-indian-school-of-mines-iit--1756596",
@@ -259,128 +127,6 @@
     "verdict": {
       "level": "fits",
       "reasons": []
-    },
-    "first_seen": "2026-09-29",
-    "closed_on": null
-  },
-  {
-    "id": 1757064,
-    "pinned": false,
-    "url": "https://unstop.com/quiz/can-you-spot-product-market-fit-upforge-1757064",
-    "title": "Can You Spot Product-Market Fit?",
-    "host": "UpForge",
-    "regn_close": "2026-09-30",
-    "comp_end": "2026-09-30",
-    "mode": "online",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 1,
-    "prize_total": 0,
-    "eligible_filters": [
-      "All"
-    ],
-    "details_fetched": true,
-    "format": "quizzes",
-    "is_case": false,
-    "tier": "other",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "eligibility not stated"
-      ]
-    },
-    "first_seen": "2026-09-29",
-    "closed_on": null
-  },
-  {
-    "id": 1743077,
-    "pinned": false,
-    "url": "https://unstop.com/quiz/ai-readiness-productivity-quiz-noobsync-innovations-1743077",
-    "title": "AI Readiness & Productivity Quiz",
-    "host": "NoobSync Innovations",
-    "regn_close": "2026-09-30",
-    "comp_end": "2026-09-30",
-    "mode": "online",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 1,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Experienced Professionals",
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Fresher",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "quizzes",
-    "is_case": false,
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "first_seen": "2026-09-29",
-    "closed_on": null
-  },
-  {
-    "id": 1750809,
-    "pinned": false,
-    "url": "https://unstop.com/quiz/upforge-marketing-iq-challenge-2026-test-your-marketing-instincts-upforge-global-1750809",
-    "title": "UpForge Marketing IQ Challenge 2026 | Test Your Marketing Instincts",
-    "host": "UpForge Global",
-    "regn_close": "2026-09-30",
-    "comp_end": "2026-09-30",
-    "mode": "online",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 1,
-    "prize_total": 0,
-    "eligible_filters": [
-      "All"
-    ],
-    "details_fetched": true,
-    "format": "quizzes",
-    "is_case": false,
-    "tier": "other",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "eligibility not stated"
-      ]
-    },
-    "first_seen": "2026-09-29",
-    "closed_on": null
-  },
-  {
-    "id": 1754497,
-    "pinned": false,
-    "url": "https://unstop.com/quiz/upforge-marketing-iq-challenge-2026-upforge-1754497",
-    "title": "UpForge Marketing IQ Challenge 2026",
-    "host": "UpForge",
-    "regn_close": "2026-09-30",
-    "comp_end": "2026-09-30",
-    "mode": "online",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 1,
-    "prize_total": 0,
-    "eligible_filters": [
-      "All"
-    ],
-    "details_fetched": true,
-    "format": "quizzes",
-    "is_case": false,
-    "tier": "other",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "eligibility not stated"
-      ]
     },
     "first_seen": "2026-09-29",
     "closed_on": null
@@ -479,6 +225,161 @@
     },
     "first_seen": "2026-09-29",
     "closed_on": null
+  },
+  {
+    "id": 1752004,
+    "pinned": false,
+    "url": "https://unstop.com/quiz/code-logic-blitz-10-lal-bahadur-shastri-institute-of-management-and-development-studies-lucknow-uttar-pradesh-1752004",
+    "title": "Code & Logic Blitz 1.0",
+    "host": "Lal Bahadur Shastri Institute of Management and Development Studies, Lucknow, Uttar Pradesh",
+    "regn_close": "2026-09-30",
+    "comp_end": "2026-10-10",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "quizzes",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": "2026-09-30"
+  },
+  {
+    "id": 1757064,
+    "pinned": false,
+    "url": "https://unstop.com/quiz/can-you-spot-product-market-fit-upforge-1757064",
+    "title": "Can You Spot Product-Market Fit?",
+    "host": "UpForge",
+    "regn_close": "2026-09-30",
+    "comp_end": "2026-09-30",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "quizzes",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": "2026-09-30"
+  },
+  {
+    "id": 1743077,
+    "pinned": false,
+    "url": "https://unstop.com/quiz/ai-readiness-productivity-quiz-noobsync-innovations-1743077",
+    "title": "AI Readiness & Productivity Quiz",
+    "host": "NoobSync Innovations",
+    "regn_close": "2026-09-30",
+    "comp_end": "2026-09-30",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Experienced Professionals",
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Fresher",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "quizzes",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": "2026-09-30"
+  },
+  {
+    "id": 1750809,
+    "pinned": false,
+    "url": "https://unstop.com/quiz/upforge-marketing-iq-challenge-2026-test-your-marketing-instincts-upforge-global-1750809",
+    "title": "UpForge Marketing IQ Challenge 2026 | Test Your Marketing Instincts",
+    "host": "UpForge Global",
+    "regn_close": "2026-09-30",
+    "comp_end": "2026-09-30",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "quizzes",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": "2026-09-30"
+  },
+  {
+    "id": 1754497,
+    "pinned": false,
+    "url": "https://unstop.com/quiz/upforge-marketing-iq-challenge-2026-upforge-1754497",
+    "title": "UpForge Marketing IQ Challenge 2026",
+    "host": "UpForge",
+    "regn_close": "2026-09-30",
+    "comp_end": "2026-09-30",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "quizzes",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": "2026-09-30"
   },
   {
     "id": 1748927,
@@ -692,6 +593,72 @@
     "closed_on": null
   },
   {
+    "id": 1762799,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/arth-chakra-2026-barcode26-symbiosis-institute-of-management-studies-sims-pune-1762799",
+    "title": "Arth Chakra 2026",
+    "host": "Symbiosis Institute of Management Studies (SIMS), Pune",
+    "regn_close": "2026-10-02",
+    "comp_end": "2026-10-11",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 3,
+    "prize_total": 8000,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": 1755423,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/strategy-wiz-renaissance-100-motilal-nehru-national-institute-of-technology-1755423",
+    "title": "Strategy-Wiz",
+    "host": "Motilal Nehru National Institute of Technology",
+    "regn_close": "2026-10-02",
+    "comp_end": "2026-10-27",
+    "mode": "online",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "case_competition",
+    "is_case": true,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
     "id": 1754811,
     "pinned": false,
     "url": "https://unstop.com/competitions/policy-dilemma-2026-econvista26-lady-shri-ram-college-for-women-lsr-du-new-delhi-1754811",
@@ -827,6 +794,39 @@
     "closed_on": null
   },
   {
+    "id": 1762278,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/auction-theory-2026-barcode26-symbiosis-institute-of-management-studies-sims-pune-1762278",
+    "title": "Auction Theory 2026",
+    "host": "Symbiosis Institute of Management Studies (SIMS), Pune",
+    "regn_close": "2026-10-04",
+    "comp_end": "2026-10-04",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 3,
+    "prize_total": 8000,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
     "id": 1751075,
     "pinned": false,
     "url": "https://unstop.com/competitions/the-infinity-deck-vivekananda-institute-of-professional-studies-vips-delhi-1751075",
@@ -863,49 +863,16 @@
     "closed_on": null
   },
   {
-    "id": 1762278,
-    "pinned": false,
-    "url": "https://unstop.com/competitions/auction-theory-2026-barcode26-symbiosis-institute-of-management-studies-sims-pune-1762278",
-    "title": "Auction Theory 2026",
-    "host": "Symbiosis Institute of Management Studies (SIMS), Pune",
-    "regn_close": "2026-10-04",
-    "comp_end": "2026-10-04",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 2,
-    "team_max": 3,
-    "prize_total": 8000,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "general_competition",
-    "is_case": false,
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "first_seen": "2026-09-29",
-    "closed_on": null
-  },
-  {
     "id": 1762150,
     "pinned": false,
     "url": "https://unstop.com/competitions/ekam-the-jack-of-all-trades-barcode26-symbiosis-institute-of-management-studies-sims-pune-1762150",
-    "title": "EKAM - The Jack of All Trades",
+    "title": "EKAM - The Jack of All Traits",
     "host": "Symbiosis Institute of Management Studies (SIMS), Pune",
     "regn_close": "2026-10-04",
     "comp_end": "2026-10-07",
     "mode": "offline",
     "fee": false,
-    "team_min": 5,
+    "team_min": 2,
     "team_max": 5,
     "prize_total": 0,
     "eligible_filters": [
@@ -922,10 +889,8 @@
     "is_case": false,
     "tier": "other",
     "verdict": {
-      "level": "out",
-      "reasons": [
-        "needs at least 5 members"
-      ]
+      "level": "fits",
+      "reasons": []
     },
     "first_seen": "2026-09-29",
     "closed_on": null
@@ -964,6 +929,36 @@
     "closed_on": null
   },
   {
+    "id": 1756227,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/crp-infosys-ingenious-the-grand-finale-2026-infosys-1756227",
+    "title": "Infosys Ingenious - The Grand Finale 2026",
+    "host": "Infosys",
+    "regn_close": "2026-10-04",
+    "comp_end": "2026-10-04",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Postgraduate",
+      "Management"
+    ],
+    "details_fetched": true,
+    "format": "hiring_challenge",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "out",
+      "reasons": [
+        "graduating 2027 only"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
     "id": 1759571,
     "pinned": false,
     "url": "https://unstop.com/competitions/prompt-challenge-marketing-edition-thinknest-1759571",
@@ -992,36 +987,39 @@
       "reasons": []
     },
     "first_seen": "2026-09-29",
-    "closed_on": null
+    "closed_on": "2026-09-30"
   },
   {
-    "id": 1756227,
+    "id": 1763272,
     "pinned": false,
-    "url": "https://unstop.com/competitions/crp-infosys-ingenious-the-grand-finale-2026-infosys-1756227",
-    "title": "Infosys Ingenious - The Grand Finale 2026",
-    "host": "Infosys",
-    "regn_close": "2026-10-04",
-    "comp_end": "2026-10-04",
+    "url": "https://unstop.com/competitions/caseverse-the-mimamsa-case-challenge-iim-indore-1763272",
+    "title": "CaseVerse : The Mimamsa Case Challenge",
+    "host": "Indian Institute of Management (IIM), Indore",
+    "regn_close": "2026-10-05",
+    "comp_end": "2026-10-10",
     "mode": "online",
     "fee": false,
-    "team_min": 1,
-    "team_max": 1,
-    "prize_total": 0,
+    "team_min": 2,
+    "team_max": 3,
+    "prize_total": 50000,
     "eligible_filters": [
+      "Engineering Students",
       "Postgraduate",
-      "Management"
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
     ],
     "details_fetched": true,
-    "format": "hiring_challenge",
-    "is_case": false,
-    "tier": "other",
+    "format": "general_competition",
+    "is_case": true,
+    "tier": "iim",
     "verdict": {
-      "level": "out",
-      "reasons": [
-        "graduating 2027 only"
-      ]
+      "level": "fits",
+      "reasons": []
     },
-    "first_seen": "2026-09-29",
+    "first_seen": "2026-09-30",
     "closed_on": null
   },
   {
@@ -1733,6 +1731,39 @@
     "closed_on": null
   },
   {
+    "id": 1759122,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/produscope-2026-the-product-case-study-competition-iit-guwahati-1759122",
+    "title": "ProduScope 2026: The Product Case Study Competition",
+    "host": "Indian Institute of Technology (IIT), Guwahati",
+    "regn_close": "2026-10-08",
+    "comp_end": "2026-10-10",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "case_competition",
+    "is_case": true,
+    "tier": "iit",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
     "id": 1762238,
     "pinned": false,
     "url": "https://unstop.com/quiz/sigma-o-poly-nit-warangal-1762238",
@@ -1839,7 +1870,7 @@
     "fee": false,
     "team_min": 1,
     "team_max": 3,
-    "prize_total": 7000,
+    "prize_total": 69700,
     "eligible_filters": [
       "Engineering Students",
       "Postgraduate",
@@ -2052,7 +2083,7 @@
     "id": 1763026,
     "pinned": false,
     "url": "https://unstop.com/hackathons/hackcosmic-vivekananda-institute-of-professional-studies-technical-campus-1763026",
-    "title": "HackCosmic",
+    "title": "HackCOSMIC",
     "host": "Vivekananda Institute of Professional Studies - Technical Campus",
     "regn_close": "2026-10-13",
     "comp_end": "2026-10-17",
@@ -2079,6 +2110,39 @@
       "reasons": []
     },
     "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": 1763042,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/cipher-trail-ctf-vivekananda-institute-of-professional-studies-technical-campus-1763042",
+    "title": "Cipher Trail CTF",
+    "host": "Vivekananda Institute of Professional Studies - Technical Campus",
+    "regn_close": "2026-10-13",
+    "comp_end": "2026-10-16",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 2,
+    "prize_total": 10000,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
     "closed_on": null
   },
   {
@@ -2697,6 +2761,39 @@
       ]
     },
     "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": 1763268,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/cipher-chase-capture-the-flag-synergy-26-international-institute-of-information-technology-iiit-bangalore-1763268",
+    "title": "Cipher Chase — Capture the Flag",
+    "host": "International Institute of Information Technology (IIIT), Bangalore",
+    "regn_close": "2026-11-12",
+    "comp_end": "2026-11-12",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 2,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
     "closed_on": null
   },
   {
