@@ -11,6 +11,7 @@ import { tier, verdict } from './classify.js';
 import { merge, appendArchive } from './merge.js';
 import { curatedRecords, oppdeskRecords } from './intl.js';
 import { fetchOppDesk } from './oppdesk.js';
+import { defaultConfig, readTables } from './supabase.js';
 import { dayDiff, todayIST } from '../dates.js';
 import { unstopId } from '../urls.js';
 
@@ -36,37 +37,52 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
     try { return { value: JSON.parse(raw) }; } catch (e) { return { error: `unparseable (${e.message})` }; }
   };
 
+  const { supabase = defaultConfig(), ...fetchDeps } = deps;
   const team = read('team.json');
   const lists = { bschools: read('bschools.json', []), corporates: read('corporates.json', []) };
   const existing = read('competitions.json', []);
-  const decisions = read('decisions.json', {});
-  const manualRaw = read('manual.json', []);
-  const manualIds = (Array.isArray(manualRaw) ? manualRaw : []).map(m => unstopId(m?.url ?? '')).filter(Boolean);
   const status = read('status.json', {});
   const stamp = now.toISOString();
+
+  // Decisions, hand-added links and confirmed international dates live in
+  // Supabase. If it is not configured or a read fails, decisions and links
+  // fall back to the old data/ files when present (else empty) and the
+  // curated records keep yesterday's dates; each case is a warning.
+  const remote = await readTables(supabase);
+  const remoteWarnings = [];
+  const fromRemote = (name, file, fallback) => {
+    if (remote[name].value !== undefined) return remote[name].value;
+    const local = readStrict(file);
+    const usable = 'value' in local;
+    remoteWarnings.push(`${name}: Supabase ${remote[name].error}; ${usable ? `using data/${file}` : 'none'}`);
+    return usable ? local.value : fallback;
+  };
+  const isObject = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+  const decisionsRaw = fromRemote('decisions', 'decisions.json', {});
+  const decisions = isObject(decisionsRaw) ? decisionsRaw : {};
+  const manualRaw = fromRemote('manual', 'manual.json', []);
+  const manualIds = (Array.isArray(manualRaw) ? manualRaw : []).map(m => unstopId(m?.url ?? '')).filter(Boolean);
 
   try {
     const { records, warnings } = await fetchAll(new Map(existing.map(r => [r.id, r])), manualIds, {
       keywords: read('keywords.json', []),
-      ...deps,
+      ...fetchDeps,
     });
+    warnings.unshift(...remoteWarnings);
     const today = todayIST(now);
     const intlFile = readStrict('international.json');
-    const datesFile = readStrict('intl-dates.json');
-    const isObject = v => v !== null && typeof v === 'object' && !Array.isArray(v);
     const curatedProblem =
       intlFile.missing ? 'international.json missing'
         : intlFile.error ? `international.json ${intlFile.error}`
           : !Array.isArray(intlFile.value) ? 'international.json is not an array'
-            : datesFile.error ? `intl-dates.json ${datesFile.error}`
-              : !datesFile.missing && !isObject(datesFile.value) ? 'intl-dates.json is not an object'
-                : null;
+            : remote.intlDates.error ? `confirmed dates unavailable (Supabase ${remote.intlDates.error})`
+              : null;
     if (curatedProblem) {
       // Keep yesterday's curated records (and their dates) rather than close them.
       warnings.push(`curated list: ${curatedProblem}; previous curated records kept`);
       records.push(...existing.filter(r => r.source === 'curated'));
     } else {
-      records.push(...curatedRecords(intlFile.value, datesFile.missing ? {} : datesFile.value, today));
+      records.push(...curatedRecords(intlFile.value, remote.intlDates.value, today));
     }
     try {
       const posts = await fetchOppDesk({ getJson: deps.getJson, pause: deps.pause, today });
@@ -108,7 +124,7 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
     console.log(`ok: ${records.length} fetched, ${warnings.length} warnings`);
     return 0;
   } catch (e) {
-    write('status.json', { last_run: stamp, last_ok: status.last_ok || null, last_error: e.message, warnings: [] });
+    write('status.json', { last_run: stamp, last_ok: status.last_ok || null, last_error: e.message, warnings: remoteWarnings });
     console.error(`fetch failed: ${e.message}`);
     return 1;
   }

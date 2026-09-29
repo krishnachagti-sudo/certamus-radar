@@ -13,16 +13,22 @@ function dataDir(over = {}) {
     'bschools.json': [],
     'corporates.json': [],
     'competitions.json': [{ id: 77, title: 'Old', regn_close: '2026-12-01', first_seen: '2026-09-01', closed_on: null }],
-    'decisions.json': {},
-    'manual.json': [],
     'status.json': { last_ok: '2026-09-28T00:30:00.000Z' },
     'international.json': [],
-    'intl-dates.json': {},
     ...over,
   };
   for (const [f, v] of Object.entries(files)) fs.writeFileSync(path.join(dir, f), typeof v === 'string' ? v : JSON.stringify(v));
   return dir;
 }
+// Supabase stub: tables maps a table name to its rows, or an Error to fail it.
+const sb = (tables = {}) => ({
+  url: 'https://test.supabase.co', anonKey: 'anon',
+  getJson: async url => {
+    const t = new URL(url).pathname.split('/').pop();
+    if (tables[t] instanceof Error) throw tables[t];
+    return tables[t] ?? [];
+  },
+});
 const read = (dir, f) => JSON.parse(fs.readFileSync(path.join(dir, f)));
 const item = {
   id: 1, title: 'Ops', updated_at: 'x', end_date: '2026-11-09T21:25:00+05:30',
@@ -38,7 +44,7 @@ const noOd = getJson => async url => (url.startsWith('https://opportunitydesk.or
 test('success writes classified competitions and a clean status', async () => {
   const dir = dataDir();
   const getJson = async url => ({ data: { data: [item], last_page: 1 } });
-  const code = await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {} } });
+  const code = await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {}, supabase: sb() } });
   assert.equal(code, 0);
   const comps = read(dir, 'competitions.json');
   const ops = comps.find(c => c.id === 1);
@@ -55,7 +61,7 @@ test('a record that fails classification does not fail the run', async () => {
   const dir = dataDir({ 'bschools.json': [{ host: '(' }] });
   const badHostItem = { ...item, organisation: { name: 'Acme Corp' } };
   const getJson = async url => ({ data: { data: [badHostItem], last_page: 1 } });
-  const code = await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {} } });
+  const code = await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {}, supabase: sb() } });
   assert.equal(code, 0);
   const comps = read(dir, 'competitions.json');
   assert.ok(comps.find(c => c.id === 1));
@@ -63,24 +69,24 @@ test('a record that fails classification does not fail the run', async () => {
   assert.ok(st.warnings.some(w => w.includes('classify')));
 });
 
-test('a non-array manual.json is treated as empty', async () => {
+test('Supabase down: a non-array fallback manual.json is treated as empty', async () => {
   const dir = dataDir({ 'manual.json': {} });
   const getJson = async url => ({ data: { data: [item], last_page: 1 } });
-  const code = await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {} } });
+  const code = await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {}, supabase: sb({ manual: new Error('HTTP 503') }) } });
   assert.equal(code, 0);
 });
 
-test('manual.json entries without a string url are skipped', async () => {
+test('Supabase down: fallback manual.json entries without a string url are skipped', async () => {
   const dir = dataDir({ 'manual.json': [null, { url: 5 }] });
   const getJson = async url => ({ data: { data: [item], last_page: 1 } });
-  const code = await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {} } });
+  const code = await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {}, supabase: sb({ manual: new Error('HTTP 503') }) } });
   assert.equal(code, 0);
 });
 
 test('failure leaves competitions untouched and records the error', async () => {
   const dir = dataDir();
   const before = fs.readFileSync(path.join(dir, 'competitions.json'), 'utf8');
-  const code = await main({ dataDir: dir, now, deps: { getJson: noOd(async () => ({ data: {} })), pause: async () => {} } });
+  const code = await main({ dataDir: dir, now, deps: { getJson: noOd(async () => ({ data: {} })), pause: async () => {}, supabase: sb() } });
   assert.equal(code, 1);
   assert.equal(fs.readFileSync(path.join(dir, 'competitions.json'), 'utf8'), before);
   const st = read(dir, 'status.json');
@@ -96,7 +102,7 @@ test('published competitions.json carries no listing body text or contact detail
   });
   const leaky = { ...item, details: '<p>All students. Call Riya 9876543210 or riya@example.edu</p>' };
   const getJson = async url => ({ data: { data: [leaky], last_page: 1 } });
-  const code = await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {} } });
+  const code = await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {}, supabase: sb() } });
   assert.equal(code, 0);
   const raw = fs.readFileSync(path.join(dir, 'competitions.json'), 'utf8');
   const comps = JSON.parse(raw);
@@ -113,12 +119,13 @@ test('published competitions.json carries no listing body text or contact detail
 test('a carried-over manual record keeps its stored tier and verdict', async () => {
   const stored = { id: 55, title: 'Kept', host: 'Acme', tier: 'iim', pinned: true, details_fetched: true,
     verdict: { level: 'fits', reasons: [] }, regn_close: '2026-12-01', first_seen: '2026-09-01', closed_on: null };
-  const dir = dataDir({ 'competitions.json': [stored], 'manual.json': [{ url: 'https://unstop.com/competitions/kept-55' }] });
+  const dir = dataDir({ 'competitions.json': [stored] });
+  const manual = [{ id: '55', url: 'https://unstop.com/competitions/kept-55', added: '2026-09-01' }];
   const getJson = async url => {
     if (url.includes('/competition/55')) throw new Error('HTTP 500');
     return { data: { data: [item], last_page: 1 } };
   };
-  const code = await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {} } });
+  const code = await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {}, supabase: sb({ manual }) } });
   assert.equal(code, 0);
   const kept = read(dir, 'competitions.json').find(c => c.id === 55);
   assert.equal(kept.tier, 'iim');
@@ -133,14 +140,14 @@ test('a pruned record lands in archive.json once, slim', async () => {
     verdict: { level: 'fits', reasons: [] } };
   const dir = dataDir({ 'competitions.json': [old] });
   const getJson = async url => ({ data: { data: [item], last_page: 1 } });
-  assert.equal(await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {} } }), 0);
+  assert.equal(await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {}, supabase: sb() } }), 0);
   assert.equal(read(dir, 'competitions.json').some(c => c.id === 88), false);
   const arch = read(dir, 'archive.json');
   assert.deepEqual(arch.map(a => a.id), [88]);
   assert.equal('verdict' in arch[0], false);
   // a second run does not duplicate it
   fs.writeFileSync(path.join(dir, 'competitions.json'), JSON.stringify([old]));
-  assert.equal(await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {} } }), 0);
+  assert.equal(await main({ dataDir: dir, now, deps: { getJson: noOd(getJson), pause: async () => {}, supabase: sb() } }), 0);
   assert.equal(read(dir, 'archive.json').length, 1);
 });
 
@@ -153,8 +160,9 @@ const router = ({ od = async () => [odPost] } = {}) => async url =>
   (url.startsWith('https://opportunitydesk.org/') ? od(url) : { data: { data: [item], last_page: 1 } });
 
 test('curated and Opportunity Desk records are added as international, unclassified', async () => {
-  const dir = dataDir({ 'international.json': [intlRow], 'intl-dates.json': { 'intl-z': { regn_close: '2026-11-20', comp_end: '2027-03-10', confirmed_on: '2026-09-29' } } });
-  const code = await main({ dataDir: dir, now, deps: { getJson: router(), pause: async () => {} } });
+  const dir = dataDir({ 'international.json': [intlRow] });
+  const intl_dates = [{ id: 'intl-z', regn_close: '2026-11-20', comp_end: '2027-03-10', confirmed_on: '2026-09-29' }];
+  const code = await main({ dataDir: dir, now, deps: { getJson: router(), pause: async () => {}, supabase: sb({ intl_dates }) } });
   assert.equal(code, 0);
   const comps = read(dir, 'competitions.json');
   const z = comps.find(c => c.id === 'intl-z');
@@ -176,7 +184,7 @@ test('an Opportunity Desk failure is a warning and keeps the previous od- record
     first_seen: '2026-09-01', closed_on: null, is_case: true };
   const dir = dataDir({ 'competitions.json': [prevOd] });
   const getJson = router({ od: async () => { throw new Error('HTTP 503 for od'); } });
-  const code = await main({ dataDir: dir, now, deps: { getJson, pause: async () => {} } });
+  const code = await main({ dataDir: dir, now, deps: { getJson, pause: async () => {}, supabase: sb() } });
   assert.equal(code, 0);
   const kept = read(dir, 'competitions.json').find(c => c.id === 'od-5');
   assert.equal(kept.closed_on, null);
@@ -189,15 +197,15 @@ const prevCurated = { id: 'intl-z', source: 'curated', title: 'Z Case Cup', host
   url: 'https://z.example/', regn_close: '2026-11-20', comp_end: '2027-03-10', first_seen: '2026-09-01', closed_on: null,
   verdict: { level: 'check', reasons: ['IIM Sirmaur must apply for an invitation'] }, is_case: true };
 
-for (const [label, files] of [
-  ['a non-array international.json', { 'international.json': { nope: 1 } }],
-  ['an unparseable international.json', { 'international.json': '{not json' }],
-  ['a non-object intl-dates.json', { 'international.json': [intlRow], 'intl-dates.json': [1, 2] }],
-  ['an unparseable intl-dates.json', { 'international.json': [intlRow], 'intl-dates.json': '{oops' }],
+for (const [label, files, supabase] of [
+  ['a non-array international.json', { 'international.json': { nope: 1 } }, sb()],
+  ['an unparseable international.json', { 'international.json': '{not json' }, sb()],
+  ['a failed intl_dates read', { 'international.json': [intlRow] }, sb({ intl_dates: new Error('HTTP 503') })],
+  ['an unconfigured Supabase', { 'international.json': [intlRow] }, { url: '', anonKey: '' }],
 ]) {
   test(`${label} warns and passes previous curated records through unchanged`, async () => {
     const dir = dataDir({ 'competitions.json': [prevCurated], ...files });
-    assert.equal(await main({ dataDir: dir, now, deps: { getJson: router(), pause: async () => {} } }), 0);
+    assert.equal(await main({ dataDir: dir, now, deps: { getJson: router(), pause: async () => {}, supabase } }), 0);
     const z = read(dir, 'competitions.json').find(c => c.id === 'intl-z');
     assert.equal(z.closed_on, null);
     assert.equal(z.regn_close, '2026-11-20');
@@ -210,7 +218,7 @@ test('a corrupt archive.json is never overwritten: warn and skip the archive wri
   const old = { id: 88, title: 'Gone', regn_close: '2026-06-01', first_seen: '2026-05-01', closed_on: '2026-06-02' };
   for (const bad of ['[{broken', '{"a":1}']) {
     const dir = dataDir({ 'competitions.json': [old], 'archive.json': bad });
-    assert.equal(await main({ dataDir: dir, now, deps: { getJson: router(), pause: async () => {} } }), 0);
+    assert.equal(await main({ dataDir: dir, now, deps: { getJson: router(), pause: async () => {}, supabase: sb() } }), 0);
     assert.equal(fs.readFileSync(path.join(dir, 'archive.json'), 'utf8'), bad);
     assert.ok(read(dir, 'status.json').warnings.some(w => /archive/.test(w)));
   }
@@ -219,7 +227,7 @@ test('a corrupt archive.json is never overwritten: warn and skip the archive wri
 test('a missing archive.json starts a new one', async () => {
   const old = { id: 88, title: 'Gone', regn_close: '2026-06-01', first_seen: '2026-05-01', closed_on: '2026-06-02' };
   const dir = dataDir({ 'competitions.json': [old] });
-  assert.equal(await main({ dataDir: dir, now, deps: { getJson: router(), pause: async () => {} } }), 0);
+  assert.equal(await main({ dataDir: dir, now, deps: { getJson: router(), pause: async () => {}, supabase: sb() } }), 0);
   assert.deepEqual(read(dir, 'archive.json').map(a => a.id), [88]);
 });
 
@@ -228,7 +236,7 @@ test('previous Opportunity Desk records missing from the fetch window pass throu
     url: `https://opportunitydesk.org/p/${id}/`, regn_close, first_seen: '2026-05-01', closed_on: null, is_case: true,
     verdict: { level: 'check', reasons: ['verify eligibility on the post'] } });
   const dir = dataDir({ 'competitions.json': [od('od-1', '2026-10-15'), od('od-2', '2026-09-29'), od('od-3', '2026-09-20')] });
-  assert.equal(await main({ dataDir: dir, now, deps: { getJson: router({ od: async () => [] }), pause: async () => {} } }), 0);
+  assert.equal(await main({ dataDir: dir, now, deps: { getJson: router({ od: async () => [] }), pause: async () => {}, supabase: sb() } }), 0);
   const comps = read(dir, 'competitions.json');
   assert.equal(comps.find(c => c.id === 'od-1').closed_on, null);
   assert.equal(comps.find(c => c.id === 'od-2').closed_on, null);
@@ -236,11 +244,56 @@ test('previous Opportunity Desk records missing from the fetch window pass throu
 });
 
 test('a curated edition is archived once when its confirmed regn_close passes, and the record stays', async () => {
-  const dir = dataDir({ 'international.json': [intlRow], 'intl-dates.json': { 'intl-z': { regn_close: '2026-09-01', comp_end: '2026-09-10', confirmed_on: '2026-08-01' } } });
+  const dir = dataDir({ 'international.json': [intlRow] });
+  const intl_dates = [{ id: 'intl-z', regn_close: '2026-09-01', comp_end: '2026-09-10', confirmed_on: '2026-08-01' }];
   for (const at of ['2026-09-29T00:30:00Z', '2026-11-05T00:30:00Z', '2026-12-01T00:30:00Z']) {
-    assert.equal(await main({ dataDir: dir, now: new Date(at), deps: { getJson: router({ od: async () => [] }), pause: async () => {} } }), 0);
+    assert.equal(await main({ dataDir: dir, now: new Date(at), deps: { getJson: router({ od: async () => [] }), pause: async () => {}, supabase: sb({ intl_dates }) } }), 0);
   }
   assert.ok(read(dir, 'competitions.json').some(c => c.id === 'intl-z'));
   const arch = read(dir, 'archive.json');
   assert.deepEqual(arch.filter(a => String(a.id).startsWith('intl-')).map(a => a.archive_key), ['intl-z@2026-09-01']);
+});
+
+// ---- Supabase reads and fallbacks ------------------------------------------
+
+test('decisions from Supabase keep a committed record past the 60-day prune', async () => {
+  const old = { id: 88, title: 'Entered', regn_close: '2026-06-01', comp_end: '2026-09-01', first_seen: '2026-05-01', closed_on: '2026-06-02' };
+  const decisions = [{ id: '88', status: 'entering', registered: false, note: null, updated_at: '2026-06-01T00:00:00Z' }];
+  const dir = dataDir({ 'competitions.json': [old] });
+  assert.equal(await main({ dataDir: dir, now, deps: { getJson: router(), pause: async () => {}, supabase: sb({ decisions }) } }), 0);
+  assert.ok(read(dir, 'competitions.json').some(c => c.id === 88));
+  assert.deepEqual(read(dir, 'status.json').warnings, []);
+});
+
+test('Supabase down: decisions fall back to data/decisions.json with a warning', async () => {
+  const old = { id: 88, title: 'Entered', regn_close: '2026-06-01', comp_end: '2026-09-01', first_seen: '2026-05-01', closed_on: '2026-06-02' };
+  const dir = dataDir({ 'competitions.json': [old], 'decisions.json': { 88: { status: 'entering' } } });
+  const supabase = sb({ decisions: new Error('HTTP 503') });
+  assert.equal(await main({ dataDir: dir, now, deps: { getJson: router(), pause: async () => {}, supabase } }), 0);
+  assert.ok(read(dir, 'competitions.json').some(c => c.id === 88));
+  assert.ok(read(dir, 'status.json').warnings.some(w => /decisions/.test(w) && /503/.test(w) && /decisions\.json/.test(w)));
+});
+
+test('Supabase down with no fallback files: empty decisions and manual links, run still succeeds', async () => {
+  const dir = dataDir();
+  const err = new Error('HTTP 503');
+  const supabase = sb({ decisions: err, manual: err, intl_dates: err });
+  assert.equal(await main({ dataDir: dir, now, deps: { getJson: router(), pause: async () => {}, supabase } }), 0);
+  const w = read(dir, 'status.json').warnings;
+  assert.ok(w.some(x => /decisions/.test(x) && /none/.test(x)));
+  assert.ok(w.some(x => /manual/.test(x) && /none/.test(x)));
+  assert.ok(read(dir, 'competitions.json').some(c => c.id === 1));
+});
+
+test('Supabase not configured: warns, reads data/ files, never calls getJson for Supabase', async () => {
+  const dir = dataDir({ 'manual.json': [{ url: 'https://unstop.com/competitions/kept-55' }] });
+  const seen = [];
+  const getJson = async url => {
+    seen.push(url);
+    if (url.includes('/competition/55')) return { data: { competition: { ...item, id: 55 } } };
+    return router()(url);
+  };
+  assert.equal(await main({ dataDir: dir, now, deps: { getJson, pause: async () => {}, supabase: { url: '', anonKey: '' } } }), 0);
+  assert.ok(seen.some(u => u.includes('/competition/55')), 'manual id from the fallback file was fetched');
+  assert.ok(read(dir, 'status.json').warnings.some(w => /not configured/.test(w)));
 });
