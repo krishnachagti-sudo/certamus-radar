@@ -37,6 +37,9 @@ function b64decode(b64) {
   return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
 }
 
+const TOKEN_REJECTED = 'Token rejected or expired. Press Edit to enter a new one.';
+class AuthError extends Error {}
+
 function api(path, init = {}) {
   return fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
     ...init,
@@ -45,18 +48,20 @@ function api(path, init = {}) {
 }
 async function apiRead(path) {
   const r = await api(path, { cache: 'no-store' });
+  if (r.status === 401) throw new AuthError(TOKEN_REJECTED);
   if (!r.ok) throw new Error(`Could not read ${path} (${r.status})`);
   const j = await r.json();
   return { sha: j.sha, data: JSON.parse(b64decode(j.content)) };
 }
 // Read file + sha, apply the change, write. Workflows never write these two
-// files, so a 409 means another tab wrote first: re-read once, then give up.
+// files, so a 409 means another tab wrote first: re-read and retry, 3 tries.
 async function apiUpdate(path, mutate, message) {
-  for (let attempt = 0; attempt < 2; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
     const { sha, data } = await apiRead(path);
     const next = mutate(data);
     const r = await api(path, { method: 'PUT', body: JSON.stringify({ message, sha, content: b64encode(JSON.stringify(next, null, 2) + '\n') }) });
     if (r.ok) return next;
+    if (r.status === 401) throw new AuthError(TOKEN_REJECTED);
     if (r.status !== 409) throw new Error(`Could not save ${path} (${r.status})`);
   }
   throw new Error(`${path} kept changing; reload and try again`);
@@ -69,6 +74,16 @@ async function pagesJson(name, fallback) {
   } catch { return fallback; }
 }
 
+// A rejected token is dropped and the board falls back to read-only.
+async function tokenRejected() {
+  state.token = null;
+  writeToken(null);
+  pendingSaves.length = 0;
+  state.decisions = await pagesJson('decisions.json', {});
+  state.manual = [];
+  state.error = TOKEN_REJECTED;
+}
+
 async function load() {
   state.error = null;
   [state.comps, state.status] = await Promise.all([pagesJson('competitions.json', []), pagesJson('status.json', {})]);
@@ -78,8 +93,11 @@ async function load() {
       state.decisions = (await apiRead('data/decisions.json')).data;
       state.manual = (await apiRead('data/manual.json')).data;
     } catch (e) {
-      state.error = `${e.message}. Check the token.`;
-      state.decisions = await pagesJson('decisions.json', {});
+      if (e instanceof AuthError) await tokenRejected();
+      else {
+        state.error = `${e.message}. Check the token.`;
+        state.decisions = await pagesJson('decisions.json', {});
+      }
     }
   } else {
     state.decisions = await pagesJson('decisions.json', {});
@@ -112,6 +130,20 @@ function teamText(c) {
   return c.team_max >= 4 ? `teams up to ${c.team_max}` : `max ${c.team_max}, send the subset`;
 }
 
+const cardClass = (c, st) => `card v-${esc(c.verdict?.level)} s-${esc(st)}`;
+
+function chipsHtml(c, st) {
+  return `<span class="chip">${esc(TIERS[c.tier] || c.tier)}</span>
+      <span class="chip ${esc(c.verdict?.level)}">${esc(VERDICTS[c.verdict?.level] || '?')}</span>
+      ${st !== 'undecided' ? `<span class="chip status">${esc(st)}</span>` : ''}
+      ${c.pinned ? '<span class="chip">added by hand</span>' : ''}`;
+}
+
+function actionsHtml(c, st) {
+  return `${STATUSES.map(s => `<button type="button" data-set="${s}" data-id="${esc(c.id)}" aria-pressed="${st === s}">${s[0].toUpperCase()}${s.slice(1)}</button>`).join('')}
+        ${st !== 'undecided' ? `<button type="button" class="ghost" data-set="" data-id="${esc(c.id)}">Clear</button>` : ''}`;
+}
+
 function card(c, today, entering) {
   const st = statusOf(c);
   const clash = clashes(c, entering, today);
@@ -120,17 +152,13 @@ function card(c, today, entering) {
     c.prize_total ? `prizes ₹${c.prize_total.toLocaleString('en-IN')}` : null].filter(Boolean);
   const edit = state.token
     ? `<div class="actions" role="group" aria-label="Decision for ${esc(c.title)}">
-        ${STATUSES.map(s => `<button type="button" data-set="${s}" data-id="${esc(c.id)}" aria-pressed="${st === s}">${s[0].toUpperCase()}${s.slice(1)}</button>`).join('')}
-        ${st !== 'undecided' ? `<button type="button" class="ghost" data-set="" data-id="${esc(c.id)}">Clear</button>` : ''}
+        ${actionsHtml(c, st)}
       </div>
       <input class="note" data-note="${esc(c.id)}" value="${esc(note)}" placeholder="Note" aria-label="Note for ${esc(c.title)}">`
     : (note ? `<p class="note-ro">${esc(note)}</p>` : '');
-  return `<article class="card v-${esc(c.verdict?.level)} s-${esc(st)}">
+  return `<article class="${cardClass(c, st)}" data-card="${esc(c.id)}">
     <div class="chips">
-      <span class="chip">${esc(TIERS[c.tier] || c.tier)}</span>
-      <span class="chip ${esc(c.verdict?.level)}">${esc(VERDICTS[c.verdict?.level] || '?')}</span>
-      ${st !== 'undecided' ? `<span class="chip status">${esc(st)}</span>` : ''}
-      ${c.pinned ? '<span class="chip">added by hand</span>' : ''}
+      ${chipsHtml(c, st)}
     </div>
     <h2><a href="${esc(safeHref(c.url))}" target="_blank" rel="noopener">${esc(c.title)}</a></h2>
     <p class="host">${esc(c.host)}</p>
@@ -144,33 +172,56 @@ function card(c, today, entering) {
 function banners() {
   const s = state.status;
   const ageHours = s.last_ok ? (Date.now() - Date.parse(s.last_ok)) / 3.6e6 : Infinity;
-  const msgs = [];
-  if (s.last_error || ageHours > 36) msgs.push(`Data stale since ${istTime(s.last_ok)}${s.last_error ? `: ${s.last_error}` : ''}`);
-  if (state.error) msgs.push(state.error);
-  return msgs.map(m => `<p class="banner" role="alert">${esc(m)}</p>`).join('');
+  const out = [];
+  if (s.last_error || ageHours > 36) {
+    const m = `Data stale since ${istTime(s.last_ok)}${s.last_error ? `: ${s.last_error}` : ''}`;
+    out.push(`<p class="banner" role="status">${esc(m)}</p>`);
+  }
+  if (state.error) out.push(`<p class="banner" role="alert">${esc(state.error)}</p>`);
+  return out.join('');
 }
 
 const toggles = (name, map, set) => Object.entries(map)
   .map(([k, label]) => `<button type="button" data-toggle="${name}" data-key="${k}" aria-pressed="${set.has(k)}">${label}</button>`).join('');
 
+// Focus survives a re-render: remember what identifies the focused control,
+// then find its replacement. Selector values are escaped for CSS.
+const cssq = v => (globalThis.CSS?.escape ? CSS.escape(String(v)) : String(v).replace(/["\\]/g, '\\$&'));
+function focusSelector(el) {
+  if (!el || !el.dataset) return null;
+  const d = el.dataset;
+  if (d.toggle !== undefined) return `[data-toggle="${cssq(d.toggle)}"][data-key="${cssq(d.key)}"]`;
+  if (d.flag !== undefined) return `[data-flag="${cssq(d.flag)}"]`;
+  if (d.set !== undefined) return `[data-set="${cssq(d.set)}"][data-id="${cssq(d.id)}"]`;
+  if (d.note !== undefined) return `[data-note="${cssq(d.note)}"]`;
+  if (el.id) return `#${cssq(el.id)}`;
+  return null;
+}
+function refocus(sel, fallback) {
+  const el = (sel && document.querySelector(sel)) || fallback;
+  if (el && typeof el.focus === 'function') el.focus();
+}
+
 function render() {
+  const sel = focusSelector(document.activeElement);
+  const draftUrl = document.getElementById('add-url')?.value || '';
   const today = todayIST();
   const entering = state.comps.filter(c => statusOf(c) === 'entering');
   const list = state.comps.filter(visible);
   const pending = state.manual.filter(m => !state.comps.some(c => c.id === unstopId(m.url)));
   document.getElementById('app').innerHTML = `
-    ${banners()}
+    <div id="banners">${banners()}</div>
     <section class="controls" aria-label="Filters">
-      <div class="row">${toggles('tier', TIERS, state.tiers)}</div>
-      <div class="row">${toggles('verdict', VERDICTS, state.verdicts)}</div>
-      <div class="row">${toggles('status', STATUS_FILTER, state.statuses)}
+      <div class="row" role="group" aria-label="Tier">${toggles('tier', TIERS, state.tiers)}</div>
+      <div class="row" role="group" aria-label="Verdict">${toggles('verdict', VERDICTS, state.verdicts)}</div>
+      <div class="row" role="group" aria-label="Status">${toggles('status', STATUS_FILTER, state.statuses)}
         <label><input type="checkbox" data-flag="showClosed" ${state.showClosed ? 'checked' : ''}> Closed</label>
         <label><input type="checkbox" data-flag="showOtherFormats" ${state.showOtherFormats ? 'checked' : ''}> Quizzes and other formats</label>
       </div>
     </section>
     ${state.token ? `<form class="add" id="add">
-        <input name="url" type="url" required placeholder="Paste an Unstop competition link" aria-label="Unstop competition link">
-        <button>Add</button><span id="add-msg" role="status"></span>
+        <input id="add-url" name="url" type="url" required placeholder="Paste an Unstop competition link" aria-label="Unstop competition link" value="${esc(draftUrl)}">
+        <button id="add-btn">Add</button><span id="add-msg" role="status"></span>
       </form>
       ${pending.length ? `<p class="pending">${pending.length} link${pending.length === 1 ? '' : 's'} added, will appear after the next fetch.</p>` : ''}` : ''}
     <p class="count">${list.length} shown of ${state.comps.length}</p>
@@ -179,9 +230,54 @@ function render() {
       ${state.token ? '<button type="button" class="ghost" id="lock">Lock editing</button>' : '<button type="button" class="ghost" id="unlock">Edit</button>'}
       <span>Updated ${esc(istTime(state.status.last_ok))}</span>
     </footer>`;
+  refocus(sel);
 }
 
-async function saveDecision(id, change) {
+const cardEl = id => document.querySelector(`[data-card="${cssq(id)}"]`);
+
+function renderBanners() {
+  const el = document.getElementById('banners');
+  if (el) el.innerHTML = banners();
+}
+
+// Replace one card in place. A card stays on screen after a status change
+// even if the filters would now hide it; the next filter change tidies up.
+function renderCard(id) {
+  const el = cardEl(id);
+  const c = state.comps.find(x => x.id === id);
+  if (!el || !c) return;
+  const focusedInside = el.contains(document.activeElement);
+  const sel = focusedInside ? focusSelector(document.activeElement) : null;
+  const today = todayIST();
+  el.outerHTML = card(c, today, state.comps.filter(x => statusOf(x) === 'entering'));
+  if (focusedInside) refocus(sel, cardEl(id)?.querySelector('.actions button'));
+}
+
+// Chips, decision buttons and the card's status class, leaving the note input
+// (and anything being typed in it) untouched.
+function renderCardStatus(id) {
+  const el = cardEl(id);
+  const c = state.comps.find(x => x.id === id);
+  if (!el || !c) return;
+  const st = statusOf(c);
+  el.className = cardClass(c, st);
+  const chips = el.querySelector('.chips');
+  if (chips) chips.innerHTML = chipsHtml(c, st);
+  const actions = el.querySelector('.actions');
+  if (actions) {
+    const sel = actions.contains(document.activeElement) ? focusSelector(document.activeElement) : null;
+    actions.innerHTML = actionsHtml(c, st);
+    if (sel) refocus(sel, actions.querySelector('button'));
+  }
+}
+
+// Saves run one at a time. Each queued change is also kept in pendingSaves so
+// a server result can be re-overlaid with the changes still waiting to save.
+let saveChain = Promise.resolve();
+const pendingSaves = [];
+const decisionView = id => ({ status: state.decisions[id]?.status || '', note: state.decisions[id]?.note || '' });
+
+function saveDecision(id, change, { fromNote = false } = {}) {
   const apply = all => {
     const next = { ...all };
     const { updated, ...rest } = change(next[id] || {});
@@ -190,15 +286,39 @@ async function saveDecision(id, change) {
     else delete next[id];
     return next;
   };
+  const entry = { apply };
+  const before = decisionView(id);
   state.decisions = apply(state.decisions);
-  render();
-  try {
-    state.decisions = await apiUpdate('data/decisions.json', apply, `decision: ${id}`);
-    state.error = null;
-  } catch (err) {
-    state.error = `Not saved: ${err.message}`; // the change stays on screen
-  }
-  render();
+  pendingSaves.push(entry);
+  const after = decisionView(id);
+  // A note's own change never re-renders its card: the user may be typing.
+  if (!fromNote) renderCard(id);
+  else if (before.status !== after.status) renderCardStatus(id);
+
+  const job = saveChain.then(async () => {
+    if (!pendingSaves.includes(entry)) return; // dropped (token rejected)
+    const shown = decisionView(id);
+    try {
+      const server = await apiUpdate('data/decisions.json', apply, `decision: ${id}`);
+      pendingSaves.splice(pendingSaves.indexOf(entry), 1);
+      state.decisions = pendingSaves.reduce((d, p) => p.apply(d), server);
+      if (state.error) { state.error = null; renderBanners(); }
+      const now = decisionView(id);
+      if (now.status !== shown.status) renderCardStatus(id);
+      if (now.note !== shown.note) {
+        const input = cardEl(id)?.querySelector('input.note');
+        if (input && document.activeElement !== input) input.value = now.note;
+      }
+    } catch (err) {
+      const i = pendingSaves.indexOf(entry);
+      if (i >= 0) pendingSaves.splice(i, 1);
+      if (err instanceof AuthError) { await tokenRejected(); render(); return; }
+      state.error = `Not saved: ${err.message}`; // the change stays on screen
+      renderBanners();
+    }
+  });
+  saveChain = job;
+  return job;
 }
 
 document.addEventListener('click', async e => {
@@ -221,21 +341,43 @@ document.addEventListener('click', async e => {
 document.addEventListener('change', async e => {
   const el = e.target;
   if (el.dataset.flag) { state[el.dataset.flag] = el.checked; render(); }
-  else if (el.dataset.note) await saveDecision(Number(el.dataset.note), d => ({ ...d, note: el.value.trim() || undefined }));
+  else if (el.dataset.note) {
+    const value = el.value.trim();
+    await saveDecision(Number(el.dataset.note), d => ({ ...d, note: value || undefined }), { fromNote: true });
+  }
 });
+
+const manualHas = (list, id) => list.some(m => unstopId(m?.url) === id);
 
 document.addEventListener('submit', async e => {
   if (e.target.id !== 'add') return;
   e.preventDefault();
   const url = e.target.url.value.trim();
   const msg = document.getElementById('add-msg');
+  const btn = document.getElementById('add-btn');
   const id = unstopId(url);
   if (!id) { msg.textContent = 'Only Unstop competition links for now'; return; }
-  if (state.comps.some(c => c.id === id) || state.manual.some(m => unstopId(m.url) === id)) { msg.textContent = 'Already on the board'; return; }
+  const onBoard = state.comps.find(c => c.id === id);
+  if (onBoard) {
+    msg.textContent = visible(onBoard) ? 'Already on the board' : 'Already on the board (it may be hidden by filters)';
+    return;
+  }
+  if (manualHas(state.manual, id)) { msg.textContent = 'Already added; it will appear after the next fetch'; return; }
+  btn.disabled = true;
+  msg.textContent = 'Saving…';
   try {
-    state.manual = await apiUpdate('data/manual.json', list => [...list, { url, added: todayIST() }], `manual: add ${id}`);
+    // Re-check inside the write: another tab may have added it meanwhile.
+    state.manual = await apiUpdate('data/manual.json',
+      list => (manualHas(list, id) ? list : [...list, { url, added: todayIST() }]), `manual: add ${id}`);
+    document.getElementById('add-url').value = '';
     render();
-  } catch (err) { msg.textContent = err.message; }
+    document.getElementById('add-msg').textContent = 'Added';
+  } catch (err) {
+    if (err instanceof AuthError) { await tokenRejected(); render(); return; }
+    msg.textContent = err.message;
+  } finally {
+    btn.disabled = false;
+  }
 });
 
 load();
