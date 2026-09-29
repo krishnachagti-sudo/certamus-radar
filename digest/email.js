@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { clashes } from '../clash.js';
 import { dayDiff, istDate, todayIST } from '../dates.js';
+import { defaultConfig, readTables } from '../fetch/supabase.js';
 
 const BOARD_URL = 'https://krishnachagti-sudo.github.io/certamus-radar/';
 const TIER = { iit: 'IIT', iim: 'IIM', bschool: 'B-school', corporate: 'Corporate', international: 'International', other: 'Other' };
@@ -13,7 +14,21 @@ const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Se
 const monthNames = ms => ms.map(m => MONTH_NAMES[m - 1]).filter(Boolean).join('/');
 const esc = s => String(s ?? '').replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
 
-export function buildDigest({ competitions, decisions, status, state, now, watch = {} }) {
+// Team decisions from Supabase; if that fails, the old data/decisions.json
+// when present (readFallback() returns it or undefined), else none. Never
+// throws: the digest still goes out, with a warning line at the top.
+export async function loadDecisions(cfg, readFallback) {
+  const { decisions: r } = await readTables(cfg, ['decisions']);
+  if (r.value !== undefined) return { decisions: r.value, warning: null };
+  const local = readFallback();
+  const usable = local && typeof local === 'object' && !Array.isArray(local);
+  return {
+    decisions: usable ? local : {},
+    warning: `Team decisions unavailable (${r.error})${usable ? '; using the last saved copy' : ''}. Statuses, Registered and clash checks below may be incomplete.`,
+  };
+}
+
+export function buildDigest({ competitions, decisions, status, state, now, watch = {}, warnings = [] }) {
   const today = todayIST(now);
   const statusOf = c => decisions[c.id]?.status || 'undecided';
   const open = competitions.filter(c => !c.closed_on);
@@ -80,10 +95,10 @@ export function buildDigest({ competitions, decisions, status, state, now, watch
     intlCount ? `${intlCount} international` : null, registered.length ? `${registered.length} registered` : null]
     .filter(Boolean).join(', ');
   const subject = `${stale ? '[stale data] ' : ''}Certamus Radar: ${blocks.length ? counts : 'nothing new this week'}`;
-  const text = [staleLine, ...blocks.map(([h, rows]) => `${h}\n${rows.map(r => `- ${r}`).join('\n')}`),
+  const text = [...warnings, staleLine, ...blocks.map(([h, rows]) => `${h}\n${rows.map(r => `- ${r}`).join('\n')}`),
     blocks.length ? null : 'Nothing new, nothing closing, no clashes.', `Board: ${BOARD_URL}`]
     .filter(Boolean).join('\n\n');
-  const html = [staleLine && `<p style="color:#A1262B"><strong>${esc(staleLine)}</strong></p>`,
+  const html = [...warnings.map(w => `<p style="color:#A1262B"><strong>${esc(w)}</strong></p>`), staleLine && `<p style="color:#A1262B"><strong>${esc(staleLine)}</strong></p>`,
     ...blocks.map(([h, rows]) => `<h3>${esc(h)}</h3><ul>${rows.map(r => `<li>${esc(r)}</li>`).join('')}</ul>`),
     blocks.length ? null : '<p>Nothing new, nothing closing, no clashes.</p>',
     `<p><a href="${BOARD_URL}">Open the board</a></p>`].filter(Boolean).join('\n');
@@ -100,10 +115,11 @@ async function main() {
   const read = (f, fallback) => {
     try { return JSON.parse(fs.readFileSync(new URL(f, dir), 'utf8')); } catch { return fallback; }
   };
+  const { decisions, warning } = await loadDecisions(defaultConfig(), () => read('decisions.json', undefined));
   const d = buildDigest({
-    competitions: read('competitions.json', []), decisions: read('decisions.json', {}),
+    competitions: read('competitions.json', []), decisions,
     status: read('status.json', {}), state: read('digest-state.json', null), now: new Date(),
-    watch: read('watch.json', {}),
+    watch: read('watch.json', {}), warnings: warning ? [warning] : [],
   });
   if (!process.argv.includes('--send')) {
     console.log(`${d.subject}\n\n${d.text}`);

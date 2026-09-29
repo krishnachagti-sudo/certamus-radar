@@ -54,7 +54,7 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
     if (remote[name].value !== undefined) return remote[name].value;
     const local = readStrict(file);
     const usable = 'value' in local;
-    remoteWarnings.push(`${name}: Supabase ${remote[name].error}; ${usable ? `using data/${file}` : 'none'}`);
+    remoteWarnings.push(`${name}: ${remote[name].error}; ${usable ? `using data/${file}` : 'none'}`);
     return usable ? local.value : fallback;
   };
   const isObject = v => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -75,7 +75,7 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
       intlFile.missing ? 'international.json missing'
         : intlFile.error ? `international.json ${intlFile.error}`
           : !Array.isArray(intlFile.value) ? 'international.json is not an array'
-            : remote.intlDates.error ? `confirmed dates unavailable (Supabase ${remote.intlDates.error})`
+            : remote.intlDates.error ? `confirmed dates unavailable (${remote.intlDates.error})`
               : null;
     if (curatedProblem) {
       // Keep yesterday's curated records (and their dates) rather than close them.

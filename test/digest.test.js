@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildDigest } from '../digest/email.js';
+import { buildDigest, loadDecisions } from '../digest/email.js';
 
 const now = new Date('2026-10-05T02:30:00Z'); // Monday 08:00 IST
 const fresh = { last_ok: '2026-10-05T00:30:00Z', last_error: null };
@@ -159,4 +159,37 @@ test('subject counts International and Registered when non-zero', () => {
   assert.equal(only.subject, 'Certamus Radar: 0 new, 0 closing, 0 clashes, 1 international');
   const none = buildDigest({ competitions: [], decisions: {}, status: fresh, state: { sent_ids: [] }, now });
   assert.match(none.subject, /nothing new this week/);
+});
+
+// ---- decisions from Supabase ------------------------------------------------
+
+test('a warning goes at the very top of the text and the html', () => {
+  const d = buildDigest({ competitions: [], decisions: {}, status: fresh, state: { sent_ids: [] }, now,
+    warnings: ['Team decisions unavailable (Supabase HTTP 503); statuses below may be missing.'] });
+  assert.match(d.text.split('\n\n')[0], /^Team decisions unavailable \(Supabase HTTP 503\)/);
+  assert.match(d.html.split('\n')[0], /Team decisions unavailable/);
+});
+
+test('no warnings, no warning line', () => {
+  const d = buildDigest({ competitions: [], decisions: {}, status: fresh, state: { sent_ids: [] }, now });
+  assert.doesNotMatch(d.text, /unavailable/);
+});
+
+const sbCfg = getJson => ({ url: 'https://abc.supabase.co', anonKey: 'anon', getJson });
+
+test('loadDecisions reads Supabase and converts rows', async () => {
+  const r = await loadDecisions(sbCfg(async () => [{ id: '1', status: 'watching', registered: true, note: null, updated_at: '2026-10-05T00:00:00Z' }]), () => ({ 9: { status: 'entering' } }));
+  assert.deepEqual(r, { decisions: { 1: { status: 'watching', registered: true, updated: '2026-10-05' } }, warning: null });
+});
+
+test('loadDecisions falls back to the file, else empty, with a warning; never throws', async () => {
+  const down = sbCfg(async () => { throw new Error('HTTP 503'); });
+  const withFile = await loadDecisions(down, () => ({ 9: { status: 'entering' } }));
+  assert.deepEqual(withFile.decisions, { 9: { status: 'entering' } });
+  assert.match(withFile.warning, /HTTP 503/);
+  const none = await loadDecisions(down, () => undefined);
+  assert.deepEqual(none.decisions, {});
+  assert.match(none.warning, /unavailable/);
+  const unset = await loadDecisions({ url: '', anonKey: '' }, () => undefined);
+  assert.match(unset.warning, /not configured/);
 });

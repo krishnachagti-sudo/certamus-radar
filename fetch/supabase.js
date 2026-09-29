@@ -25,13 +25,14 @@ export async function readTable(cfg, table) {
 
 const TABLES = { decisions: ['decisions', decisionsFromRows], manual: ['manual', manualFromRows], intlDates: ['intl_dates', intlDatesFromRows] };
 
-// { configured, decisions, manual, intlDates }, each { value } or { error }.
+// { configured, decisions, manual, intlDates }, each { value } or { error };
+// every error starts with 'Supabase'.
 export async function readTables(cfg, names = Object.keys(TABLES)) {
   const out = { configured: isConfigured(cfg) };
   await Promise.all(names.map(async name => {
     const [table, convert] = TABLES[name];
     try { out[name] = { value: convert(await readTable(cfg, table)) }; }
-    catch (e) { out[name] = { error: e.message }; }
+    catch (e) { out[name] = { error: /^Supabase\b/.test(e.message) ? e.message : `Supabase ${e.message}` }; }
   }));
   return out;
 }

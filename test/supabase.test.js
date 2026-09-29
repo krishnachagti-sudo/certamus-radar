@@ -43,7 +43,7 @@ test('readTables converts each table and reports failures per table', async () =
   assert.equal(r.configured, true);
   assert.deepEqual(r.decisions, { value: { 7: { status: 'entering', registered: true, updated: '2026-09-29' } } });
   assert.deepEqual(r.manual, { value: [{ url: 'https://unstop.com/c/kept-55', added: '2026-09-20' }] });
-  assert.deepEqual(r.intlDates, { error: 'HTTP 503' });
+  assert.deepEqual(r.intlDates, { error: 'Supabase HTTP 503' });
 });
 
 test('readTables without config never calls getJson', async () => {
