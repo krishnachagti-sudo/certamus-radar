@@ -2,4 +2,4 @@
 import { BOARD_TIERS } from '../lib/data.js';
 import { startListPage } from '../lib/listpage.js';
 
-startListPage({ page: 'board', tiers: BOARD_TIERS, startups: false, search: false, allowAdd: true, sort: false });
+startListPage({ page: 'board', tiers: BOARD_TIERS, startups: false, search: false, allowAdd: true, sort: false, inbox: true });
