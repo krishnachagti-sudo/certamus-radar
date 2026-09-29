@@ -1,0 +1,16 @@
+name: probe
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Unstop search and detail from a GitHub runner
+        run: |
+          for ua in "CertamusRadar/1.0 (+https://github.com/krishnachagti-sudo/certamus-radar)" "Mozilla/5.0"; do
+            echo "== UA: $ua"
+            curl -s -o s.json -w "search HTTP %{http_code}\n" -A "$ua" \
+              "https://unstop.com/api/public/opportunity/search-result?opportunity=competitions&oppstatus=open&searchTerm=case&page=1&per_page=30"
+            python3 -c "import json;d=json.load(open('s.json'));print('items',len(d['data']['data']))" || head -c 300 s.json
+            curl -s -o d.json -w "detail HTTP %{http_code}\n" -A "$ua" "https://unstop.com/api/public/competition/1759741"
+            python3 -c "import json;print(json.load(open('d.json'))['data']['competition']['title'])" || head -c 300 d.json
+          done
