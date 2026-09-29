@@ -20,19 +20,35 @@ async function defaultGetJson(url) {
 }
 const defaultPause = () => new Promise(r => setTimeout(r, 1000));
 
+// A code point above 0x10FFFF is not decodable (String.fromCodePoint throws),
+// so it degrades to a space rather than crashing the whole run.
+const safeCodePoint = c => (c <= 0x10FFFF ? String.fromCodePoint(c) : ' ');
+
 export function stripHtml(html) {
-  return String(html || '')
+  const stripped = String(html || '')
     .replace(/<(br|\/p|\/li|\/div|\/h\d)[^>]*>/gi, '\n')
-    .replace(/<[^>]+>/g, ' ')
+    .replace(/<[^>]+>/g, ' ');
+  const decoded = stripped
     .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&#39;|&rsquo;/g, "'")
+    .replace(/&#39;/g, "'")
     .replace(/&quot;/g, '"')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
-    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCodePoint(parseInt(hex, 16)))
-    .replace(/&#(\d+);/g, (_, dec) => String.fromCodePoint(Number(dec)))
-    .replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n+/g, '\n').trim();
+    .replace(/&ndash;/g, '–')
+    .replace(/&mdash;/g, '—')
+    .replace(/&middot;/g, '·')
+    .replace(/&hellip;/g, '…')
+    .replace(/&ldquo;/g, '“')
+    .replace(/&rdquo;/g, '”')
+    .replace(/&lsquo;/g, '‘')
+    .replace(/&rsquo;/g, '’')
+    .replace(/&bull;/g, '•')
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => safeCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec) => safeCodePoint(Number(dec)))
+    // &amp; decodes last, so a double-escaped entity like &amp;lt; degrades
+    // to the literal text "&lt;" instead of re-decoding into "<".
+    .replace(/&amp;/g, '&');
+  return decoded.replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n+/g, '\n').trim();
 }
 
 const MODES = ['offline', 'hybrid', 'online'];
@@ -51,9 +67,6 @@ export function normalise(src) {
   return {
     id: src.id,
     pinned: false,
-    unstop_updated_at: src.updated_at || null,
-    end_date_raw: src.end_date || null,
-    regn_end_raw: r.end_regn_dt || null,
     url: src.seo_url || `https://unstop.com/competitions/${src.id}`,
     title: src.title || '',
     host: src.organisation?.name || '',
@@ -81,6 +94,7 @@ export async function fetchAll(existingById, manualIds, opts) {
 
   const items = new Map();
   for (const term of opts.keywords) {
+    let warnedMaxPages = false;
     for (let page = 1; page <= MAX_PAGES; page++) {
       let body;
       try {
@@ -102,7 +116,10 @@ export async function fetchAll(existingById, manualIds, opts) {
       // Unstop pages can come back short (29 of 30) with more pages left, so
       // page by last_page, never by page length. Verified 2026-09-29.
       const lastPage = Number(rawLastPage) || page;
-      if (lastPage > MAX_PAGES) warnings.push(`last_page ${lastPage} exceeds MAX_PAGES for ${term}`);
+      if (lastPage > MAX_PAGES && !warnedMaxPages) {
+        warnings.push(`last_page ${lastPage} exceeds MAX_PAGES for ${term}`);
+        warnedMaxPages = true;
+      }
       if (list.length === 0 || page >= lastPage) break;
     }
   }

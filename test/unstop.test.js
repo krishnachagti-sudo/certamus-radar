@@ -40,6 +40,15 @@ test('stripHtml decodes numeric entities', () => {
   assert.equal(stripHtml('&#8377;100 &#x20B9;200'), '₹100 ₹200');
 });
 
+test('stripHtml does not throw on an out-of-range numeric entity', () => {
+  assert.doesNotThrow(() => stripHtml('x &#99999999; y'));
+});
+
+test('stripHtml decodes named punctuation entities, and amp last', () => {
+  assert.equal(stripHtml('A &ndash; B'), 'A – B');
+  assert.equal(stripHtml('&amp;lt;'), '&lt;');
+});
+
 test('normalise builds a record from the real detail payload alone', () => {
   const c = detailFixture.data.competition;
   const r = normalise(c);
@@ -106,6 +115,32 @@ test('pages by last_page, not by a short page', async () => {
   const { records } = await fetchAll(new Map(), [], opts(http));
   assert.deepEqual(records.map(r => r.id).sort(), [1, 2]);
   assert.equal(http.calls.filter(u => u.includes('search-result')).length, 2);
+});
+
+test('a page missing last_page warns and stops paging', async () => {
+  const http = fakeHttp([['search-result', { data: { data: [item(1)] } }]]);
+  const { records, warnings } = await fetchAll(new Map(), [], opts(http));
+  assert.deepEqual(records.map(r => r.id), [1]);
+  assert.match(warnings.join(' '), /no last_page/);
+  assert.equal(http.calls.filter(u => u.includes('search-result')).length, 1);
+});
+
+test('a search item without details gives details_fetched false', async () => {
+  const base = item(1);
+  delete base.details;
+  const http = fakeHttp([['search-result', { data: { data: [base], last_page: 1 } }]]);
+  const { records } = await fetchAll(new Map(), [], opts(http));
+  assert.equal(records[0].details_fetched, false);
+});
+
+test('the MAX_PAGES warning is pushed at most once per term', async () => {
+  const http = fakeHttp([
+    ['page=1&', { data: { data: [item(1)], last_page: 99 } }],
+    ['page=', { data: { data: [item(2)], last_page: 99 } }],
+  ]);
+  const { warnings } = await fetchAll(new Map(), [], opts(http));
+  const maxPageWarnings = warnings.filter(w => w.includes('exceeds MAX_PAGES'));
+  assert.equal(maxPageWarnings.length, 1);
 });
 
 test('manual ids missing from search are built from detail and pinned', async () => {
