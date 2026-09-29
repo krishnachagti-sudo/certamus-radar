@@ -1,6 +1,6 @@
 import { dayDiff } from './dates.js';
 
-const WINDOW_DAYS = 7;
+export const WINDOW_DAYS = 7;
 
 const datesOf = c => [c.regn_close, c.comp_end].filter(Boolean);
 
