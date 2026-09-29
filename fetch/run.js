@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { fetchAll } from './unstop.js';
 import { tier, verdict } from './classify.js';
-import { merge } from './merge.js';
+import { merge, appendArchive } from './merge.js';
 import { todayIST } from '../dates.js';
 import { unstopId } from '../urls.js';
 
@@ -53,7 +53,10 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
         warnings.push(`classify ${r.id}: ${e.message}`);
       }
     }
-    write('competitions.json', merge(existing.map(publishable), records.map(publishable), decisions, todayIST(now)));
+    const { next, pruned } = merge(existing.map(publishable), records.map(publishable), decisions, todayIST(now));
+    const archive = read('archive.json', []);
+    write('competitions.json', next);
+    if (pruned.length) write('archive.json', appendArchive(Array.isArray(archive) ? archive : [], pruned));
     write('status.json', { last_run: stamp, last_ok: stamp, last_error: null, warnings });
     console.log(`ok: ${records.length} fetched, ${warnings.length} warnings`);
     return 0;

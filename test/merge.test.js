@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { merge } from '../fetch/merge.js';
+import { merge as mergeFull, appendArchive } from '../fetch/merge.js';
+
+const merge = (...a) => mergeFull(...a).next;
 
 const today = '2026-10-01';
 const r = (id, over = {}) => ({ id, title: `C${id}`, regn_close: '2026-10-20', comp_end: '2026-10-30', ...over });
@@ -37,4 +39,42 @@ test('entering records are kept until 60 days after comp_end', () => {
 test('output is sorted by registration close', () => {
   const out = merge([], [r(1, { regn_close: '2026-11-01' }), r(2, { regn_close: '2026-10-05' }), r(3, { regn_close: null })], {}, today);
   assert.deepEqual(out.map(x => x.id), [2, 1, 3]);
+});
+
+test('registered (not entering) records are kept until 60 days after comp_end', () => {
+  const closed = [{ ...r(1, { comp_end: '2026-09-15' }), first_seen: '2026-07-01', closed_on: '2026-08-01' }];
+  const dec = { 1: { registered: true } };
+  assert.equal(merge(closed, [], dec, '2026-11-14').length, 1);
+  assert.equal(merge(closed, [], dec, '2026-11-15').length, 0);
+});
+
+test('merge returns the pruned records separately', () => {
+  const closed = [{ ...r(1), first_seen: '2026-07-01', closed_on: '2026-08-01' }, { ...r(2), first_seen: '2026-09-01', closed_on: null }];
+  const { next, pruned } = mergeFull(closed, [r(2)], {}, '2026-10-01');
+  assert.deepEqual(next.map(x => x.id), [2]);
+  assert.deepEqual(pruned.map(x => x.id), [1]);
+  assert.equal(pruned[0].closed_on, '2026-08-01');
+});
+
+test('committed anchor falls back to regn_close then closed_on', () => {
+  const closed = [{ ...r(1, { comp_end: null, regn_close: '2026-09-01' }), first_seen: '2026-07-01', closed_on: '2026-08-01' }];
+  const dec = { 1: { status: 'watching', registered: true } };
+  assert.equal(merge(closed, [], dec, '2026-10-31').length, 1);
+  assert.equal(merge(closed, [], dec, '2026-11-01').length, 0);
+});
+
+test('appendArchive keeps only slim fields and dedupes by id', () => {
+  const rec = { ...r(1), host: 'H', tier: 'iim', url: 'https://unstop.com/x-1', first_seen: '2026-07-01', closed_on: '2026-08-01',
+    format: 'case_competition', is_case: true, verdict: { level: 'fits', reasons: [] }, details_text: 'body', eligibility: {}, team_max: 4 };
+  const once = appendArchive([], [rec]);
+  assert.deepEqual(Object.keys(once[0]).sort(),
+    ['closed_on', 'comp_end', 'first_seen', 'format', 'host', 'id', 'is_case', 'regn_close', 'tier', 'title', 'url']);
+  const twice = appendArchive(once, [rec, { ...rec, id: 2 }]);
+  assert.deepEqual(twice.map(x => x.id), [1, 2]);
+  assert.equal(appendArchive(twice, []), twice);
+});
+
+test('appendArchive dedupes across number and string ids', () => {
+  const a = appendArchive([{ id: 1, title: 'x' }], [{ id: '1', title: 'x' }]);
+  assert.equal(a.length, 1);
 });

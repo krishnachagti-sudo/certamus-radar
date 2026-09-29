@@ -121,3 +121,20 @@ test('a carried-over manual record keeps its stored tier and verdict', async () 
   assert.equal(kept.pinned, true);
   assert.equal('carried_over' in kept, false);
 });
+
+test('a pruned record lands in archive.json once, slim', async () => {
+  const old = { id: 88, title: 'Gone', host: 'IIM X', tier: 'iim', url: 'https://unstop.com/gone-88', regn_close: '2026-06-01',
+    comp_end: '2026-06-10', first_seen: '2026-05-01', closed_on: '2026-06-02', format: 'case_competition', is_case: true,
+    verdict: { level: 'fits', reasons: [] } };
+  const dir = dataDir({ 'competitions.json': [old] });
+  const getJson = async url => ({ data: { data: [item], last_page: 1 } });
+  assert.equal(await main({ dataDir: dir, now, deps: { getJson, pause: async () => {} } }), 0);
+  assert.equal(read(dir, 'competitions.json').some(c => c.id === 88), false);
+  const arch = read(dir, 'archive.json');
+  assert.deepEqual(arch.map(a => a.id), [88]);
+  assert.equal('verdict' in arch[0], false);
+  // a second run does not duplicate it
+  fs.writeFileSync(path.join(dir, 'competitions.json'), JSON.stringify([old]));
+  assert.equal(await main({ dataDir: dir, now, deps: { getJson, pause: async () => {} } }), 0);
+  assert.equal(read(dir, 'archive.json').length, 1);
+});
