@@ -6,3 +6,15 @@ export function unstopId(url) {
   const m = u.pathname.replace(/\/+$/, '').match(/-(\d+)$/);
   return m ? Number(m[1]) : null;
 }
+
+// Links from curated and Opportunity Desk sources: any https URL, nothing
+// else (blocks javascript:, data:, plain http).
+export function httpsUrl(url) {
+  if (typeof url !== 'string') return null;
+  try {
+    const u = new URL(url);
+    return u.protocol === 'https:' ? u.href : null;
+  } catch {
+    return null;
+  }
+}

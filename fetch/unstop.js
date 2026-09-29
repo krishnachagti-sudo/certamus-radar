@@ -13,12 +13,12 @@ const searchUrl = (term, page) =>
   `${BASE}/opportunity/search-result?opportunity=competitions&oppstatus=open&searchTerm=${encodeURIComponent(term)}&page=${page}&per_page=${PER_PAGE}`;
 const detailUrl = id => `${BASE}/competition/${id}`;
 
-async function defaultGetJson(url) {
+export async function defaultGetJson(url) {
   const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' }, signal: AbortSignal.timeout(20000) });
   if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   return res.json();
 }
-const defaultPause = () => new Promise(r => setTimeout(r, 1000));
+export const defaultPause = () => new Promise(r => setTimeout(r, 1000));
 
 // A code point above 0x10FFFF is not decodable (String.fromCodePoint throws),
 // so it degrades to a space rather than crashing the whole run.
@@ -58,12 +58,17 @@ const MODES = ['offline', 'hybrid', 'online'];
 const CASE_FALSE_TITLE = /\bquiz\b|call for (articles|papers)|article writing|essay|\bprompt\b/i;
 const CASE_TRUE_TITLE = /\bcase|consult|strateg|teardown|war room|\bL\.?I\.?M\.?E\b|crucible/i;
 
+// The title-only half of the rule, shared with the Opportunity Desk adapter.
+export function isCaseTitle(title) {
+  return !CASE_FALSE_TITLE.test(title) && CASE_TRUE_TITLE.test(title);
+}
+
 function isCase(src, title) {
   if (src.type === 'quizzes' || src.type === 'hackathons') return false;
   if ((src.subtype || '') === 'online_coding_challenge') return false;
   if (CASE_FALSE_TITLE.test(title)) return false;
   if (src.subtype === 'case_competition') return true;
-  return CASE_TRUE_TITLE.test(title);
+  return isCaseTitle(title);
 }
 
 // Only an https link on unstop.com is published; anything else (javascript:,
