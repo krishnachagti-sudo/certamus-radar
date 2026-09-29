@@ -9,8 +9,8 @@ const res = (status, body) => ({
   json: async () => body,
 });
 
-test('empty config: not configured, never editable', () => {
-  assert.equal(configured(), false);
+test('configured from config.js; not editable without a key', () => {
+  assert.equal(configured(), true);
   assert.equal(editable(), false);
 });
 
