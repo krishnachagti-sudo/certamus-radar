@@ -65,9 +65,9 @@ prompt to go check the page by hand, not an automatic date update.
 
 To confirm real dates once you've checked a page: open the competition on
 `c.html`, use **Set dates** (edit mode) to enter the registration close and
-competition end. That writes `data/intl-dates.json`; the calendar and clash
-checks pick it up after the next fetch, not instantly (the board says so
-when you save).
+competition end. That writes the `intl_dates` table in Supabase; the
+Competition page shows the dates at once, and the calendar, board and clash
+checks pick them up after the next fetch (the page says so when you save).
 
 ## Archive
 
@@ -85,24 +85,31 @@ mistake.
 - **Monday 05:00 IST** `watch` workflow → `data/watch.json`.
 - **Monday 08:00 IST** `digest` workflow → email; `data/digest-state.json`.
 - **Board / Competition** edits (Watching / Entering / Skipped, Registered,
-  notes, add an Unstop link, Set dates) write `data/decisions.json`,
-  `data/manual.json` and `data/intl-dates.json` through the GitHub API.
+  notes, add an Unstop link, Set dates) write the Supabase tables
+  `decisions`, `manual` and `intl_dates` (see "Editing" below).
   The board has a "Quizzes and other formats" toggle: records carry
   `is_case`, and quizzes, article calls and coding challenges are hidden by
   default and never appear in the digest.
 
-Each data file has exactly one writer, so the jobs and the board never
+Each piece of data has exactly one writer, so the jobs and the board never
 conflict:
 
-| File | Written by |
+| Data | Written by |
 |---|---|
 | `data/competitions.json`, `data/status.json` | `fetch/run.js` |
 | `data/archive.json` | `fetch/run.js` |
 | `data/watch.json` | `fetch/watch.js` |
-| `data/decisions.json`, `data/manual.json` | the board (GitHub API) |
-| `data/intl-dates.json` | the Competition page's "Set dates" (GitHub API) |
+| Supabase `decisions` (status, Registered, note) | the board, All case comps and Competition pages (edit link) |
+| Supabase `manual` (hand-added Unstop links) | the board's Add form (edit link) |
+| Supabase `intl_dates` (confirmed international dates) | the Competition page's "Set dates" (edit link) |
 | `data/international.json` | hand-edited only; nothing writes it |
 | `data/digest-state.json` | the digest job |
+
+The fetch and digest jobs only read the Supabase tables. If Supabase is
+not configured or a read fails, they carry on with a warning: decisions and
+links fall back to the old `data/decisions.json` / `data/manual.json` if
+present (they are retired, so normally none), curated international records
+keep yesterday's dates, and the digest puts a warning line at the top.
 
 Listing body text is used to classify each competition but is never stored
 or published: it often carries organisers' personal phone numbers and
@@ -116,15 +123,51 @@ emails.
    (defaults to `GMAIL_USER`).
 2. Pages: Settings → Pages → Build and deployment → **Deploy from a branch**,
    branch `main`, folder `/ (root)`.
-3. Board editing: create a fine-grained token (GitHub → Settings → Developer
-   settings → Fine-grained tokens), repository access **certamus-radar only**,
-   permission **Contents: Read and write**, expiry **90 days or less**. On the
-   board, press **Edit** and paste it. **Lock editing** removes it. When it
-   expires the board says "Token rejected"; make a new one and press **Edit**.
+3. Editing: see below.
 
-   The token sits in this browser's localStorage for
-   `krishnachagti-sudo.github.io`, which every Pages site on that account
-   shares, so keep it scoped to this repo only (Contents) with a short expiry.
+## Editing (private edit link)
+
+Only the owner edits, with no login. Everyone can read the team's
+decisions; a secret **editor key** unlocks editing on a device.
+
+1. Create a Supabase project (free tier). In its SQL Editor, run
+   `supabase/schema.sql` once. It creates the three tables (public read, no
+   direct writes) and the write functions `set_decision`, `add_manual` and
+   `set_intl_dates`, which refuse any call without the right key.
+2. Put the project's URL and anon (public) key in `config.js` and commit.
+   Until both are filled in, the site is read-only with a quiet "Editing not
+   configured yet" banner, and the jobs fall back as described above.
+3. Keep the private link
+   `https://krishnachagti-sudo.github.io/certamus-radar/#key=<your 64-hex key>`
+   somewhere safe (a password manager). Open it once on each device you
+   edit from: the page moves the key into that browser's storage, removes it
+   from the address bar, and checks it with the server. A wrong key shows
+   "That edit link isn't valid". **Stop editing on this device** (footer)
+   forgets it.
+
+The key itself is never in the repo. Only its SHA-256 is, in
+`supabase/schema.sql` (the `private.editor_key` table); the server hashes
+whatever key a page sends and compares.
+
+To rotate the key (lost device, link shared by mistake):
+
+```bash
+KEY=$(openssl rand -hex 32); echo "$KEY"             # the new key: keep it
+printf %s "$KEY" | shasum -a 256 | cut -d' ' -f1   # its hash
+```
+
+then in the Supabase SQL Editor:
+`update private.editor_key set hash = '<new hash>';`
+(and update the hash in `supabase/schema.sql` so a rebuild matches). Every
+device holding the old key gets "edit link was rejected" on its next save
+and drops back to read-only; open the new link on the devices you keep.
+
+Free-tier note: Supabase pauses a free project after about a week without
+activity. The daily fetch reads the tables, which should keep it awake, but
+if the board shows "Could not load team data" or the fetch status warns
+about Supabase, open the Supabase dashboard and restore the project. While
+it is paused the site still works read-only and the jobs carry on with
+their fallbacks.
 
 ## Tuning
 
