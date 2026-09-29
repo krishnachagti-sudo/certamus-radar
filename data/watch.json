@@ -2,116 +2,136 @@
   "intl-icbc": {
     "hash": "2171973c8e044b3b5b84940f3f29824801bc87195e8eb441187b241fd2ec66e4",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-cbs-global": {
     "hash": "3fb36f6d16ecd11643ed832bb50c733bce8b3eeac3a0a940f0030caece244b89",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-cbs-invitational": {
     "hash": "9dba08b60c582188072770394202f27e00bfae23b49e1a9b2a84fb1823daef95",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-gcch": {
     "hash": "5a1f8a4329b82a703cb3d2f13a8ace56e470b0c6ea5a5af38ce419aed0c2fe70",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-180dc": {
     "hash": "8ad17cc20a638b43043d763ce8a25e9bddd51e5ac5150e75eb7c2cd31fd5f531",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-brandstorm": {
     "changed_on": null,
-    "last_checked": "2026-09-29",
+    "last_checked": "2026-09-30",
     "last_error": "HTTP 403 for https://brandstorm.loreal.com/en"
   },
   "intl-hult": {
     "hash": "d5143253f264df7f1ca074ad9a581ec0abe24e64c2794763d0769a00d1bffa44",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-lkygbpc": {
     "hash": "c83183c384024f5d81e37eeae4f95873549605549df5e5fc12f2d97714533e19",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-jmucc": {
     "hash": "2962cc459f37d884e9927e17b20d6733b14db4a0e32ee816f73b398f09d43f92",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-micc": {
     "hash": "997f902f56a2aca0e585df31e91c71ae51183bd870a4bbf6b04581b0b398fd98",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-rsm": {
     "hash": "3e967096197dbc3dec4c30fb31d25c9d92b7fa12905b8f70f05b842c8e25483c",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-aubcc": {
     "hash": "e8f18738ce033657b35de6bf98858ce6e58b9796252aeb4b0418462b8df9e583",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-hkicc": {
     "hash": "d23c6fe218a1403d3d9b8a97b33abde8c940d2b51063ee6b1e43ae96200567e1",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-cibcc": {
     "hash": "3dd4808f17c7b3a39e34433c56f2188fddd67495d0179bb5495cd56374ad7d98",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-tubc": {
     "hash": "f3159acd9c265551711d5bbfc2edd097874b391ecae683965c0e9c4cc1594dd6",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-sauder": {
     "hash": "9f7d5edd9b155ffdfcf4f248ad20cfe1a127c8837a63a83fa34eaf87891947e6",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-caseit": {
     "hash": "618099e53221f92284bc5a606d9a3ccca2d471dcd132ebea30e2b8f99c13133e",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-champions": {
     "hash": "89444cab0398a71b5d5b56f5a480d59d88e0abfc287bc473d5947afe4de2004c",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-bbicc": {
     "hash": "c800240ac2ecda118f627e4c19365f6b38438fd4a60c48b4dfc4b8d0469888a4",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-iccm": {
     "hash": "13b26ce78978f0f1fff6aa748a9966bd856c77e39467d9b86dac90fdf063488e",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-unicc": {
     "hash": "785ef8428f66c46f5bbb2ccf0ac53013dad926680b518ec7e427e251cb2e33e1",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-sicc": {
     "hash": "f5c6673fc2de8ac746795f2b9260d3acb0995fc85a8a545aef47d34e7793eac7",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
   },
   "intl-nibs": {
     "hash": "fee73f1b21599ec951f61777fa203aa307a8b5d0cb7cb6ee541dd5ead185e7c0",
     "changed_on": null,
-    "last_checked": "2026-09-29"
+    "last_checked": "2026-09-30"
+  },
+  "fest-esummit": {
+    "hash": "a72d4e08eaf12064a744d0a833434a65179064849e001260e43ce8e03a2a4b8d",
+    "changed_on": null,
+    "last_checked": "2026-09-30"
+  },
+  "fest-becon": {
+    "hash": "280443e20fcd6ced3eba2e4dfb69cfdc83e73217aa6d1d021c7587a738dec7bf",
+    "changed_on": null,
+    "last_checked": "2026-09-30"
+  },
+  "fest-intaglio": {
+    "hash": "8ca218399b38993e56496f62bcd03d2efce8f80ec4275d3624497d6f1dbc89d3",
+    "changed_on": null,
+    "last_checked": "2026-09-30"
+  },
+  "fest-kshitij": {
+    "hash": "82882f13a8617448063bbc8f84eb9c56756ffaa238c6cf9ca2f6317fe29e5fb5",
+    "changed_on": null,
+    "last_checked": "2026-09-30"
   }
 }

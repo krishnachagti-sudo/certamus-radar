@@ -7512,6 +7512,30 @@
     "closed_on": null
   },
   {
+    "id": "iim-6a955d1e110d4314a62ed69e",
+    "source": "insideiim",
+    "pinned": false,
+    "title": "Cummins Redefine 2026",
+    "host": "Cummins",
+    "tier": "corporate",
+    "url": "https://insidekampus.com/competition/cummins-redefine-2026",
+    "format": "insideiim",
+    "format_kind": "case",
+    "is_case": true,
+    "kind": "case",
+    "team_max": null,
+    "regn_close": "2026-10-05",
+    "comp_end": null,
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "Campus-restricted: check whether IIM Sirmaur is an eligible campus"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1762320,
     "pinned": false,
     "url": "https://unstop.com/competitions/alchenova-every-blindspot-has-a-blueprint-gargi-college-delhi-university-delhi-1762320",
@@ -14272,6 +14296,54 @@
     "verdict": {
       "level": "fits",
       "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": "iim-6aacf58c9f46739d7b37bd6f",
+    "source": "insideiim",
+    "pinned": false,
+    "title": "India's Most Employable MBA Graduate - 2027 | Season 13",
+    "host": "InsideIIM",
+    "tier": "corporate",
+    "url": "https://insidekampus.com/competition/india-s-most-employable-mba-graduate-2027-or-season-13",
+    "format": "insideiim",
+    "format_kind": "business",
+    "is_case": true,
+    "kind": "business",
+    "team_max": null,
+    "regn_close": "2026-10-11",
+    "comp_end": null,
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "Eligibility on InsideIIM"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": "iim-6ab2385364b0579d4cc3ad47",
+    "source": "insideiim",
+    "pinned": false,
+    "title": "India's Most Promising Incoming MBA Student - 2026 | Season 6",
+    "host": "InsideIIM",
+    "tier": "corporate",
+    "url": "https://insidekampus.com/competition/india-s-most-promising-incoming-mba-student-2026-or-season-6",
+    "format": "insideiim",
+    "format_kind": "business",
+    "is_case": true,
+    "kind": "business",
+    "team_max": null,
+    "regn_close": "2026-10-11",
+    "comp_end": null,
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "Eligibility on InsideIIM"
+      ]
     },
     "first_seen": "2026-09-30",
     "closed_on": null
@@ -22869,6 +22941,158 @@
       ]
     },
     "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "fest-esummit",
+    "source": "curated",
+    "pinned": false,
+    "title": "IIT Bombay E-Summit",
+    "host": "E-Cell, IIT Bombay",
+    "tier": "iit",
+    "url": "https://www.ecell.in/esummit",
+    "format": "curated",
+    "format_kind": "case",
+    "is_case": true,
+    "kind": "case",
+    "team_max": null,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": null
+    },
+    "intl": {
+      "entry": "open",
+      "entry_note": null,
+      "who_applies": "team",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Check the fest page for undergraduate eligibility",
+      "fee": null,
+      "last_edition": null,
+      "watch_url": "https://www.ecell.in/esummit"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "Check the fest page for undergraduate eligibility"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": "fest-becon",
+    "source": "curated",
+    "pinned": false,
+    "title": "IIT Delhi BECon",
+    "host": "eDC, IIT Delhi",
+    "tier": "iit",
+    "url": "https://becon.edciitd.com/",
+    "format": "curated",
+    "format_kind": "case",
+    "is_case": true,
+    "kind": "case",
+    "team_max": null,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": null
+    },
+    "intl": {
+      "entry": "open",
+      "entry_note": null,
+      "who_applies": "team",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Check the fest page for undergraduate eligibility",
+      "fee": null,
+      "last_edition": null,
+      "watch_url": "https://becon.edciitd.com/"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "Check the fest page for undergraduate eligibility"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": "fest-intaglio",
+    "source": "curated",
+    "pinned": false,
+    "title": "IIM Calcutta Intaglio",
+    "host": "IIM Calcutta",
+    "tier": "iim",
+    "url": "https://www.iimcal.ac.in/life-iimc/events/intaglio",
+    "format": "curated",
+    "format_kind": "case",
+    "is_case": true,
+    "kind": "case",
+    "team_max": null,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": null
+    },
+    "intl": {
+      "entry": "open",
+      "entry_note": null,
+      "who_applies": "team",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Check the fest page for undergraduate eligibility",
+      "fee": null,
+      "last_edition": null,
+      "watch_url": "https://www.iimcal.ac.in/life-iimc/events/intaglio"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "Check the fest page for undergraduate eligibility"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": "fest-kshitij",
+    "source": "curated",
+    "pinned": false,
+    "title": "IIT Kharagpur Kshitij",
+    "host": "IIT Kharagpur",
+    "tier": "iit",
+    "url": "https://ktj.in/",
+    "format": "curated",
+    "format_kind": "case",
+    "is_case": true,
+    "kind": "case",
+    "team_max": null,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": null
+    },
+    "intl": {
+      "entry": "open",
+      "entry_note": null,
+      "who_applies": "team",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Check the fest page for undergraduate eligibility",
+      "fee": null,
+      "last_edition": null,
+      "watch_url": "https://ktj.in/"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "Check the fest page for undergraduate eligibility"
+      ]
+    },
+    "first_seen": "2026-09-30",
     "closed_on": null
   }
 ]
