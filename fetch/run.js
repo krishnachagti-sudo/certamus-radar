@@ -22,7 +22,8 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
   const lists = { bschools: read('bschools.json', []), corporates: read('corporates.json', []) };
   const existing = read('competitions.json', []);
   const decisions = read('decisions.json', {});
-  const manualIds = read('manual.json', []).map(m => unstopId(m.url)).filter(Boolean);
+  const manualRaw = read('manual.json', []);
+  const manualIds = (Array.isArray(manualRaw) ? manualRaw : []).map(m => unstopId(m?.url ?? '')).filter(Boolean);
   const status = read('status.json', {});
   const stamp = now.toISOString();
 
@@ -32,8 +33,14 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
       ...deps,
     });
     for (const r of records) {
-      r.tier = tier(r, lists);
-      r.verdict = verdict(r, team);
+      try {
+        r.tier = tier(r, lists);
+        r.verdict = verdict(r, team);
+      } catch (e) {
+        r.tier = 'other';
+        r.verdict = { level: 'check', reasons: [`could not classify: ${e.message}`] };
+        warnings.push(`classify ${r.id}: ${e.message}`);
+      }
     }
     write('competitions.json', merge(existing, records, decisions, todayIST(now)));
     write('status.json', { last_run: stamp, last_ok: stamp, last_error: null, warnings });

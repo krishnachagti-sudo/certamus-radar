@@ -46,6 +46,32 @@ test('success writes classified competitions and a clean status', async () => {
   assert.equal(st.last_error, null);
 });
 
+test('a record that fails classification does not fail the run', async () => {
+  const dir = dataDir({ 'bschools.json': [{ host: '(' }] });
+  const badHostItem = { ...item, organisation: { name: 'Acme Corp' } };
+  const getJson = async url => ({ data: { data: [badHostItem], last_page: 1 } });
+  const code = await main({ dataDir: dir, now, deps: { getJson, pause: async () => {} } });
+  assert.equal(code, 0);
+  const comps = read(dir, 'competitions.json');
+  assert.ok(comps.find(c => c.id === 1));
+  const st = read(dir, 'status.json');
+  assert.ok(st.warnings.some(w => w.includes('classify')));
+});
+
+test('a non-array manual.json is treated as empty', async () => {
+  const dir = dataDir({ 'manual.json': {} });
+  const getJson = async url => ({ data: { data: [item], last_page: 1 } });
+  const code = await main({ dataDir: dir, now, deps: { getJson, pause: async () => {} } });
+  assert.equal(code, 0);
+});
+
+test('manual.json entries without a string url are skipped', async () => {
+  const dir = dataDir({ 'manual.json': [null, { url: 5 }] });
+  const getJson = async url => ({ data: { data: [item], last_page: 1 } });
+  const code = await main({ dataDir: dir, now, deps: { getJson, pause: async () => {} } });
+  assert.equal(code, 0);
+});
+
 test('failure leaves competitions untouched and records the error', async () => {
   const dir = dataDir();
   const before = fs.readFileSync(path.join(dir, 'competitions.json'), 'utf8');

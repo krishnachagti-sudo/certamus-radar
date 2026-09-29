@@ -60,6 +60,7 @@ const CASE_TRUE_TITLE = /\bcase|consult|strateg|teardown|war room|\bL\.?I\.?M\.?
 
 function isCase(src, title) {
   if (src.type === 'quizzes' || src.type === 'hackathons') return false;
+  if ((src.subtype || '') === 'online_coding_challenge') return false;
   if (CASE_FALSE_TITLE.test(title)) return false;
   if (src.subtype === 'case_competition') return true;
   return CASE_TRUE_TITLE.test(title);

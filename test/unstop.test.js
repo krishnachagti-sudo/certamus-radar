@@ -203,6 +203,16 @@ test('is_case: "Consulting Consortium 2026" with subtype general_competition is 
   assert.equal(r.format, 'general_competition');
 });
 
+test('is_case: subtype online_coding_challenge is false', () => {
+  const r = normalise(item(1, { subtype: 'online_coding_challenge', title: 'Strategy Hack' }));
+  assert.equal(r.is_case, false);
+});
+
+test('is_case: subtype case_competition with "Call for Articles" title is false', () => {
+  const r = normalise(item(1, { subtype: 'case_competition', title: 'Call for Articles: X' }));
+  assert.equal(r.is_case, false);
+});
+
 test('a search that fails once and then succeeds gives records', async () => {
   let calls = 0;
   const getJson = async url => {
