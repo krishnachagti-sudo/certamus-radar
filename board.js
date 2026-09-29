@@ -24,6 +24,7 @@ const state = {
 };
 
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const safeHref = u => /^https:\/\/(www\.)?unstop\.com\//.test(u) ? u : '#';
 const istTime = iso => (iso ? new Date(iso).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : 'never');
 
 function b64encode(str) {
@@ -119,19 +120,19 @@ function card(c, today, entering) {
     c.prize_total ? `prizes ₹${c.prize_total.toLocaleString('en-IN')}` : null].filter(Boolean);
   const edit = state.token
     ? `<div class="actions" role="group" aria-label="Decision for ${esc(c.title)}">
-        ${STATUSES.map(s => `<button type="button" data-set="${s}" data-id="${c.id}" aria-pressed="${st === s}">${s[0].toUpperCase()}${s.slice(1)}</button>`).join('')}
-        ${st !== 'undecided' ? `<button type="button" class="ghost" data-set="" data-id="${c.id}">Clear</button>` : ''}
+        ${STATUSES.map(s => `<button type="button" data-set="${s}" data-id="${esc(c.id)}" aria-pressed="${st === s}">${s[0].toUpperCase()}${s.slice(1)}</button>`).join('')}
+        ${st !== 'undecided' ? `<button type="button" class="ghost" data-set="" data-id="${esc(c.id)}">Clear</button>` : ''}
       </div>
-      <input class="note" data-note="${c.id}" value="${esc(note)}" placeholder="Note" aria-label="Note for ${esc(c.title)}">`
+      <input class="note" data-note="${esc(c.id)}" value="${esc(note)}" placeholder="Note" aria-label="Note for ${esc(c.title)}">`
     : (note ? `<p class="note-ro">${esc(note)}</p>` : '');
-  return `<article class="card v-${esc(c.verdict?.level)} s-${st}">
+  return `<article class="card v-${esc(c.verdict?.level)} s-${esc(st)}">
     <div class="chips">
       <span class="chip">${esc(TIERS[c.tier] || c.tier)}</span>
       <span class="chip ${esc(c.verdict?.level)}">${esc(VERDICTS[c.verdict?.level] || '?')}</span>
-      ${st !== 'undecided' ? `<span class="chip status">${st}</span>` : ''}
+      ${st !== 'undecided' ? `<span class="chip status">${esc(st)}</span>` : ''}
       ${c.pinned ? '<span class="chip">added by hand</span>' : ''}
     </div>
-    <h2><a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a></h2>
+    <h2><a href="${esc(safeHref(c.url))}" target="_blank" rel="noopener">${esc(c.title)}</a></h2>
     <p class="host">${esc(c.host)}</p>
     <p class="facts">${facts.map(esc).join(' · ')}</p>
     ${c.verdict?.reasons?.length ? `<ul class="reasons">${c.verdict.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : ''}

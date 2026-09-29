@@ -235,3 +235,23 @@ test('a search that fails twice rejects', async () => {
     /down/
   );
 });
+
+test('a javascript: seo_url falls back to the canonical Unstop url', () => {
+  const r = normalise(item(5, { seo_url: 'javascript:alert(1)' }));
+  assert.equal(r.url, 'https://unstop.com/competitions/5');
+});
+
+test('seo_url on another host or over http falls back', () => {
+  assert.equal(normalise(item(5, { seo_url: 'https://unstop.com.evil.test/x-5' })).url, 'https://unstop.com/competitions/5');
+  assert.equal(normalise(item(5, { seo_url: 'http://unstop.com/x-5' })).url, 'https://unstop.com/competitions/5');
+  assert.equal(normalise(item(5, { seo_url: 'not a url' })).url, 'https://unstop.com/competitions/5');
+  assert.equal(normalise(item(5, { seo_url: 'https://www.unstop.com/x-5' })).url, 'https://www.unstop.com/x-5');
+});
+
+test('an item with a non-integer id is skipped as malformed', async () => {
+  const bad = item('1" onmouseover="x');
+  const http = fakeHttp([['search-result', { data: { data: [item(1), bad, item(2.5)], last_page: 1 } }]]);
+  const { records, warnings } = await fetchAll(new Map(), [], opts(http));
+  assert.deepEqual(records.map(r => r.id), [1]);
+  assert.equal(warnings.filter(w => w.startsWith('skipped malformed')).length, 2);
+});

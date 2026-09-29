@@ -66,6 +66,16 @@ function isCase(src, title) {
   return CASE_TRUE_TITLE.test(title);
 }
 
+// Only an https link on unstop.com is published; anything else (javascript:,
+// another host) becomes the canonical listing url.
+function safeUrl(seoUrl, id) {
+  try {
+    const u = new URL(seoUrl);
+    if (u.protocol === 'https:' && (u.hostname === 'unstop.com' || u.hostname === 'www.unstop.com')) return u.href;
+  } catch { /* fall through */ }
+  return `https://unstop.com/competitions/${id}`;
+}
+
 // `src` is a search item or a detail competition (same field names, except
 // isPaid vs paid); both shapes carry a `details` HTML field.
 export function normalise(src) {
@@ -80,7 +90,7 @@ export function normalise(src) {
   return {
     id: src.id,
     pinned: false,
-    url: src.seo_url || `https://unstop.com/competitions/${src.id}`,
+    url: safeUrl(src.seo_url, src.id),
     title: src.title || '',
     host: src.organisation?.name || '',
     regn_close: istDate(r.end_regn_dt || src.end_date),
@@ -99,7 +109,7 @@ export function normalise(src) {
   };
 }
 
-const validItem = it => it && it.id && it.title && it.organisation && it.regnRequirements;
+const validItem = it => it && Number.isInteger(it.id) && it.id > 0 && it.title && it.organisation && it.regnRequirements;
 
 export async function fetchAll(existingById, manualIds, opts) {
   const getJson = opts.getJson || defaultGetJson;
@@ -156,7 +166,7 @@ export async function fetchAll(existingById, manualIds, opts) {
     try {
       const body = await getJson(detailUrl(id));
       const c = body?.data?.competition;
-      if (!c || !c.id) throw new Error('detail shape changed');
+      if (!c || !Number.isInteger(c.id)) throw new Error('detail shape changed');
       return c;
     } catch (e) {
       warnings.push(`detail ${id}: ${e.message}`);
