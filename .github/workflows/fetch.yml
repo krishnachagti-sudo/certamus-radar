@@ -15,14 +15,14 @@ jobs:
         run: |
           if node fetch/run.js; then echo "ok=1" >> "$GITHUB_OUTPUT"; else echo "ok=0" >> "$GITHUB_OUTPUT"; fi
       - name: Commit data (also on failure, so the error reaches the board)
-        if: always()
+        if: ${{ !cancelled() }}
         run: |
           git config user.name "certamus-radar-bot"
           git config user.email "certamus-radar-bot@users.noreply.github.com"
           git add data/competitions.json data/status.json
           git diff --cached --quiet && exit 0
           git commit -m "data: fetch $(date -u +%F)"
-          for i in 1 2 3; do git pull --rebase -q && git push -q && exit 0; sleep 5; done
+          for i in 1 2 3; do git pull --rebase -q || { git rebase --abort; false; } && git push -q && exit 0; sleep 5; done
           exit 1
       - name: Fail the job if the fetch failed
         if: steps.run.outputs.ok != '1'

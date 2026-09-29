@@ -24,5 +24,5 @@ jobs:
           git add data/digest-state.json
           git diff --cached --quiet && exit 0
           git commit -m "data: digest $(date -u +%F)"
-          for i in 1 2 3; do git pull --rebase -q && git push -q && exit 0; sleep 5; done
+          for i in 1 2 3; do git pull --rebase -q || { git rebase --abort; false; } && git push -q && exit 0; sleep 5; done
           exit 1
