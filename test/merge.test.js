@@ -123,3 +123,11 @@ test('appendArchive keys curated editions by id@regn_close and archives each onc
   assert.deepEqual(u.map(x => x.id), [5, 6]);
   assert.equal(u[1].archive_key, '6');
 });
+
+test('prune:false keeps expired records (decisions unavailable)', () => {
+  const closed = [{ id: 1, title: 'C1', regn_close: '2026-07-01', first_seen: '2026-06-01', closed_on: '2026-07-02' }];
+  const kept = mergeFull(closed, [], {}, '2026-10-01', { prune: false });
+  assert.equal(kept.next.length, 1);
+  assert.equal(kept.pruned.length, 0);
+  assert.equal(mergeFull(closed, [], {}, '2026-10-01').pruned.length, 1);
+});

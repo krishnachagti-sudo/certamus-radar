@@ -109,7 +109,7 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
         warnings.push(`classify ${r.id}: ${e.message}`);
       }
     }
-    const { next, pruned } = merge(existing.map(publishable), records.map(publishable), decisions, today);
+    const { next, pruned } = merge(existing.map(publishable), records.map(publishable), decisions, today, { prune: remote.decisions.value !== undefined });
     // Archive first: if the run dies between the two writes, a pruned record
     // is archived and still live, never lost.
     if (pruned.length) {

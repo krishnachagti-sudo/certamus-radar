@@ -17,7 +17,9 @@ function expired(rec, decisions, today) {
 // records closed long enough ago (they leave the live file), plus curated
 // records whose confirmed regn_close has passed (they stay in the live file;
 // appendArchive keys them per edition, so each edition is archived once).
-export function merge(existing, fetched, decisions, today) {
+// prune=false keeps expired records for a run whose decisions could not be
+// read: without them, an entering or registered record would look expired.
+export function merge(existing, fetched, decisions, today, { prune = true } = {}) {
   const prev = new Map(existing.map(r => [r.id, r]));
   const seen = new Set();
   const next = [];
@@ -34,7 +36,7 @@ export function merge(existing, fetched, decisions, today) {
   const kept = [];
   const pruned = [];
   for (const r of next) {
-    if (expired(r, decisions, today)) { pruned.push(r); continue; }
+    if (prune && expired(r, decisions, today)) { pruned.push(r); continue; }
     kept.push(r);
     if (r.source === 'curated' && r.regn_close && dayDiff(today, r.regn_close) < 0) pruned.push(r);
   }

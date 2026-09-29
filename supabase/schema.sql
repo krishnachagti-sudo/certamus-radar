@@ -10,7 +10,7 @@ revoke all on schema private from public, anon, authenticated;
 
 create table if not exists private.editor_key (hash text primary key);
 insert into private.editor_key (hash)
-values ('6cb7d24ad1e5784369face1df22fbbbc0595ab0989b4adca204f83bcf237a713')
+values ('1e8ae88a6fa5716e916b982e85fba7205dcb87e3a8b68cbc691fbff239f56ddb')
 on conflict do nothing;
 
 create or replace function private.key_ok(k text) returns boolean
