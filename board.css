@@ -51,8 +51,10 @@ footer { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; color: 
 .nav a { color: var(--ink-2); text-decoration: none; font-weight: 600; font-size: .92rem; padding-bottom: 4px; }
 .nav a[aria-current] { color: var(--accent); border-bottom: 2px solid var(--accent); }
 .search { flex: 1 1 16rem; min-width: 0; font: inherit; padding: 6px 10px; border: 1px solid var(--rule); border-radius: 8px; }
+.chip.registered { background: var(--fits-bg); color: var(--fits); }
 .chip.startup { background: var(--check-bg); color: var(--check); }
 .who { margin: 6px 0 0; font-size: 0.9rem; font-weight: 600; }
 .watchflag { margin: 6px 0 0; font-size: 0.9rem; font-weight: 600; color: var(--check); }
 .ext { margin: 8px 0 0; font-size: 0.88rem; }
 .ext a { color: var(--accent); }
+.reg-toggle { display: inline-flex; gap: 6px; align-items: center; margin-top: 8px; font-size: 0.9rem; font-weight: 600; color: var(--fits); }
