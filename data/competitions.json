@@ -794,6 +794,39 @@
     "closed_on": null
   },
   {
+    "id": 1759639,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/the-best-manager-2026-barcode26-symbiosis-institute-of-management-studies-sims-pune-1759639",
+    "title": "The Best Manager 2026",
+    "host": "Symbiosis Institute of Management Studies (SIMS), Pune",
+    "regn_close": "2026-10-04",
+    "comp_end": "2026-10-11",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
     "id": 1751075,
     "pinned": false,
     "url": "https://unstop.com/competitions/the-infinity-deck-vivekananda-institute-of-professional-studies-vips-delhi-1751075",
@@ -830,18 +863,18 @@
     "closed_on": null
   },
   {
-    "id": 1759639,
+    "id": 1762278,
     "pinned": false,
-    "url": "https://unstop.com/competitions/the-best-manager-2026-barcode26-symbiosis-institute-of-management-studies-sims-pune-1759639",
-    "title": "The Best Manager 2026",
+    "url": "https://unstop.com/competitions/auction-theory-2026-barcode26-symbiosis-institute-of-management-studies-sims-pune-1762278",
+    "title": "Auction Theory 2026",
     "host": "Symbiosis Institute of Management Studies (SIMS), Pune",
     "regn_close": "2026-10-04",
-    "comp_end": "2026-10-11",
+    "comp_end": "2026-10-04",
     "mode": "offline",
     "fee": false,
-    "team_min": 1,
-    "team_max": 1,
-    "prize_total": 0,
+    "team_min": 2,
+    "team_max": 3,
+    "prize_total": 8000,
     "eligible_filters": [
       "Engineering Students",
       "Postgraduate",
@@ -893,39 +926,6 @@
       "reasons": [
         "needs at least 5 members"
       ]
-    },
-    "first_seen": "2026-09-29",
-    "closed_on": null
-  },
-  {
-    "id": 1762278,
-    "pinned": false,
-    "url": "https://unstop.com/competitions/auction-theory-2026-barcode26-symbiosis-institute-of-management-studies-sims-pune-1762278",
-    "title": "Auction Theory 2026",
-    "host": "Symbiosis Institute of Management Studies (SIMS), Pune",
-    "regn_close": "2026-10-04",
-    "comp_end": "2026-10-04",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 2,
-    "team_max": 3,
-    "prize_total": 8000,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "general_competition",
-    "is_case": false,
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
     },
     "first_seen": "2026-09-29",
     "closed_on": null
@@ -1343,39 +1343,6 @@
     "closed_on": null
   },
   {
-    "id": 1754647,
-    "pinned": false,
-    "url": "https://unstop.com/competitions/gyanotsav-60-the-ad-showdown-marketing-rukmini-devi-institute-of-advanced-studies-rdias-delhi-1754647",
-    "title": "Gyanotsav 6.0 – The Ad Showdown | Marketing",
-    "host": "Rukmini Devi Institute of Advanced Studies (RDIAS), Delhi",
-    "regn_close": "2026-10-06",
-    "comp_end": "2026-10-06",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 2,
-    "team_max": 3,
-    "prize_total": 3000,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "general_competition",
-    "is_case": false,
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "first_seen": "2026-09-29",
-    "closed_on": null
-  },
-  {
     "id": 1754695,
     "pinned": false,
     "url": "https://unstop.com/competitions/gyanotsav-60-budget-battle-royale-finance-rukmini-devi-institute-of-advanced-studies-rdias-delhi-1754695",
@@ -1409,13 +1376,46 @@
     "closed_on": null
   },
   {
+    "id": 1754647,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/gyanotsav-60-the-ad-showdown-marketing-rukmini-devi-institute-of-advanced-studies-rdias-delhi-1754647",
+    "title": "Gyanotsav 6.0 – The Ad Showdown | Marketing",
+    "host": "Rukmini Devi Institute of Advanced Studies (RDIAS), Delhi",
+    "regn_close": "2026-10-06",
+    "comp_end": "2026-10-06",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 3,
+    "prize_total": 3000,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
     "id": 1747996,
     "pinned": false,
     "url": "https://unstop.com/competitions/consulting-consortium-2026-indian-school-of-business-isb-1747996",
     "title": "Consulting Consortium 2026",
     "host": "Indian School of Business (ISB)",
     "regn_close": "2026-10-06",
-    "comp_end": "2026-10-31",
+    "comp_end": "2026-11-02",
     "mode": "online",
     "fee": false,
     "team_min": 3,
@@ -2790,39 +2790,6 @@
     "closed_on": null
   },
   {
-    "id": 1749530,
-    "pinned": false,
-    "url": "https://unstop.com/quiz/mind-the-product-2026-test-5-iit-guwahati-1749530",
-    "title": "Mind The Product 2026: Test 5",
-    "host": "Indian Institute of Technology (IIT), Guwahati",
-    "regn_close": "2026-11-30",
-    "comp_end": "2026-11-30",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 1,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "quizzes",
-    "is_case": false,
-    "tier": "iit",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "first_seen": "2026-09-29",
-    "closed_on": null
-  },
-  {
     "id": 1751186,
     "pinned": false,
     "url": "https://unstop.com/quiz/mind-the-product-2026-test-8-iit-guwahati-1751186",
@@ -2918,6 +2885,39 @@
     "closed_on": null
   },
   {
+    "id": 1749530,
+    "pinned": false,
+    "url": "https://unstop.com/quiz/mind-the-product-2026-test-5-iit-guwahati-1749530",
+    "title": "Mind The Product 2026: Test 5",
+    "host": "Indian Institute of Technology (IIT), Guwahati",
+    "regn_close": "2026-11-30",
+    "comp_end": "2026-11-30",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "quizzes",
+    "is_case": false,
+    "tier": "iit",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
     "id": 1575623,
     "pinned": false,
     "url": "https://unstop.com/competitions/ace-design-sprint-technical-day-50-vivekananda-institute-of-professional-studies-vips-delhi-1575623",
@@ -2945,6 +2945,918 @@
       "level": "check",
       "reasons": [
         "entry fee"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-icbc",
+    "source": "curated",
+    "pinned": false,
+    "title": "I.C.B.C. Inter-Collegiate Business Competition",
+    "host": "Smith School of Business, Queen's University",
+    "tier": "international",
+    "url": "https://icbcqueens.com/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": 3,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": [
+        10
+      ],
+      "finals_months": [
+        1
+      ]
+    },
+    "intl": {
+      "entry": "qualifier",
+      "entry_note": "Open video Preliminary Round; top teams per stream invited to Final Weekend",
+      "who_applies": "team",
+      "indian_ug": "yes",
+      "indian_ug_note": "Open to all institutions offering an undergraduate business program (2025/26 Rules)",
+      "fee": null,
+      "last_edition": "Prelims Oct 12–26 2025; finals Jan 9–11 2026",
+      "watch_url": "https://icbcqueens.com/preliminary-round/"
+    },
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-cbs-global",
+    "source": "curated",
+    "pinned": false,
+    "title": "CBS Case Competition GLOBAL",
+    "host": "Copenhagen Business School (student-run)",
+    "tier": "international",
+    "url": "https://www.casecompetition.com/global",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": 4,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": null
+    },
+    "intl": {
+      "entry": "open",
+      "entry_note": "Online rounds, in-person final in Copenhagen",
+      "who_applies": "team",
+      "indian_ug": "yes",
+      "indian_ug_note": "Undergraduate and graduate students from all over the world",
+      "fee": "None",
+      "last_edition": "Sign-ups open as of 2026-09-29",
+      "watch_url": "https://www.casecompetition.com/"
+    },
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-cbs-invitational",
+    "source": "curated",
+    "pinned": false,
+    "title": "CBS Case Competition INVITATIONAL",
+    "host": "Copenhagen Business School",
+    "tier": "international",
+    "url": "https://www.casecompetition.com/invitational",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": 4,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": [
+        2,
+        3
+      ]
+    },
+    "intl": {
+      "entry": "invite",
+      "entry_note": "12 teams invited; criteria: case experience, international representation",
+      "who_applies": "school",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Invitation only",
+      "fee": "Covered except travel to Copenhagen",
+      "last_edition": "Next edition week 9, 2027",
+      "watch_url": "https://www.casecompetition.com/invitational"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "IIM Sirmaur must apply for an invitation"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-gcch",
+    "source": "curated",
+    "pinned": false,
+    "title": "Global Case Competition at Harvard (GCCH)",
+    "host": "International Finance Student Association, Harvard",
+    "tier": "international",
+    "url": "https://www.thecasecompetition.org/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": 5,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": [
+        11
+      ],
+      "finals_months": [
+        3
+      ]
+    },
+    "intl": {
+      "entry": "open",
+      "entry_note": "Registration opened Nov 14 2025; case Feb; top 10 in March",
+      "who_applies": "team",
+      "indian_ug": "yes",
+      "indian_ug_note": "Any enrolled university student",
+      "fee": null,
+      "last_edition": "Feb 2 – Mar 29 2026 (online)",
+      "watch_url": "https://www.thecasecompetition.org/gcch-2026"
+    },
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-180dc",
+    "source": "curated",
+    "pinned": false,
+    "title": "180 Degrees Consulting Global Case Competition",
+    "host": "180 Degrees Consulting",
+    "tier": "international",
+    "url": "https://180dc.org/programs/global-case-competition",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": 4,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": [
+        9,
+        10,
+        11,
+        12
+      ],
+      "finals_months": null
+    },
+    "intl": {
+      "entry": "open",
+      "entry_note": "Social-impact case; cross-university teams allowed",
+      "who_applies": "team",
+      "indian_ug": "yes",
+      "indian_ug_note": "Any full-time student under 28",
+      "fee": "None",
+      "last_edition": "2026 edition tentatively Sep–Dec, timeline TBD",
+      "watch_url": "https://180dc.org/programs/global-case-competition"
+    },
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-brandstorm",
+    "source": "curated",
+    "pinned": false,
+    "title": "L'Oréal Brandstorm",
+    "host": "L'Oréal",
+    "tier": "international",
+    "url": "https://brandstorm2026.loreal.com/en",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": 3,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": [
+        6
+      ]
+    },
+    "intl": {
+      "entry": "open",
+      "entry_note": "National round then international final",
+      "who_applies": "team",
+      "indian_ug": "yes",
+      "indian_ug_note": "India participates; ages 18–30",
+      "fee": "None",
+      "last_edition": "International final Paris, June 2026",
+      "watch_url": "https://brandstorm.loreal.com/en"
+    },
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-hult",
+    "source": "curated",
+    "pinned": false,
+    "title": "EF Hult Prize",
+    "host": "Hult Prize Foundation",
+    "tier": "international",
+    "url": "https://www.hultprize.org/",
+    "format": "curated",
+    "is_case": false,
+    "kind": "startup",
+    "team_max": 4,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": [
+        9,
+        10,
+        11,
+        12,
+        1,
+        2
+      ],
+      "finals_months": [
+        9
+      ]
+    },
+    "intl": {
+      "entry": "open",
+      "entry_note": "Startup pitch, not a case competition",
+      "who_applies": "team",
+      "indian_ug": "yes",
+      "indian_ug_note": "Any degree-granting program",
+      "fee": null,
+      "last_edition": "2026 Global Finals Sep 2",
+      "watch_url": "https://www.hultprize.org/competition"
+    },
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-lkygbpc",
+    "source": "curated",
+    "pinned": false,
+    "title": "Lee Kuan Yew Global Business Plan Competition",
+    "host": "Singapore Management University",
+    "tier": "international",
+    "url": "https://lkygbpc.smu.edu.sg/",
+    "format": "curated",
+    "is_case": false,
+    "kind": "startup",
+    "team_max": null,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "finals_months": [
+        9,
+        10
+      ]
+    },
+    "intl": {
+      "entry": "open",
+      "entry_note": "Business-plan contest, not a case competition",
+      "who_applies": "team",
+      "indian_ug": "yes",
+      "indian_ug_note": "At least one full-time student or recent graduate",
+      "fee": "Free",
+      "last_edition": "12th closed Oct 2025; 13th dates not published",
+      "watch_url": "https://lkygbpc.smu.edu.sg/competition-information"
+    },
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-jmucc",
+    "source": "curated",
+    "pinned": false,
+    "title": "John Molson Undergraduate Case Competition (JMUCC)",
+    "host": "John Molson School of Business, Concordia",
+    "tier": "international",
+    "url": "https://www.jmucc.ca/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": null,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": [
+        9
+      ],
+      "finals_months": [
+        2,
+        3
+      ]
+    },
+    "intl": {
+      "entry": "invite",
+      "entry_note": "The school applies; 24 schools",
+      "who_applies": "school",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Any school may apply",
+      "fee": null,
+      "last_edition": "19th edition Feb 28 – Mar 6 2027; school deadline was Sep 26 in 2025",
+      "watch_url": "https://www.jmucc.ca/school-applications"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "IIM Sirmaur must apply for an invitation"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-micc",
+    "source": "curated",
+    "pinned": false,
+    "title": "Marshall International Case Competition (MICC)",
+    "host": "USC Marshall School of Business",
+    "tier": "international",
+    "url": "https://marshallinternationalcasecomp.com/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": 4,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": [
+        5
+      ],
+      "finals_months": [
+        2
+      ]
+    },
+    "intl": {
+      "entry": "invite",
+      "entry_note": "University submits expression of interest; 20 teams",
+      "who_applies": "school",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Any university may apply",
+      "fee": null,
+      "last_edition": "MICC 2027 Feb 22–28; apply by May 15",
+      "watch_url": "https://marshallinternationalcasecomp.com/how-to-participate"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "IIM Sirmaur must apply for an invitation"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-rsm",
+    "source": "curated",
+    "pinned": false,
+    "title": "RSM STAR Case Competition",
+    "host": "Rotterdam School of Management",
+    "tier": "international",
+    "url": "https://www.rsm.nl/about-rsm/partners/international-relations-office/case-competitions/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": 4,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": [
+        7,
+        8
+      ],
+      "finals_months": [
+        4
+      ]
+    },
+    "intl": {
+      "entry": "invite",
+      "entry_note": "Expression of interest then invitation; 16 teams",
+      "who_applies": "school",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Universities reply to save-the-date",
+      "fee": "About €1,500 excl. travel",
+      "last_edition": "Apr 17–24 2026",
+      "watch_url": "https://www.rsm.nl/about-rsm/partners/international-relations-office/case-competitions/"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "IIM Sirmaur must apply for an invitation"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-aubcc",
+    "source": "curated",
+    "pinned": false,
+    "title": "Australian Undergraduate Business Case Competition (AUBCC)",
+    "host": "UNSW Business School with Monash",
+    "tier": "international",
+    "url": "https://aubcc.com.au/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": 4,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": [
+        10
+      ]
+    },
+    "intl": {
+      "entry": "invite",
+      "entry_note": "University expression of interest; 16 teams",
+      "who_applies": "school",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Open to full-time undergraduates via their university",
+      "fee": "AUD 2,600 per team (2025)",
+      "last_edition": "Oct 19–25 2026, Sydney",
+      "watch_url": "https://aubcc.com.au/infobookrulebook"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "IIM Sirmaur must apply for an invitation"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-hkicc",
+    "source": "curated",
+    "pinned": false,
+    "title": "HKUST International Case Competition",
+    "host": "HKUST Business School",
+    "tier": "international",
+    "url": "https://hkicc.hkust.edu.hk/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": 4,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": [
+        9,
+        10
+      ]
+    },
+    "intl": {
+      "entry": "invite",
+      "entry_note": "16 teams; process not published",
+      "who_applies": "school",
+      "indian_ug": "unclear",
+      "indian_ug_note": "No published application route",
+      "fee": null,
+      "last_edition": "Sep 27 – Oct 3 2026",
+      "watch_url": "https://hkicc.hkust.edu.hk/hkicc.html"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "IIM Sirmaur must apply for an invitation"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-cibcc",
+    "source": "curated",
+    "pinned": false,
+    "title": "Chulalongkorn International Business Case Competition",
+    "host": "Chulalongkorn Business School",
+    "tier": "international",
+    "url": "https://www.cibcc.org/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": null,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": [
+        5
+      ]
+    },
+    "intl": {
+      "entry": "invite",
+      "entry_note": "20 universities",
+      "who_applies": "school",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Invitation only",
+      "fee": null,
+      "last_edition": "Next: May 17–23 2027",
+      "watch_url": "https://www.cibcc.org/"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "IIM Sirmaur must apply for an invitation"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-tubc",
+    "source": "curated",
+    "pinned": false,
+    "title": "Thammasat Undergraduate Business Challenge",
+    "host": "Thammasat Business School",
+    "tier": "international",
+    "url": "https://tubc.page/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": 4,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": null
+    },
+    "intl": {
+      "entry": "invite",
+      "entry_note": "International teams invited; qualifier is Thai-only",
+      "who_applies": "school",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Invited international teams",
+      "fee": null,
+      "last_edition": "2026 page says Coming Soon",
+      "watch_url": "https://tubc.page/2026TUBCcompetition.html"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "IIM Sirmaur must apply for an invitation"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-sauder",
+    "source": "curated",
+    "pinned": false,
+    "title": "Sauder Summit Global Case Competition",
+    "host": "UBC Sauder School of Business",
+    "tier": "international",
+    "url": "https://www.saudersummit.ca/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": 4,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": [
+        3
+      ]
+    },
+    "intl": {
+      "entry": "invite",
+      "entry_note": "16 schools invited",
+      "who_applies": "school",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Invitation only",
+      "fee": null,
+      "last_edition": "Mar 14–21 2026",
+      "watch_url": "https://www.saudersummit.ca/global"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "IIM Sirmaur must apply for an invitation"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-caseit",
+    "source": "curated",
+    "pinned": false,
+    "title": "CaseIT (MIS)",
+    "host": "SFU Beedie School of Business",
+    "tier": "international",
+    "url": "https://www.caseit.org/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": null,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": [
+        2
+      ]
+    },
+    "intl": {
+      "entry": "invite",
+      "entry_note": "16 universities; process not published",
+      "who_applies": "school",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Information-systems focus",
+      "fee": null,
+      "last_edition": "CaseIT 2027 Feb 14–19",
+      "watch_url": "https://www.caseit.org/2026"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "IIM Sirmaur must apply for an invitation"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-champions",
+    "source": "curated",
+    "pinned": false,
+    "title": "Champions Trophy Case Competition",
+    "host": "University of Auckland Business School",
+    "tier": "international",
+    "url": "https://champions-trophy.squarespace.com/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": null,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": [
+        1
+      ]
+    },
+    "intl": {
+      "entry": "qualifier",
+      "entry_note": "Winners of 10 nominated competitions",
+      "who_applies": "school",
+      "indian_ug": "no",
+      "indian_ug_note": "Must first win a qualifying competition",
+      "fee": null,
+      "last_edition": "Jan 25–31 2026",
+      "watch_url": "https://champions-trophy.squarespace.com/qualifying-nominatedcompetitions"
+    },
+    "verdict": {
+      "level": "out",
+      "reasons": [
+        "Must first win a qualifying competition"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-bbicc",
+    "source": "curated",
+    "pinned": false,
+    "title": "Belgrade Business International Case Competition",
+    "host": "Faculty of Organizational Sciences, University of Belgrade",
+    "tier": "international",
+    "url": "https://bbicc.fon.bg.ac.rs/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": null,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": [
+        3
+      ]
+    },
+    "intl": {
+      "entry": "unclear",
+      "entry_note": "20 universities",
+      "who_applies": "school",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Site under maintenance when checked",
+      "fee": null,
+      "last_edition": "Grand Final Mar 14 2026",
+      "watch_url": "https://bbicc.fon.bg.ac.rs/"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "IIM Sirmaur must apply for an invitation"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-iccm",
+    "source": "curated",
+    "pinned": false,
+    "title": "International Case Competition @ Maastricht",
+    "host": "Maastricht University SBE",
+    "tier": "international",
+    "url": "https://www.icc-maastricht.com/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": 4,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": [
+        5
+      ]
+    },
+    "intl": {
+      "entry": "invite",
+      "entry_note": "16 accredited business schools",
+      "who_applies": "school",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Top accredited schools",
+      "fee": null,
+      "last_edition": "Next: May 9–15 2027",
+      "watch_url": "https://www.icc-maastricht.com/"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "IIM Sirmaur must apply for an invitation"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-unicc",
+    "source": "curated",
+    "pinned": false,
+    "title": "University of Navarra International Case Competition",
+    "host": "Universidad de Navarra",
+    "tier": "international",
+    "url": "https://www.unav.edu/web/unicc",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": null,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": [
+        3
+      ]
+    },
+    "intl": {
+      "entry": "invite",
+      "entry_note": "16 universities",
+      "who_applies": "school",
+      "indian_ug": "unclear",
+      "indian_ug_note": "Process not stated",
+      "fee": null,
+      "last_edition": "Mar 15–20 2026",
+      "watch_url": "https://www.unav.edu/web/unicc/competition"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "IIM Sirmaur must apply for an invitation"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-sicc",
+    "source": "curated",
+    "pinned": false,
+    "title": "Scotiabank International Case Competition",
+    "host": "Ivey Business School",
+    "tier": "international",
+    "url": "https://www.ivey-sicc.com/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": null,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": null,
+      "finals_months": [
+        3
+      ]
+    },
+    "intl": {
+      "entry": "unclear",
+      "entry_note": "About 14–16 teams",
+      "who_applies": "school",
+      "indian_ug": "unclear",
+      "indian_ug_note": "2026 had first-time teams from Nigeria and Japan",
+      "fee": null,
+      "last_edition": "2027: Mar 16–20",
+      "watch_url": "https://www.ivey-sicc.com/"
+    },
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "IIM Sirmaur must apply for an invitation"
+      ]
+    },
+    "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": "intl-nibs",
+    "source": "curated",
+    "pinned": false,
+    "title": "NIBS Worldwide Case Competition",
+    "host": "Network of International Business Schools",
+    "tier": "international",
+    "url": "https://nibscasecompetition.org/",
+    "format": "curated",
+    "is_case": true,
+    "kind": "case",
+    "team_max": 4,
+    "regn_close": null,
+    "comp_end": null,
+    "expected": {
+      "application_months": [
+        9,
+        10
+      ],
+      "finals_months": [
+        2
+      ]
+    },
+    "intl": {
+      "entry": "qualifier",
+      "entry_note": "NIBS member schools only; written round then top 16",
+      "who_applies": "school",
+      "indian_ug": "no",
+      "indian_ug_note": "Only if IIM Sirmaur is a NIBS member",
+      "fee": null,
+      "last_edition": "Registration closes Oct 23 2026; finals Feb 7–12 2027",
+      "watch_url": "https://www.nibsweb.org/competitions/case-competition/"
+    },
+    "verdict": {
+      "level": "out",
+      "reasons": [
+        "Only if IIM Sirmaur is a NIBS member"
       ]
     },
     "first_seen": "2026-09-29",
