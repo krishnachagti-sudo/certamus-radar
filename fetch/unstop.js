@@ -20,6 +20,12 @@ export async function defaultGetJson(url) {
   if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   return res.json();
 }
+// Plain-text GET with the same UA, for HTML pages (watcher, InsideIIM).
+export async function defaultGetText(url) {
+  const res = await fetch(url, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(20000) });
+  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+  return res.text();
+}
 export const defaultPause = () => new Promise(r => setTimeout(r, 1000));
 
 // A code point above 0x10FFFF is not decodable (String.fromCodePoint throws),
