@@ -12,6 +12,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(-
 .top h1 { margin: 0; font-size: 1.6rem; letter-spacing: -0.01em; }
 .top p { margin: 4px 0 16px; color: var(--ink-2); max-width: 44rem; }
 .banner { background: var(--out-bg); color: var(--out); border-radius: 8px; padding: 10px 12px; font-weight: 600; }
+.banner.quiet { background: var(--soft); color: var(--ink-2); font-weight: 400; font-size: 0.9rem; padding: 6px 12px; }
 .controls .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
 .controls label { font-size: 0.9rem; color: var(--ink-2); margin-left: 6px; }
 button { font: inherit; cursor: pointer; border-radius: 999px; border: 1px solid var(--rule); background: var(--panel); color: var(--ink); padding: 4px 12px; }

@@ -2,10 +2,10 @@
 // (mock C). Read-only. Shows competitions that are Watching, Entering or
 // Registered: ⏰ registration closes, 🏁 competition ends, clash days tinted,
 // and dashed "expected" markers for curated international items (§9.10).
-// Decisions load like the Board: published file, or live with a token.
+// Decisions load like the Board: live from the store (public reads).
 import { todayIST } from '../dates.js';
 import { committedSet, expectedText, monthsText, pagesJson, sameId } from '../lib/data.js';
-import { TOKEN_REJECTED, setToken } from '../lib/gh.js';
+import { initEditor } from '../lib/editor.js';
 import { esc, compHref } from '../lib/card.js';
 import { captureFocus } from '../lib/focus.js';
 import { mountNav } from '../lib/nav.js';
@@ -37,19 +37,13 @@ const startMonth = () => {
   return { year: Number(t.slice(0, 4)), month: Number(t.slice(5, 7)) };
 };
 
-const state = { comps: [], status: {}, decisions: {}, error: null, view: storedView(), ...startMonth() };
-
-async function tokenRejected() {
-  setToken(null);
-  state.decisions = await pagesJson('decisions.json', {});
-  state.error = TOKEN_REJECTED;
-}
+const state = { comps: [], status: {}, decisions: {}, error: null, notice: null, view: storedView(), ...startMonth() };
 
 async function load() {
   state.error = null;
   [state.comps, state.status] = await Promise.all([pagesJson('competitions.json', []), pagesJson('status.json', {})]);
   if (!Array.isArray(state.comps)) state.comps = [];
-  await loadDecisions(state, tokenRejected);
+  await loadDecisions(state);
   render();
 }
 
@@ -176,7 +170,7 @@ function render() {
         <button type="button" id="today">Today</button>
         <button type="button" id="next" aria-label="Next month">›</button>
       </div>` : '';
-  document.getElementById('app').innerHTML = `<div id="banners">${bannersHtml(state.status, state.error)}</div>
+  document.getElementById('app').innerHTML = `<div id="banners">${bannersHtml(state.status, state.error, state.notice)}</div>
     <div class="cal">
       <div class="cal-bar">
         <h1>${grid ? esc(monthTitle(state.year, state.month)) : 'Coming up'}</h1>
@@ -204,4 +198,4 @@ document.addEventListener('click', e => {
 });
 
 mountNav('calendar');
-load();
+initEditor().then(notice => { state.notice = notice; return load(); });

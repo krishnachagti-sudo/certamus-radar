@@ -3,24 +3,30 @@
 // team note. Right, sticky: countdown, team/format/fee/prizes, status, the
 // Registered tick, clash warnings, the watcher flag and the outbound link;
 // in edit mode a curated record also gets "Set dates". Ids are strings.
+// Dates confirmed with "Set dates" show here at once (an overlay from the
+// store); the calendar and board get them from the next fetch.
 import { clashes } from '../clash.js';
 import { dayDiff, todayIST } from '../dates.js';
 import {
   STATUSES, sameId, statusOf, isRegistered, committedSet, expectedText, whoAppliesText, watchChanged,
   needsFullRender, pagesJson,
 } from '../lib/data.js';
-import { AuthError, TOKEN_REJECTED, apiUpdate, createDecisionSaver, getToken, setToken } from '../lib/gh.js';
+import {
+  KeyRejected, KEY_REJECTED, clearKey, createDecisionSaver, editable, readIntlDates, setIntlDates,
+} from '../lib/store.js';
+import { initEditor } from '../lib/editor.js';
 import { esc, safeHref, teamText, linkLabel, tierChipHtml, verdictChipHtml, startupChipHtml } from '../lib/card.js';
 import { eligibilityRows } from '../lib/eligibility.js';
 import { captureFocus } from '../lib/focus.js';
 import { mountNav } from '../lib/nav.js';
-import { loadDecisions, bannersHtml, askToken, editFooterHtml } from '../lib/session.js';
+import { loadDecisions, bannersHtml, editFooterHtml } from '../lib/session.js';
 
 const ID = new URLSearchParams(location.search).get('id') ?? '';
 const SITE = 'Certamus Radar';
 
-const state = { comps: [], archive: [], intl: [], watch: {}, status: {}, decisions: {}, error: null, datesMsg: '' };
-const editable = () => !!getToken();
+const state = {
+  comps: [], archive: [], intl: [], watch: {}, status: {}, decisions: {}, intlDates: {}, error: null, notice: null, datesMsg: '',
+};
 
 const ENTRY = { open: 'Open entry', invite: 'By invitation', qualifier: 'Qualifier round', unclear: 'Entry route unclear' };
 const INDIAN_UG = { yes: 'Open to Indian undergraduates', no: 'Not open to Indian undergraduates', unclear: 'Unclear for Indian undergraduates' };
@@ -32,11 +38,11 @@ const fmtDate = d => (d
   : null);
 const dateOr = (d, missing) => esc(fmtDate(d) || missing);
 
-async function tokenRejected() {
-  setToken(null);
+async function keyRejected() {
+  clearKey();
   saver.drop();
-  state.decisions = await pagesJson('decisions.json', {});
-  state.error = TOKEN_REJECTED;
+  await load();
+  state.error = KEY_REJECTED;
 }
 
 async function load() {
@@ -44,11 +50,22 @@ async function load() {
   [state.comps, state.archive, state.intl, state.watch, state.status] = await Promise.all([
     pagesJson('competitions.json', []), pagesJson('archive.json', []), pagesJson('international.json', []),
     pagesJson('watch.json', {}), pagesJson('status.json', {})]);
-  await loadDecisions(state, tokenRejected);
+  const curated = String(ID).startsWith('intl-');
+  await loadDecisions(state, {
+    overlay: d => saver.overlay(d),
+    readMore: async () => { if (curated) state.intlDates = { ...await readIntlDates(), ...localDates }; },
+  });
   render();
 }
 
-const findComp = () => (Array.isArray(state.comps) ? state.comps : []).find(c => sameId(c.id, ID));
+// Dates saved on this page this session win over what the store returned
+// (a cleared row is gone from the store but still in competitions.json).
+const localDates = {};
+const withDates = c => {
+  const d = c?.source === 'curated' ? state.intlDates[String(c.id)] : null;
+  return d ? { ...c, regn_close: d.regn_close, comp_end: d.comp_end } : c;
+};
+const findComp = () => withDates((Array.isArray(state.comps) ? state.comps : []).find(c => sameId(c.id, ID)));
 // A curated id can be archived once per edition: the newest entry wins.
 const findArchived = () => (Array.isArray(state.archive) ? state.archive : []).filter(a => sameId(a?.id, ID)).at(-1);
 const curatedRow = c => (Array.isArray(state.intl) ? state.intl : []).find(r => sameId(r?.id, c.id));
@@ -233,7 +250,7 @@ function render() {
   }
 }
 
-const banners = () => bannersHtml(state.status, state.error);
+const banners = () => bannersHtml(state.status, state.error, state.notice);
 function renderBanners() {
   const el = document.getElementById('banners');
   if (el) el.innerHTML = banners();
@@ -253,7 +270,7 @@ const saver = createDecisionSaver(state, {
       if (t && document.activeElement !== t) t.value = now.note;
     }
   },
-  async authRejected() { await tokenRejected(); render(); },
+  async keyRejected() { await keyRejected(); render(); },
   failed(err) {
     state.error = `Not saved: ${err.message}`; // the change stays on screen
     renderBanners();
@@ -263,10 +280,8 @@ const saver = createDecisionSaver(state, {
 document.addEventListener('click', async e => {
   const b = e.target.closest('button');
   if (!b) return;
-  if (b.id === 'unlock') {
-    if (askToken()) await load();
-  } else if (b.id === 'lock') {
-    setToken(null); await load();
+  if (b.id === 'lock') {
+    clearKey(); saver.drop(); state.notice = null; await load();
   } else if ('set' in b.dataset && editable()) {
     await saver.save(b.dataset.id, d => ({ ...d, status: b.dataset.set || undefined }));
   }
@@ -301,16 +316,13 @@ document.addEventListener('submit', async e => {
   btn.disabled = true;
   msg.textContent = 'Saving…';
   try {
-    await apiUpdate('data/intl-dates.json', data => {
-      const next = data && typeof data === 'object' && !Array.isArray(data) ? { ...data } : {};
-      if (!regn && !end) delete next[key];
-      else next[key] = { regn_close: regn || null, comp_end: end || null, confirmed_on: todayIST() };
-      return next;
-    }, `dates: ${key}`);
+    await setIntlDates(key, regn || null, end || null);
+    localDates[key] = { regn_close: regn || null, comp_end: end || null, confirmed_on: todayIST() };
+    state.intlDates = { ...state.intlDates, [key]: localDates[key] };
     state.datesMsg = !regn && !end ? 'Cleared; the calendar updates after the next fetch' : 'Saved; the calendar updates after the next fetch';
-    msg.textContent = state.datesMsg;
+    render();
   } catch (err) {
-    if (err instanceof AuthError) { await tokenRejected(); render(); return; }
+    if (err instanceof KeyRejected) { await keyRejected(); render(); return; }
     msg.textContent = err.message;
   } finally {
     const b = document.getElementById('dates-btn');
@@ -319,4 +331,4 @@ document.addEventListener('submit', async e => {
 });
 
 mountNav(null);
-load();
+initEditor().then(notice => { state.notice = notice; return load(); });

@@ -7,13 +7,14 @@ import { hostRows, archiveList } from '../lib/hosts.js';
 import { captureFocus } from '../lib/focus.js';
 import { mountNav } from '../lib/nav.js';
 import { bannersHtml, istTime } from '../lib/session.js';
+import { initEditor } from '../lib/editor.js';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const ARCHIVE_STARTED = '2026-09-29';
 const ARCHIVE_HISTORY_DAYS = 30;
 
 const state = {
-  comps: [], archive: [], curated: [], status: {}, error: null,
+  comps: [], archive: [], curated: [], status: {}, error: null, notice: null,
   hostTiers: new Set(Object.keys(TIERS)), hostQuery: '', archiveQuery: '',
 };
 
@@ -96,7 +97,7 @@ function archiveSectionHtml(today) {
 
 function render() {
   const focus = captureFocus();
-  document.getElementById('app').innerHTML = `<div id="banners">${bannersHtml(state.status, state.error)}</div>
+  document.getElementById('app').innerHTML = `<div id="banners">${bannersHtml(state.status, state.error, state.notice)}</div>
     ${hostsSectionHtml()}
     ${archiveSectionHtml(todayIST())}
     <footer><span>Read-only.</span><span>Updated ${esc(istTime(state.status?.last_ok))}</span></footer>`;
@@ -117,4 +118,4 @@ document.addEventListener('input', e => {
 });
 
 mountNav('hosts');
-load();
+initEditor().then(notice => { state.notice = notice; return load(); });
