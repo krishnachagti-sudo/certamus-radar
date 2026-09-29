@@ -1,7 +1,7 @@
 [
   { "name": "HUL LIME", "host": "Hindustan Unilever|\\bHUL\\b", "title": "\\bL\\.?I\\.?M\\.?E\\b" },
   { "name": "Tata Crucible", "host": "^Tata (Group|Sons|Steel|Motors|Consultancy)|^TCS\\b", "title": "\\bTata Crucible\\b" },
-  { "name": "Mahindra War Room", "host": "^Mahindra (&|and) Mahindra|^Mahindra Group", "title": "\\bWar Room\\b" },
+  { "name": "Mahindra War Room", "host": "^Mahindra (&|and) Mahindra|^Mahindra Group|^Mahindra Rise", "title": "\\bWar Room\\b" },
   { "name": "Flipkart WiRED", "host": "Flipkart", "title": "\\bWiRED\\b" },
   { "name": "Amazon", "host": "^Amazon" },
   { "name": "ITC Interrobang", "host": "\\bITC\\b", "title": "\\bInterrobang\\b" },

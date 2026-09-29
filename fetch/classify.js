@@ -2,8 +2,8 @@
 // team are arguments, so nothing here reads data/.
 
 const IIT = /indian institute of technology|\bIIT\b/i;
-const IIM = /indian institute of management(?! and commerce)|\bIIM\b/i;
-const IS_COLLEGE = /universit|college|institute|school|IIT|IIM|NIT/i;
+const IIM = /indian institute of management(?! (and|&) commerce)|\bIIM\b/i;
+const IS_COLLEGE = /universit|college|institute|school|\bIIT\b|\bIIM\b|\bNIT\b/i;
 
 export function tier(rec, lists) {
   const host = rec.host || '';
@@ -49,6 +49,23 @@ const DETAIL_FLAGS = [
 function courses(el, key) {
   const list = Array.isArray(el?.[key]) ? el[key] : [];
   return list.map(x => (typeof x === 'string' ? x : x?.course)).filter(Boolean);
+}
+
+// A sentence that also names an undergraduate route (BMS's own route, or the
+// generic "undergraduate"/BBA one) is not a restriction against BMS, even if
+// it happens to mention MBA/PGDM elsewhere in the same breath.
+const UG_MENTION = /\b(undergraduate|UG|BMS|BBA)\b/i;
+
+function detailFlag(detailsText) {
+  const sentences = (detailsText || '').split(/[.;\n]/);
+  for (const sentence of sentences) {
+    if (UG_MENTION.test(sentence)) continue;
+    for (const re of DETAIL_FLAGS) {
+      const m = sentence.match(re);
+      if (m) return m[0].trim();
+    }
+  }
+  return null;
 }
 
 // Names a populated course list for the "open to X only" reason: a list
@@ -101,8 +118,8 @@ export function verdict(rec, team) {
   if (populated.length && !othersAll && !bs.some(c => BSCHOOL_OPEN.includes(c))) {
     reasons.push('listed for BBA/IPM/B.Com; BMS usually counts, confirm');
   }
-  const flag = DETAIL_FLAGS.map(re => (rec.details_text || '').match(re)).find(Boolean);
-  if (flag) reasons.push(`details say "${flag[0].trim()}"`);
+  const flag = detailFlag(rec.details_text);
+  if (flag) reasons.push(`details say "${flag}"`);
   if (rec.fee) reasons.push('entry fee');
   if (!el) reasons.push('eligibility not stated');
   if (!rec.details_fetched && !rec.details_text) reasons.push('details not fetched');

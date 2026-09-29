@@ -140,6 +140,25 @@ test('tier: Tata Steel is the corporate', () => {
   assert.equal(tier(rec({ host: 'Tata Steel' }), realLists), 'corporate');
 });
 
+test('tier: Mahindra Rise host is not miscategorised as a college by a NIT substring', () => {
+  assert.equal(tier(rec({ host: 'Mahindra Rise Community', title: 'The War Room 2026' }), realLists), 'corporate');
+});
+test('tier: IIM and Commerce with an ampersand is not an IIM', () => {
+  assert.equal(tier(rec({ host: 'Indian Institute of Management & Commerce' }), realLists), 'other');
+});
+test('fits: MBA/PGDM/PGP mentioned in the same sentence as undergraduate', () => {
+  const r = v({ details_text: 'Open to students currently enrolled in full-time MBA, PGDM, PGP and undergraduate programs.' });
+  assert.equal(r.level, 'fits');
+});
+test('fits: MBA and BMS welcome in the same sentence', () => {
+  const r = v({ details_text: 'Only one team per college, MBA and BMS welcome.' });
+  assert.equal(r.level, 'fits');
+});
+test('check: MBA only with no mention of undergraduates still flags', () => {
+  const r = v({ details_text: 'Open to MBA students only.' });
+  assert.equal(r.level, 'check');
+});
+
 test('out reason: readable course names, capped list, category label when "all" is present', () => {
   const el = { sector: ['students'], others: [], arts: ['all'], bSchools: [{ course: 'mba1' }] };
   const r = v({ eligibility: el });
