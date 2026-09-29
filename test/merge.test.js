@@ -68,10 +68,16 @@ test('appendArchive keeps only slim fields and dedupes by id', () => {
     format: 'case_competition', is_case: true, verdict: { level: 'fits', reasons: [] }, details_text: 'body', eligibility: {}, team_max: 4 };
   const once = appendArchive([], [rec]);
   assert.deepEqual(Object.keys(once[0]).sort(),
-    ['archive_key', 'closed_on', 'comp_end', 'first_seen', 'format', 'host', 'id', 'is_case', 'regn_close', 'tier', 'title', 'url']);
+    ['archive_key', 'closed_on', 'comp_end', 'first_seen', 'format', 'host', 'id', 'is_case', 'regn_close', 'source', 'tier', 'title', 'url']);
   const twice = appendArchive(once, [rec, { ...rec, id: 2 }]);
   assert.deepEqual(twice.map(x => x.id), [1, 2]);
   assert.equal(appendArchive(twice, []), twice);
+});
+
+test('appendArchive keeps the record source', () => {
+  const rec = { ...r(1), source: 'oppdesk', host: 'H', tier: 'other', url: 'https://opportunitydesk.org/x', first_seen: '2026-07-01', closed_on: '2026-08-01' };
+  const once = appendArchive([], [rec]);
+  assert.equal(once[0].source, 'oppdesk');
 });
 
 test('appendArchive dedupes across number and string ids', () => {
@@ -80,14 +86,31 @@ test('appendArchive dedupes across number and string ids', () => {
 });
 
 test('curated records are never pruned; each closed edition is returned for the archive', () => {
-  const cur = { ...r('intl-a', { regn_close: '2026-08-01', comp_end: '2026-08-10' }), source: 'curated', first_seen: '2026-07-01', closed_on: '2026-08-02' };
-  const { next, pruned } = mergeFull([cur], [{ ...cur }], {}, '2026-10-01'); // 61 days after closed_on
+  const cur = { ...r('intl-a', { regn_close: '2026-08-01', comp_end: '2026-08-10' }), source: 'curated', first_seen: '2026-07-01', closed_on: null };
+  const { next, pruned } = mergeFull([cur], [{ ...cur }], {}, '2026-10-01'); // 61 days after regn_close
   assert.deepEqual(next.map(x => x.id), ['intl-a']);
+  assert.equal(next[0].closed_on, null);
   assert.deepEqual(pruned.map(x => x.id), ['intl-a']);
   const open = mergeFull([], [{ ...r('intl-b', { regn_close: '2026-12-01' }), source: 'curated' }], {}, today);
   assert.deepEqual(open.pruned, []);
   const undated = mergeFull([], [{ ...r('intl-c', { regn_close: null }), source: 'curated' }], {}, today);
   assert.deepEqual(undated.pruned, []);
+});
+
+test('curated records never get closed_on, even after their confirmed regn_close passes; archived exactly once across repeated runs', () => {
+  const cur = { ...r('intl-d', { regn_close: '2026-08-01', comp_end: '2026-08-10' }), source: 'curated' };
+  const run1 = mergeFull([], [cur], {}, '2026-10-01'); // 61 days after regn_close
+  assert.equal(run1.next[0].closed_on, null);
+  assert.deepEqual(run1.pruned.map(x => x.id), ['intl-d']);
+
+  // A second run (e.g. the next day's fetch) must not archive the same edition again.
+  const run2 = mergeFull(run1.next, [cur], {}, '2026-10-02');
+  assert.equal(run2.next[0].closed_on, null);
+  assert.deepEqual(run2.pruned.map(x => x.id), ['intl-d']);
+
+  const archive = appendArchive(appendArchive([], run1.pruned), run2.pruned);
+  assert.equal(archive.length, 1);
+  assert.equal(archive[0].archive_key, 'intl-d@2026-08-01');
 });
 
 test('appendArchive keys curated editions by id@regn_close and archives each once', () => {

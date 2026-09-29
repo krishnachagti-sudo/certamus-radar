@@ -25,10 +25,11 @@ export function merge(existing, fetched, decisions, today) {
     seen.add(f.id);
     const p = prev.get(f.id);
     const past = f.regn_close && dayDiff(today, f.regn_close) < 0;
-    next.push({ ...f, first_seen: p?.first_seen || today, closed_on: past ? (p?.closed_on || today) : null });
+    const closed_on = f.source === 'curated' ? null : (past ? (p?.closed_on || today) : null);
+    next.push({ ...f, first_seen: p?.first_seen || today, closed_on });
   }
   for (const p of existing) {
-    if (!seen.has(p.id)) next.push({ ...p, closed_on: p.closed_on || today });
+    if (!seen.has(p.id)) next.push({ ...p, closed_on: p.source === 'curated' ? null : (p.closed_on || today) });
   }
   const kept = [];
   const pruned = [];
@@ -44,7 +45,7 @@ export function merge(existing, fetched, decisions, today) {
 // The archive keeps only what the Hosts page needs: never body text,
 // eligibility or verdict reasons. Append-only, deduped by archive_key:
 // the id, or id@regn_close for a curated edition.
-const ARCHIVE_FIELDS = ['id', 'title', 'host', 'tier', 'url', 'regn_close', 'comp_end', 'first_seen', 'closed_on', 'format', 'is_case'];
+const ARCHIVE_FIELDS = ['id', 'title', 'host', 'tier', 'url', 'regn_close', 'comp_end', 'first_seen', 'closed_on', 'format', 'is_case', 'source'];
 
 export const archiveKey = r => (r.source === 'curated' && r.regn_close ? `${r.id}@${r.regn_close}` : String(r.id));
 

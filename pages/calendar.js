@@ -145,13 +145,18 @@ function expectedRow(c) {
     </li>`;
 }
 
-function agendaHtml(today) {
+// `marked` says whether anything is Watching/Entering/Registered. When
+// nothing is marked, the page-level "Nothing on the calendar yet…" message
+// (emptyHtml) already covers it, so this must not also print its own
+// "Nothing dated from today onward." line — that pairing is the two-message
+// empty state bug.
+function agendaHtml(today, marked) {
   const pairs = clashDays(committedSet(state.comps, state.decisions), today).pairs;
   const groups = agendaGroups(calendarEvents(state.comps, state.decisions), today);
   const expected = expectedItems(state.comps, state.decisions);
   const weeks = groups.map(g => `<section class="wk" aria-label="${esc(g.label)}"><h2>${esc(g.label)}</h2>
     <ul>${g.events.map(e => agendaRow(e, pairs)).join('')}</ul></section>`).join('');
-  return `${weeks || '<p class="empty">Nothing dated from today onward.</p>'}
+  return `${weeks || (marked ? '<p class="empty">Nothing dated from today onward.</p>' : '')}
     ${expected.length ? `<section class="wk" aria-label="Expected, dates not confirmed"><h2>Expected, dates not confirmed</h2>
       <ul>${expected.map(expectedRow).join('')}</ul></section>` : ''}`;
 }
@@ -182,7 +187,7 @@ function render() {
         </div>
       </div>
       ${marked ? '' : emptyHtml()}
-      ${anything ? (grid ? gridHtml(today) : agendaHtml(today)) : ''}
+      ${anything ? (grid ? gridHtml(today) : agendaHtml(today, marked)) : ''}
     </div>
     <footer><span>Read-only. Change statuses on the <a href="index.html">Board</a>.</span><span>Updated ${esc(istTime(state.status?.last_ok))}</span></footer>`;
   focus.restore();

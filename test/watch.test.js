@@ -1,7 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
-import { watchAll } from '../fetch/watch.js';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { watchAll, main } from '../fetch/watch.js';
 
 const sha256 = s => crypto.createHash('sha256').update(s).digest('hex');
 
@@ -105,4 +108,46 @@ test('ids removed from the list are dropped from the next map', async () => {
   const second = await watchAll([row('intl-a')], first, { getText: async () => 'text', pause: async () => {}, now: '2026-10-06' });
   assert.ok(second['intl-a']);
   assert.equal(second['intl-b'], undefined);
+});
+
+// ---- main() ---------------------------------------------------------------
+
+function tmpDataDir(files) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'radar-watch-'));
+  for (const [f, v] of Object.entries(files)) {
+    fs.writeFileSync(path.join(dir, f), typeof v === 'string' ? v : JSON.stringify(v));
+  }
+  return dir;
+}
+
+test('main writes watch.json when international.json is a valid array', async () => {
+  const dir = tmpDataDir({ 'international.json': [row('intl-a')] });
+  const code = await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async () => 'text', pause: async () => {} } });
+  assert.equal(code, 0);
+  const written = JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8'));
+  assert.ok(written['intl-a']);
+});
+
+test('main errors and does not write watch.json when international.json is missing', async () => {
+  const dir = tmpDataDir({});
+  fs.writeFileSync(path.join(dir, 'watch.json'), JSON.stringify({ old: true }));
+  const code = await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async () => 'text', pause: async () => {} } });
+  assert.equal(code, 1);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8')), { old: true });
+});
+
+test('main errors and does not write watch.json when international.json is unparseable', async () => {
+  const dir = tmpDataDir({ 'international.json': '{not json' });
+  fs.writeFileSync(path.join(dir, 'watch.json'), JSON.stringify({ old: true }));
+  const code = await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async () => 'text', pause: async () => {} } });
+  assert.equal(code, 1);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8')), { old: true });
+});
+
+test('main errors and does not write watch.json when international.json is not an array', async () => {
+  const dir = tmpDataDir({ 'international.json': { not: 'an array' } });
+  fs.writeFileSync(path.join(dir, 'watch.json'), JSON.stringify({ old: true }));
+  const code = await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async () => 'text', pause: async () => {} } });
+  assert.equal(code, 1);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8')), { old: true });
 });

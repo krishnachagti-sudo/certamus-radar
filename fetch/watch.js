@@ -75,14 +75,30 @@ export async function watchAll(list, prev, { getText = defaultGetText, pause = d
 
 const DEFAULT_DIR = fileURLToPath(new URL('../data/', import.meta.url));
 
+// Tells "missing" apart from "there but broken", for a file we must not
+// silently treat as empty: a bad international.json must never blank
+// watch.json for every already-watched row.
+function readList(dataDir, f) {
+  let raw;
+  try { raw = fs.readFileSync(path.join(dataDir, f), 'utf8'); } catch { return { missing: true }; }
+  let value;
+  try { value = JSON.parse(raw); } catch (e) { return { error: `unparseable (${e.message})` }; }
+  if (!Array.isArray(value)) return { error: 'is not an array' };
+  return { value };
+}
+
 export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} } = {}) {
   const file = f => path.join(dataDir, f);
   const read = (f, fallback) => {
     try { return JSON.parse(fs.readFileSync(file(f), 'utf8')); } catch { return fallback; }
   };
-  const list = read('international.json', []);
+  const listFile = readList(dataDir, 'international.json');
+  if (listFile.missing || listFile.error) {
+    console.error(`watch: international.json ${listFile.missing ? 'missing' : listFile.error}; watch.json not written`);
+    return 1;
+  }
   const prev = read('watch.json', {});
-  const next = await watchAll(list, prev, { now, ...deps });
+  const next = await watchAll(listFile.value, prev, { now, ...deps });
   fs.writeFileSync(file('watch.json'), JSON.stringify(next, null, 2) + '\n');
   const errors = Object.entries(next).filter(([, v]) => v.last_error);
   console.log(`watch: ${Object.keys(next).length} checked, ${errors.length} errors`);
