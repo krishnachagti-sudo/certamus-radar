@@ -203,7 +203,10 @@ function refocus(sel, fallback) {
 }
 
 function render() {
-  const sel = focusSelector(document.activeElement);
+  const active = document.activeElement;
+  const sel = focusSelector(active);
+  const typing = active?.dataset?.note !== undefined
+    ? { value: active.value, start: active.selectionStart, end: active.selectionEnd } : null;
   const draftUrl = document.getElementById('add-url')?.value || '';
   const today = todayIST();
   const entering = state.comps.filter(c => statusOf(c) === 'entering');
@@ -231,6 +234,10 @@ function render() {
       <span>Updated ${esc(istTime(state.status.last_ok))}</span>
     </footer>`;
   refocus(sel);
+  if (typing && sel) {
+    const input = document.querySelector(sel);
+    if (input) { input.value = typing.value; try { input.setSelectionRange(typing.start, typing.end); } catch { /* ignore */ } }
+  }
 }
 
 const cardEl = id => document.querySelector(`[data-card="${cssq(id)}"]`);
@@ -275,6 +282,10 @@ function renderCardStatus(id) {
 // a server result can be re-overlaid with the changes still waiting to save.
 let saveChain = Promise.resolve();
 const pendingSaves = [];
+// Entering changes clash badges on other cards; skipped hides the card by
+// default. Either needs the whole list redrawn (render() restores focus).
+const FULL_RENDER = new Set(['entering', 'skipped']);
+const needsFullRender = (a, b) => a !== b && (FULL_RENDER.has(a) || FULL_RENDER.has(b));
 const decisionView = id => ({ status: state.decisions[id]?.status || '', note: state.decisions[id]?.note || '' });
 
 function saveDecision(id, change, { fromNote = false } = {}) {
@@ -292,8 +303,8 @@ function saveDecision(id, change, { fromNote = false } = {}) {
   pendingSaves.push(entry);
   const after = decisionView(id);
   // A note's own change never re-renders its card: the user may be typing.
-  if (!fromNote) renderCard(id);
-  else if (before.status !== after.status) renderCardStatus(id);
+  if (!fromNote) (needsFullRender(before.status, after.status) ? render() : renderCard(id));
+  else if (before.status !== after.status) (needsFullRender(before.status, after.status) ? render() : renderCardStatus(id));
 
   const job = saveChain.then(async () => {
     if (!pendingSaves.includes(entry)) return; // dropped (token rejected)
@@ -304,7 +315,8 @@ function saveDecision(id, change, { fromNote = false } = {}) {
       state.decisions = pendingSaves.reduce((d, p) => p.apply(d), server);
       if (state.error) { state.error = null; renderBanners(); }
       const now = decisionView(id);
-      if (now.status !== shown.status) renderCardStatus(id);
+      if (needsFullRender(shown.status, now.status)) render();
+      else if (now.status !== shown.status) renderCardStatus(id);
       if (now.note !== shown.note) {
         const input = cardEl(id)?.querySelector('input.note');
         if (input && document.activeElement !== input) input.value = now.note;
