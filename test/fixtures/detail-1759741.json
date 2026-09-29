@@ -1,0 +1,937 @@
+{
+ "data": {
+  "status": true,
+  "competition": {
+   "id": 1759741,
+   "visibility": "public",
+   "theme_colour": "blue_un",
+   "paid": 0,
+   "title": "Ops-Essentia: Operations Case Study Challenge",
+   "festival_id": null,
+   "organization_id": 590,
+   "web_url": null,
+   "start_date": "2026-09-22T00:00:00+05:30",
+   "end_date": "2026-11-09T21:25:00+05:30",
+   "location": null,
+   "type": "competitions",
+   "public_url": "competitions/ops-essentia-operations-case-study-challenge--1759741",
+   "region": "online",
+   "details": "<p><strong>Overview</strong></p>\n<p>OPTUS, the Operations and Supply Chain Club of IIM Raipur bring you to OPS - Essentia to acknowledge your perception and derive its implications in the field of operations.</p>\n<p>Ops-Essentia deals with doing things in the right way at the right time. It empowers you to envision and focus on the big picture in the environment of turmoil and access your managerial instincts and perception about the imminent situation.</p>\n<p><strong>Rules:</strong></p>\n<ul>\n<li>Each team should have a minimum of 2 and a maximum of 3 participants.</li>\n<li>There is no limit on the number of teams that can participate from a single institute; however, no student from an institute can be part of more than one team from the same institute.</li>\n<li>Modification of the team composition or team details after the first round of submissions is not allowed.</li>\n<li>All team members must be from the same institute.</li>\n<li>Any deviation from the above will result in immediate disqualification of the entire team.</li>\n<li>All decisions regarding eligibility and final judgment shall rest with the OPTUS team.</li>\n<li>The format and rules of events are subject to change before the start of the event.</li>\n<li>Only the team leader, the person who registered the team, will be able to play the online quiz.</li>\n</ul>\n<p><strong>Details of the Rounds: </strong>Ops-Essentia is a two-round challenge</p>\n<p><strong>Round 1 - </strong><strong>Online Quiz:</strong>&nbsp;</p>\n<ul>\n<li>This round will test the knowledge of the general concepts of operations and supply chain management.</li>\n<li>Teams must complete the game within the stipulated time of 15 minutes.</li>\n<li>The online quiz will be live on 09.10.2026, between 09:30 PM - 10:30 PM IST</li>\n<li>Only the team leader can attempt the quiz.</li>\n<li>Teams will be shortlisted for round 2 based on their scores in this round.</li>\n<li>Results will be declared on 10.10.2026 at 10:00 AM IST.</li>\n<li>Selected teams will be informed via email.</li>\n</ul>\n<p><strong>Round 2 - </strong><strong>Online Case Study:&nbsp;</strong></p>\n<ul class=\"\">\n<li>The case study will be live for selected candidates on 10th October'26 from 10:00 AM IST.&nbsp;</li>\n<li>Submission Window: 10th October'26 from 10:00 AM<span class=\"\">&nbsp;</span>to 17th October'26 from 11:59 PM IST.</li>\n<li>Only the team leader will be able to make the submissions.</li>\n<li>You'll need to submit a PowerPoint Presentation (PPT) of not more than 5 slides (excluding cover &amp; annexures) with your analysis.</li>\n<li>The naming convention should be TeamName_CollegeName (e.g., Kaizen_Xaviers).</li>\n<li>In the case of file submissions, please ensure that the file size is less than 20 MB.</li>\n<li>Please make all your submissions well before the submission deadline to avoid any last-minute hassles.</li>\n</ul>",
+   "overall_prizes": null,
+   "regn_open": 1,
+   "regn_type": 1,
+   "regn_url": null,
+   "registration_clicks": 0,
+   "moderation_status": 1,
+   "overall_leaderboard": 0,
+   "reject_reason": null,
+   "display_date": null,
+   "created_at": "2026-09-22T03:18:33+05:30",
+   "updated_at": "2026-09-25T14:17:39+05:30",
+   "communication_sent": null,
+   "certificate_at": null,
+   "remarks": null,
+   "disable_auto_rounds": null,
+   "certificate_config": null,
+   "subtype": "case_competition",
+   "combined_leaderboard": null,
+   "source": null,
+   "short_id": "5tbDuv4",
+   "hashtags": null,
+   "participation_certificate": 0,
+   "winner_certificate_at": null,
+   "listed": 1,
+   "self_moderated": 2,
+   "prizes_release_days": null,
+   "checked": null,
+   "display_title": null,
+   "show_discussions_only_user": 1,
+   "show_reviews_only_user": 1,
+   "show_score_card": 0,
+   "players_count": 69,
+   "referral_leaderboard_show": 0,
+   "is_ad_free": 0,
+   "enable_gamify_leaderboard": 0,
+   "tpo_college_id": null,
+   "publish_at": "2026-09-25 02:54:34",
+   "auto_shortlist_trigger": false,
+   "enable_ai_discussion": false,
+   "total_unlock_teams": 0,
+   "enable_hiring_automation": false,
+   "auto_send_participation_certificate": true,
+   "closed_at": null,
+   "linkedInEventId": "",
+   "logoUrl": "https://d8it4huxumps7.cloudfront.net/uploads/images/75x75/6ab5e99008112_220px-Indian_Institute_of_Management_Raipur_logo.png",
+   "logoUrl2": "https://d8it4huxumps7.cloudfront.net/uploads/images/150x150/6ab5e99008112_220px-Indian_Institute_of_Management_Raipur_logo.png",
+   "regnRequirements": {
+    "id": 2491259,
+    "opportunity_id": 1759741,
+    "festival_id": null,
+    "max_team_size": 3,
+    "min_team_size": 2,
+    "start_regn_dt": "2026-09-22T00:00:00+05:30",
+    "end_regn_dt": "2026-11-09T21:25:00+05:30",
+    "show_deadline": 1,
+    "open_for": 0,
+    "college_type": 0,
+    "same_organisation": 1,
+    "study_year_filter": 0,
+    "deleted_at": null,
+    "eligibility": "{\"sector\":[\"students\"],\"engineering\":[],\"bSchools\":[],\"arts\":[],\"medicine\":[],\"law\":[],\"others\":[\"all\"],\"experience\":[\"all\"],\"studentPassoutYearsSelected\":[\"all\"],\"fresherPassoutYearsSelected\":[\"all\"],\"schoolFilteredClasses\":[\"all\"],\"minMarks\":{\"high_school_perc\":0,\"high_school_cgpa\":0},\"locations\":[],\"location_type\":\"all\",\"professionalEligibility\":null,\"fresherEligibility\":null}",
+    "gender": [
+     "A"
+    ],
+    "vendor_id": null,
+    "verified_email": 1,
+    "verified_mobile": 1,
+    "experience": null,
+    "only_official_domains": null,
+    "enable_verifications": null,
+    "enable_icsfile": null,
+    "proctoring": {},
+    "gender_diversity": null,
+    "allow_social_login": 1,
+    "allowed_countries": "[]",
+    "extendRegForm": 0,
+    "screening_round": null,
+    "consent_needed": 0,
+    "invitations_allowed": 1,
+    "registration_limit": null,
+    "same_graduation_year": 0,
+    "same_course": 0,
+    "same_user_type": 0,
+    "can_edit_extended_form": 0,
+    "extend_basic_form": null,
+    "core_req_fields": {
+     "name": {
+      "mandatory": true,
+      "required": true
+     },
+     "email": {
+      "mandatory": true,
+      "required": true
+     },
+     "mobile_no": {
+      "mandatory": true,
+      "required": true
+     },
+     "gender": {
+      "mandatory": true,
+      "required": true
+     },
+     "organization": {
+      "mandatory": true,
+      "required": true
+     },
+     "userType": {
+      "mandatory": true,
+      "required": true
+     },
+     "country": {
+      "mandatory": true,
+      "required": true
+     },
+     "differentlyAbled": {
+      "mandatory": true,
+      "required": true
+     },
+     "skills": {
+      "mandatory": false,
+      "required": false
+     }
+    },
+    "enable_draft_reg": false,
+    "closed_job_end_date": 0,
+    "reg_restricted": 0,
+    "free_webinar_for_unstop_pro": 0,
+    "email_reply_to": 0,
+    "verified_aadhaar": 0,
+    "verified_aadhaar_face": 0,
+    "player_extended_form": {
+     "resume_field": {
+      "enabled": false,
+      "pre_defined": false,
+      "customFields": [
+       {
+        "accepted_values": "pdf",
+        "mandatory": -1,
+        "remarks": "Submit your resume in pdf",
+        "title": "Resume ",
+        "type": "file",
+        "validation_rules": null,
+        "validations": {
+         "max_file_size": 5
+        },
+        "uid": "17900273131969"
+       }
+      ],
+      "fieldInfo": {
+       "required": true,
+       "title": "resume_field",
+       "keyName": "resume_field"
+      },
+      "default": "fill"
+     }
+    },
+    "unique_face_verify": false,
+    "resume_parser": 0,
+    "display_compatibility_score": null,
+    "registration_config": {
+     "enable_newsletter_subscription": 0,
+     "extended_form_page_break": "separate"
+    },
+    "verified_driving_licence_face": 0,
+    "verified_aadhaar_face_via_digilocker": 0,
+    "audio_capture": 0,
+    "verification_service": 2,
+    "driver_for_proctoring": "aws",
+    "digilocker_verification_service": 1,
+    "allow_specific_cities": false,
+    "enable_data_transfer_to_SAP": 0,
+    "resume_match_config": "[{\"key\": \"work_experience\", \"label\": \"Work Experience\", \"include\": true, \"is_custom\": false, \"weightage\": 17, \"weight_level\": 1}, {\"key\": \"skills\", \"label\": \"Skills\", \"include\": true, \"is_custom\": false, \"weightage\": 17, \"weight_level\": 1}, {\"key\": \"education\", \"label\": \"Education\", \"include\": true, \"is_custom\": false, \"weightage\": 17, \"weight_level\": 1}, {\"key\": \"achievements\", \"label\": \"Achievements\", \"include\": true, \"is_custom\": false, \"weightage\": 17, \"weight_level\": 1}, {\"key\": \"certifications\", \"label\": \"Certifications\", \"include\": true, \"is_custom\": false, \"weightage\": 16, \"weight_level\": 1}, {\"key\": \"projects\", \"label\": \"Projects\", \"include\": true, \"is_custom\": false, \"weightage\": 16, \"weight_level\": 1}]",
+    "limit_type": 1,
+    "work_location_type": "city",
+    "gender_verification": false,
+    "sap_stage_id": null,
+    "has_compatibility_priority": 0,
+    "face_recog_driver": "aws",
+    "face_detect_driver": "aws",
+    "reg_status": "STARTED",
+    "remaining_time": 3562480,
+    "remain_days": "1 month left",
+    "allowed_organisations": [],
+    "organisations": [],
+    "attachment": [],
+    "remainingDaysArray": {
+     "durations": "1",
+     "text": "month left"
+    },
+    "isRegistrationFull": false
+   },
+   "seo_url": "https://unstop.com/competitions/ops-essentia-operations-case-study-challenge--1759741",
+   "status": "LIVE",
+   "opportunityCountries": [],
+   "festival": null,
+   "filters": [
+    {
+     "id": 426,
+     "name": "Undergraduate",
+     "type": "eligible",
+     "file_name": "undergraduate",
+     "domain_id": 0,
+     "subtype": null,
+     "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/undergraduate.svg"
+    },
+    {
+     "id": 424,
+     "name": "Postgraduate",
+     "type": "eligible",
+     "file_name": "postgraduate",
+     "domain_id": 0,
+     "subtype": null,
+     "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/postgraduate.svg"
+    },
+    {
+     "id": 422,
+     "name": "Engineering Students",
+     "type": "eligible",
+     "file_name": "engineering",
+     "domain_id": 0,
+     "subtype": null,
+     "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/engineering.svg"
+    },
+    {
+     "id": 4022,
+     "name": "Management",
+     "type": "eligible",
+     "file_name": null,
+     "domain_id": 0,
+     "subtype": null,
+     "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+    },
+    {
+     "id": 4025,
+     "name": "Arts, Commerce, Sciences & Others",
+     "type": "eligible",
+     "file_name": null,
+     "domain_id": 0,
+     "subtype": null,
+     "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+    },
+    {
+     "id": 4024,
+     "name": "Law",
+     "type": "eligible",
+     "file_name": null,
+     "domain_id": 0,
+     "subtype": null,
+     "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+    },
+    {
+     "id": 4023,
+     "name": "Medical",
+     "type": "eligible",
+     "file_name": null,
+     "domain_id": 0,
+     "subtype": null,
+     "icon_url": "https://d8it4huxumps7.cloudfront.net/images/icons/color_icons/.svg"
+    }
+   ],
+   "fields": [],
+   "datesToshow": [],
+   "attachment": [],
+   "prizes": [
+    {
+     "id": 3858061,
+     "rank": "Winner",
+     "cash": 9000,
+     "currency": "fa-rupee",
+     "certificate": 0,
+     "entity_id": 1759741,
+     "entity_type": "App\\Model\\Opportunity",
+     "others": "",
+     "currencyCode": "INR",
+     "cash_postfix": null,
+     "max_cash": null,
+     "pre_placement_internship": 0,
+     "pre_placement_opportunity": 0
+    },
+    {
+     "id": 3858062,
+     "rank": "First Runner Up",
+     "cash": 6500,
+     "currency": "fa-rupee",
+     "certificate": 0,
+     "entity_id": 1759741,
+     "entity_type": "App\\Model\\Opportunity",
+     "others": "",
+     "currencyCode": "INR",
+     "cash_postfix": null,
+     "max_cash": null,
+     "pre_placement_internship": 0,
+     "pre_placement_opportunity": 0
+    },
+    {
+     "id": 3858063,
+     "rank": "Second Runner Up",
+     "cash": 4500,
+     "currency": "fa-rupee",
+     "certificate": 0,
+     "entity_id": 1759741,
+     "entity_type": "App\\Model\\Opportunity",
+     "others": "",
+     "currencyCode": "INR",
+     "cash_postfix": null,
+     "max_cash": null,
+     "pre_placement_internship": 0,
+     "pre_placement_opportunity": 0
+    }
+   ],
+   "mod_status": "LIVE",
+   "registerCount": 253,
+   "short_url": "https://unstop.com/o/5tbDuv4",
+   "review_details": {
+    "avg_rating": null,
+    "usersCount": 0
+   },
+   "MobilecarouselImages": [],
+   "banner": {
+    "id": 3258138,
+    "filename": "6ab595385e1c6_ops-essentia-operations-case-study-challenge.png",
+    "path": "uploads/images/opportunity/banner/6ab595385e1c6_ops-essentia-operations-case-study-challenge.png",
+    "image_type": "banner",
+    "image_url": "https://d8it4huxumps7.cloudfront.net/uploads/images/opportunity/banner/6ab595385e1c6_ops-essentia-operations-case-study-challenge.png"
+   },
+   "authors": [],
+   "banner_mobile": {
+    "id": 3258297,
+    "filename": "6ab600860e6a6_ops-essentia-operations-case-study-challenge.png",
+    "path": "uploads/images/opportunity/mobile_banner/6ab600860e6a6_ops-essentia-operations-case-study-challenge.png",
+    "image_type": "mobile_banner",
+    "image_url": "https://d8it4huxumps7.cloudfront.net/uploads/images/opportunity/mobile_banner/6ab600860e6a6_ops-essentia-operations-case-study-challenge.png"
+   },
+   "all_banner": [],
+   "video": null,
+   "gallery": [],
+   "display_configs": {
+    "id": 1455735,
+    "opportunity_id": 1759741,
+    "header_type": 1,
+    "footer_type": 0,
+    "show_registrations_count": 1,
+    "show_tags": 1,
+    "eligible_colleges": 0,
+    "show_rounds": 1,
+    "show_eligibility": 1,
+    "show_region": 1,
+    "show_get_notified": 1,
+    "show_details": 1,
+    "show_imp_dates": 1,
+    "show_organisers": 1,
+    "show_about_organiser": 1,
+    "show_gallery": 1,
+    "show_ratings": 1,
+    "show_feedbacks": 1,
+    "show_articles": 1,
+    "show_deadline": 1,
+    "disclaimer": 1,
+    "convert_to_job": 0,
+    "show_rounds_data": 1,
+    "displayviewport": null,
+    "design_type": 1,
+    "section_order": null,
+    "show_add_banner": 0,
+    "hide_registration_button": 0,
+    "show_contact_us": 0,
+    "banner_config": "{\"color\":\"color-bg8\",\"text\":\"Ops-Essentia: Operations Case Study Challenge\",\"type\":3,\"banner_data\":[2]}",
+    "extra_fields": null,
+    "show_organiser_contact": 1,
+    "evaluator_see_all_sideview_rounds": 1,
+    "show_team_size": 1,
+    "enable_webp": 1,
+    "show_ref_banner": 1,
+    "show_impressions": 1,
+    "show_prize": 1,
+    "show_opportunity_menu": 1,
+    "opportunity_theme": "{\"theme\":\"light\",\"bgImage\":\"opportunity_custom_banner_sprite.svg\",\"color\":\"red\"}",
+    "show_faq": 1,
+    "group_evaluators": 0
+   },
+   "current_messages": [],
+   "eligible_countries": [],
+   "payment_services": [],
+   "assignTags": {
+    "tag": null
+   },
+   "fullbannerimages": null,
+   "address_with_country_logo": {
+    "id": 1850633,
+    "address": "",
+    "city": "",
+    "state": "",
+    "country": null,
+    "zip": null,
+    "lat": null,
+    "lng": null,
+    "addressable_id": 1759741,
+    "addressable_type": "App\\Model\\Opportunity",
+    "created_at": "2026-09-22T03:27:59+05:30",
+    "updated_at": "2026-09-25T08:55:04+05:30",
+    "deleted_at": null,
+    "address_title": "event_location",
+    "city_id": null,
+    "sort_order": 1,
+    "state_code": null,
+    "country_code": null
+   },
+   "job_detail": null,
+   "referral_leaderboard_banner": null,
+   "m_referral_leaderboard_banner": null,
+   "skills": [
+    {
+     "id": 645700,
+     "skill": "Business Acumen",
+     "category": "recommendation_new",
+     "visible": true,
+     "domain": null,
+     "skill_name": "Business Acumen",
+     "pivot": {
+      "entity_id": 1759741,
+      "subject_id": 645700,
+      "id": 6274596,
+      "ai_generated": false
+     }
+    },
+    {
+     "id": 647511,
+     "skill": "Teamwork and Collaboration",
+     "category": "recommendation_new",
+     "visible": true,
+     "domain": null,
+     "skill_name": "Teamwork and Collaboration",
+     "pivot": {
+      "entity_id": 1759741,
+      "subject_id": 647511,
+      "id": 6274597,
+      "ai_generated": false
+     }
+    },
+    {
+     "id": 645226,
+     "skill": "Time Management Techniques",
+     "category": "recommendation_new",
+     "visible": true,
+     "domain": null,
+     "skill_name": "Time Management Techniques",
+     "pivot": {
+      "entity_id": 1759741,
+      "subject_id": 645226,
+      "id": 6274598,
+      "ai_generated": false
+     }
+    },
+    {
+     "id": 644673,
+     "skill": "Presentation Design",
+     "category": "recommendation_new",
+     "visible": true,
+     "domain": null,
+     "skill_name": "Presentation Design",
+     "pivot": {
+      "entity_id": 1759741,
+      "subject_id": 644673,
+      "id": 6274599,
+      "ai_generated": false
+     }
+    },
+    {
+     "id": 644277,
+     "skill": "Logistics Management",
+     "category": "recommendation_new",
+     "visible": true,
+     "domain": null,
+     "skill_name": "Logistics Management",
+     "pivot": {
+      "entity_id": 1759741,
+      "subject_id": 644277,
+      "id": 6274656,
+      "ai_generated": true
+     }
+    },
+    {
+     "id": 647025,
+     "skill": "Process optimization",
+     "category": "recommendation_new",
+     "visible": true,
+     "domain": null,
+     "skill_name": "Process optimization",
+     "pivot": {
+      "entity_id": 1759741,
+      "subject_id": 647025,
+      "id": 6274657,
+      "ai_generated": true
+     }
+    },
+    {
+     "id": 643203,
+     "skill": "Analytical Skills",
+     "category": "recommendation_new",
+     "visible": true,
+     "domain": null,
+     "skill_name": "Analytical Skills",
+     "pivot": {
+      "entity_id": 1759741,
+      "subject_id": 643203,
+      "id": 6274658,
+      "ai_generated": true
+     }
+    },
+    {
+     "id": 644121,
+     "skill": "Inventory Management",
+     "category": "recommendation_new",
+     "visible": true,
+     "domain": null,
+     "skill_name": "Inventory Management",
+     "pivot": {
+      "entity_id": 1759741,
+      "subject_id": 644121,
+      "id": 6274659,
+      "ai_generated": true
+     }
+    },
+    {
+     "id": 668375,
+     "skill": "PowerPoint",
+     "category": "recommendation_new",
+     "visible": true,
+     "domain": null,
+     "skill_name": "PowerPoint",
+     "pivot": {
+      "entity_id": 1759741,
+      "subject_id": 668375,
+      "id": 6274660,
+      "ai_generated": true
+     }
+    }
+   ],
+   "workfunction": [
+    {
+     "id": 1967,
+     "name": "Supply Chain Operations",
+     "description": "",
+     "created_at": "2026-02-06T23:31:46+05:30",
+     "updated_at": "2026-02-06T23:31:46+05:30",
+     "work_function_name": null,
+     "batch_id": 11,
+     "pivot": {
+      "entity_id": 1759741,
+      "subject_id": 1967,
+      "id": 6274661,
+      "ai_generated": true
+     }
+    },
+    {
+     "id": 2014,
+     "name": "Quizzes & Treasure Hunt",
+     "description": "",
+     "created_at": "2026-02-06T23:31:46+05:30",
+     "updated_at": "2026-02-06T23:31:46+05:30",
+     "work_function_name": null,
+     "batch_id": 11,
+     "pivot": {
+      "entity_id": 1759741,
+      "subject_id": 2014,
+      "id": 6274662,
+      "ai_generated": true
+     }
+    }
+   ],
+   "listing_status": "Live",
+   "assignedTag": {
+    "tag": null
+   },
+   "locations": [],
+   "contacts": [
+    {
+     "id": 2373219,
+     "name": "OPTUS",
+     "designation": null,
+     "contact_no": null,
+     "contactable_id": 1759741,
+     "contactable_type": "App\\Model\\Opportunity",
+     "email": "redacted@example.com",
+     "sort_order": 1
+    }
+   ],
+   "seo_details": [
+    {
+     "id": 1690627,
+     "entity_id": 1759741,
+     "entity_type": "App\\Model\\Opportunity",
+     "title": "Ops-Essentia: Operations Case Study Challenge - 2026",
+     "description": "Find out the best Ops-Essentia: Operations Case Study Challenge that match your interests. Prove your mettle and win exciting prizes like job opportunities a...",
+     "keywords": "",
+     "event_type": null,
+     "event_data": null,
+     "public_url": null,
+     "change_data": false,
+     "sharable_image_url": "https://d8it4huxumps7.cloudfront.net/lambda-pdfs/opportunity-bannerImages/1790326052.png"
+    }
+   ],
+   "isUserAdmin": false,
+   "organisation": {
+    "id": 590,
+    "name": "Indian Institute of Management (IIM), Raipur",
+    "public_url": "c/indian-institute-of-management-iim-raipur-placement-interview-competitions-articles-videos-590",
+    "logoUrl": "https://d8it4huxumps7.cloudfront.net/images/partners/partners75/5d08d8c303e01_220px-Indian_Institute_of_Management_Raipur_logo.png",
+    "logoUrl2": "https://d8it4huxumps7.cloudfront.net/images/partners/partners125/5d08d8c303e01_220px-Indian_Institute_of_Management_Raipur_logo.png",
+    "organisation_type": "2",
+    "wp_tag": 515,
+    "seo_url": "https://unstop.com/c/indian-institute-of-management-iim-raipur-placement-interview-competitions-articles-videos-590",
+    "website": "http://www.iimraipur.ac.in/",
+    "extra_fields": "{\"industry\":\"\",\"founder\":\"\",\"foundedOn\":\"\",\"keyPeople\":\"\",\"headquarter\":\"\",\"founderUrl\":\"\"}"
+   },
+   "rounds": [
+    {
+     "id": 1629046,
+     "opportunity_id": 1759741,
+     "entity_id": 483285,
+     "entity_type": "App\\Models\\AssessmentRound\\AssessmentRound",
+     "is_inactive": 0,
+     "is_hidden": 0,
+     "evaluation_fields": "{\"fields\":[{\"label\":\"Gets Results\",\"comments\":\"\",\"score\":\"\",\"info\":\"\"},{\"label\":\"Leadership & Communication Skills\",\"comments\":\"\",\"score\":\"\",\"info\":\"\"},{\"label\":\"Managing Stakeholders\",\"comments\":\"\",\"score\":\"\",\"info\":\"\"},{\"label\":\"Decision Making\",\"comments\":\"\",\"score\":\"\",\"info\":\"\"},{\"label\":\"Functional & Sector Knowledge\",\"comments\":\"\",\"score\":\"\",\"info\":\"\"}],\"overall_comments\":\"\",\"score\":5,\"comments\":[{\"label\":\"Strengths\",\"comments\":\"\"},{\"label\":\"Areas of conflict\",\"comments\":\"\"},{\"label\":\"Group Discussion notes\",\"comments\":\"\"}],\"panel_decision\":null}",
+     "subtype": null,
+     "round_order": 1,
+     "players_count": 40,
+     "register_window": 1,
+     "eliminator_round": 0,
+     "result_flag": 0,
+     "to_be_announced": null,
+     "proctoring": null,
+     "grace_period": 15,
+     "hide_rounds_data": null,
+     "hosted_on_d2c": 1,
+     "parent": null,
+     "pro_only": false,
+     "show_round_score": 0,
+     "show_live_status": 0,
+     "round_lang": 1,
+     "live_leaderboard": 0,
+     "proctoring_group_id": null,
+     "certificate_at": null,
+     "winner_certificate_at": null,
+     "details": [
+      {
+       "id": 483285,
+       "entity_id": 472080,
+       "entity_type": "App\\Models\\AssessmentRound\\Assessment",
+       "subject_id": 1759741,
+       "subject_type": "App\\Model\\Opportunity",
+       "max_attempts": null,
+       "deleted_at": null,
+       "created_at": "2026-09-25T03:02:24+05:30",
+       "updated_at": "2026-09-25T03:05:56+05:30",
+       "improve_score": null,
+       "attempt_after": null,
+       "total_marks": 10,
+       "transaction_id": null,
+       "parent_id": null,
+       "title": "Ops-Essentia Round 1: Online Quiz",
+       "duration": "00:15:00",
+       "reg_req": null,
+       "eligibility": null,
+       "start_date": "2026-10-09T21:30:00+05:30",
+       "end_date": "2026-10-09T22:30:00+05:30",
+       "total_questions": 10,
+       "allow_external_player": 1,
+       "time_per_question": 0,
+       "question_time": "00:01:00",
+       "hide_unstop_logo": 0,
+       "is_active": true,
+       "load_test": null,
+       "display_text": "<p>Teams will have to take part in a 15-minute online quiz that will test their abilities on concepts from operations management, supply chain management, and awareness of applications in the real world.</p>",
+       "type": 1,
+       "can_edit_answers": 0,
+       "shuffling": 1,
+       "who_can_play": 1,
+       "question_visibility": 2,
+       "show_tags": 0,
+       "question_skipped": 1,
+       "shuffling_options": 1,
+       "enable_auto_save": 0,
+       "final_score_strategy": null,
+       "leader_board_count": null,
+       "hide_marks": null,
+       "code_quality_metrics": true,
+       "show_mock_solutions": 0,
+       "result_flag": 0,
+       "result_info": null,
+       "show_solutions": 0,
+       "enable_plagiarism": false,
+       "play_by_duration": false,
+       "extendedFormData": null,
+       "proctoring_group_id": "d9d66029-8528-4929-bd48-1855b16b61b1",
+       "proctoring_new_design": 1,
+       "separate_play": false,
+       "evaluation_on": "best_time",
+       "multilingual": null,
+       "show_skills": 0,
+       "show_complexity": 0,
+       "custom_guidelines": null,
+       "waiting_lobby_enabled": false,
+       "code_editor": 2,
+       "show_reviews": 1,
+       "enable_bonus_marks": 0,
+       "question_visible_duration": 0,
+       "disable_driver_code": null,
+       "hide_speechace_score": false,
+       "public_url": "/competitions/ops-essentia-operations-case-study-challenge--1759741/online-assessment/483285",
+       "seo_url": "https://unstop.com/competitions/ops-essentia-operations-case-study-challenge--1759741/online-assessment/483285",
+       "rules": [
+        {
+         "id": 1063476,
+         "rule": "<ul>\n<li>All registered Candidates can play this Assessment.</li>\n<li>There is no negative marking for this Assessment.</li>\n<li>All decisions in the matter of eligibility, authenticity &amp; final judgement will be with Unstop and the organizer.</li>\n</ul>",
+         "entity_id": 483285,
+         "entity_type": "App\\Models\\AssessmentRound\\AssessmentRound",
+         "created_at": "2026-09-25T03:05:56+05:30",
+         "updated_at": "2026-09-25T03:05:56+05:30",
+         "deleted_at": null,
+         "type_guideline": 1,
+         "rule_visibility": 0
+        }
+       ],
+       "has_audio_question": false,
+       "has_video_question": false,
+       "has_typing_test": false,
+       "is_proctoring_enabled": true,
+       "proctoring_new": {
+        "full_screen": true,
+        "audio_record": false,
+        "audio_detection": false,
+        "webcam_record": false,
+        "screen_record": false,
+        "face_detection": false,
+        "object_detection": false,
+        "tab_detection": false,
+        "external_monitor": false,
+        "geo_location": false,
+        "room_connection": false,
+        "ip_address": false,
+        "face_verification_before_round": false,
+        "face_verification_during_round": false,
+        "pre_check": false,
+        "audio_verification_before_round": false,
+        "audio_verification_during_round": false,
+        "system_check": false,
+        "disable_mobile": true,
+        "app_protection": false,
+        "enable_canvas": false,
+        "virtual_machine": false,
+        "remote_desktop": false,
+        "buffer_config": {
+         "audio_interval_buffer": 30,
+         "voilation_grouping_buffer": 3,
+         "voilation_check_buffer": 2,
+         "network_disconnected_buffer": 60,
+         "internetSpeedTimeout": 60
+        },
+        "voilation_config": {
+         "room": {
+          "room_disconnected": 0,
+          "combined_voilation": 0,
+          "rear_no_person_detect": 0,
+          "rear_multi_person_detect": 0,
+          "rear_no_cell_phone_detect": 0
+         },
+         "webcam": {
+          "no_face_detect": 0,
+          "cell_phone_detect": 0,
+          "combined_voilation": 0,
+          "multiple_face_detect": 0
+         },
+         "ip_address": 0,
+         "geo_location": 0,
+         "audio_detection": 0,
+         "fullscreen_detect": 5,
+         "tab_change_detect": 0
+        },
+        "proctoring_mode": "browser",
+        "custom_config": {
+         "model": "yolo",
+         "is_load_test": false,
+         "is_log_enable": false,
+         "use_beta_system_compatibility_feature": false,
+         "allow_external_camera": true,
+         "ip_ranges": "",
+         "access": "all",
+         "access_type": "all",
+         "mobile_desktop": "none",
+         "evaluation_model": "none",
+         "backend_detections": false,
+         "blocked_shortcuts": [],
+         "waiting_lobby": {
+          "enabled": false,
+          "concurrent_limit": 10,
+          "max_queue_size": 100,
+          "max_session_duration_seconds": 600,
+          "heartbeat_timeout_seconds": 10,
+          "admission_timeout_seconds": 30,
+          "stale_entry_max_age_seconds": 300,
+          "capacity_warning_threshold": 0.8
+         }
+        },
+        "client_detection_config": {
+         "room": {
+          "device": 0.2,
+          "person": 0.2,
+          "multiFace": 0.3,
+          "multiPerson": 0.5
+         },
+         "webcam": {
+          "device": 0.6,
+          "person": 0.2,
+          "multiFace": 0.3,
+          "multiPerson": 0.6
+         }
+        }
+       },
+       "has_section": false,
+       "mainSections": [],
+       "has_audio_video_type": false,
+       "has_multi_lingual_question": false,
+       "block_mobile_device": false,
+       "has_negative_marking": false,
+       "images": []
+      }
+     ],
+     "status": "DRAFT",
+     "display_only": null
+    },
+    {
+     "id": 1629050,
+     "opportunity_id": 1759741,
+     "entity_id": 865321,
+     "entity_type": "App\\Model\\Rounds",
+     "is_inactive": 0,
+     "is_hidden": 0,
+     "evaluation_fields": "{\"fields\":[{\"label\":\"Overall Comments\",\"comments\":\"\",\"score\":\"\",\"info\":\"\",\"validations\":{\"mandatory\":false,\"minlength\":0,\"maxlength\":500},\"weight_level\":1,\"weighted_score\":100}],\"score\":5,\"panelButtons\":[\"shortlist\",\"reject\",\"hold\",\"noshow\"],\"weightAutoAdjust\":true,\"extraFields\":[]}",
+     "subtype": null,
+     "round_order": 2,
+     "players_count": 40,
+     "register_window": 1,
+     "eliminator_round": 1,
+     "result_flag": 0,
+     "to_be_announced": null,
+     "proctoring": null,
+     "grace_period": 15,
+     "hide_rounds_data": null,
+     "hosted_on_d2c": 1,
+     "parent": null,
+     "pro_only": false,
+     "show_round_score": 0,
+     "show_live_status": 1,
+     "round_lang": 1,
+     "live_leaderboard": 0,
+     "proctoring_group_id": null,
+     "certificate_at": null,
+     "winner_certificate_at": null,
+     "details": [
+      {
+       "id": 865321,
+       "title": "Ops-Essentia Round 2: Case Study Submission",
+       "start_date": "2026-10-10T10:00:00+05:30",
+       "end_date": "2026-10-17T23:59:00+05:30",
+       "description": "",
+       "with_reg": 0,
+       "allow_multiple_submissions": 1,
+       "display_text": "<p>Shortlisted teams from round 1 will be given a case study. Your team will have to analyze and provide solutions for a given case study and upload it on the Unstop platform.</p>",
+       "ai_interview_enabled": false,
+       "can_edit_submissions": null,
+       "status": "NOT_STARTED",
+       "seo_data": {
+        "title": "Ops-Essentia Round 2: Case Study Submission",
+        "keyword": "",
+        "description": "Online Submission Round as part of Ops-Essentia: Operations Case Study Challenge",
+        "sharable_image_url": "",
+        "audience": "",
+        "entity_type": "App\\Model\\Opportunity",
+        "entity_id": 1759741,
+        "public_url": "/competitions/ops-essentia-operations-case-study-challenge--1759741/case-submissions/865321",
+        "seo_url": "https://unstop.com/competitions/ops-essentia-operations-case-study-challenge--1759741/case-submissions/865321"
+       },
+       "submissions_case": null,
+       "images": []
+      }
+     ],
+     "status": "NOT_STARTED",
+     "display_only": false,
+     "submission_types": [
+      {
+       "id": 892084,
+       "opportunity_association_id": 1629050,
+       "title": "PPT File Submission",
+       "type": "file",
+       "accepted_values": "",
+       "validations": "{\"max_file_size\":50}",
+       "remarks": "",
+       "created_at": "2026-09-25T03:09:22+05:30",
+       "updated_at": "2026-09-25T03:09:22+05:30",
+       "mandatory": 1,
+       "field_order": null,
+       "deleted_at": null,
+       "plagiarism_detection_mode": 0,
+       "field_values": [],
+       "validationsField": {
+        "max_file_size": 50
+       }
+      }
+     ]
+    }
+   ],
+   "linked_submission": 0,
+   "submissionRound": null,
+   "viewsCount": 14636
+  }
+ }
+}
