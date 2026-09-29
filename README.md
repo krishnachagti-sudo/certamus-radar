@@ -57,10 +57,10 @@ two sources:
 
 ### Weekly official-page watcher
 
-A weekly Action (`fetch/watch.js`, Mondays 05:00 IST, before the Sunday-
-night digest) fetches each curated competition's official watch page,
-strips it down to text and hashes it. A changed hash shows **"Official page
-changed on \<date>, new edition?"** on the card and in the digest — a
+A weekly Action (`fetch/watch.js`, Mondays 05:00 IST) fetches each curated
+competition's official watch page, strips it down to text and hashes it. A
+changed hash shows **"Official page changed on \<date>, new edition?"** on
+the card (and in the digest, when it is built by hand) — a
 prompt to go check the page by hand, not an automatic date update.
 
 To confirm real dates once you've checked a page: open the competition on
@@ -83,7 +83,8 @@ mistake.
 - **Daily 06:00 IST** `fetch` workflow → `data/competitions.json`,
   `data/status.json`, `data/archive.json`.
 - **Monday 05:00 IST** `watch` workflow → `data/watch.json`.
-- **Monday 08:00 IST** `digest` workflow → email; `data/digest-state.json`.
+- **Manual only** `digest` workflow → `data/digest-latest.json`,
+  `data/digest-state.json` (the Monday schedule was retired on 2026-09-30).
 - **Board / Competition** edits (Watching / Entering / Skipped, Registered,
   notes, add an Unstop link, Set dates) write the Supabase tables
   `decisions`, `manual` and `intl_dates` (see "Editing" below).
@@ -117,12 +118,16 @@ emails.
 
 ## Setup (once)
 
-1. Monday email: the `digest` workflow (Mon 08:00 IST) publishes the digest
-   to `data/digest-latest.json`; a weekly Claude scheduled task (Mon 08:30
-   IST, on the owner's Mac) reads it and sends it from the owner's Gmail via
-   the Gmail connector. No mail credentials live in the repo. (Fallback:
-   `node digest/email.js --send` with `GMAIL_USER` / `GMAIL_APP_PASSWORD`
-   still works if SMTP is ever preferred.)
+1. What needs attention: there is no Monday email any more (retired
+   2026-09-30). The top of the Board has a panel with two lists: **New since
+   your last visit** (top-tier case competitions, not Out, not Skipped, not
+   Registered, that this device has not seen; on a device's first visit,
+   anything first seen in the last 7 days) and **Closing within 10 days, not
+   registered yet**. "Mark all seen" is remembered in this browser's
+   localStorage (`certamus-radar.seen`), so each device keeps its own list.
+   With the edit link, each row has a Registered checkbox. Nothing to set up.
+   The digest can still be built by hand: `node digest/email.js` prints it,
+   and the `digest` workflow can be run manually from the Actions tab.
 2. Pages: Settings → Pages → Build and deployment → **Deploy from a branch**,
    branch `main`, folder `/ (root)`.
 3. Editing: see below.

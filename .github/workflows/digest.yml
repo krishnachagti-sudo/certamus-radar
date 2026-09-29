@@ -1,6 +1,7 @@
 name: digest
+# Email retired 2026-09-30: the Board's 'New since your last visit' panel replaces it.
+# Manual runs only (Actions -> digest -> Run workflow).
 on:
-  schedule: [{ cron: '30 2 * * 1' }]   # Monday 08:00 IST
   workflow_dispatch:
 permissions: { contents: write }
 concurrency: { group: data-writes, cancel-in-progress: false }
