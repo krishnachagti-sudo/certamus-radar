@@ -1,8 +1,6 @@
 {
-  "last_run": "2026-09-29T19:38:39.409Z",
-  "last_ok": "2026-09-29T19:38:39.409Z",
+  "last_run": "2026-09-29T21:08:01.903Z",
+  "last_ok": "2026-09-29T21:08:01.903Z",
   "last_error": null,
-  "warnings": [
-    "Opportunity Desk: HTTP 403 for https://opportunitydesk.org/wp-json/wp/v2/posts?categories=11&after=2026-06-02T00%3A00%3A00&per_page=50&_fields=id%2Clink%2Ctitle%2Ccontent%2Cdate&page=1"
-  ]
+  "warnings": []
 }
