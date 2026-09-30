@@ -22,6 +22,17 @@ export async function defaultGetJson(url) {
   if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   return res.json();
 }
+// JSON POST with the same UA, for search APIs that take a body (Devfolio).
+export async function defaultPostJson(url, body) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'User-Agent': UA, Accept: 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+  return res.json();
+}
 // Plain-text GET with the same UA, for HTML pages (watcher, InsideIIM).
 export async function defaultGetText(url) {
   const res = await fetch(url, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(20000) });
