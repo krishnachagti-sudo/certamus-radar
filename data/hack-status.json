@@ -1,6 +1,6 @@
 {
-  "last_run": "2026-09-30T05:53:52.099Z",
-  "last_ok": "2026-09-30T05:53:52.099Z",
+  "last_run": "2026-09-30T18:04:26.585Z",
+  "last_ok": "2026-09-30T18:04:26.585Z",
   "last_error": null,
   "warnings": [],
   "sources": {
@@ -10,15 +10,15 @@
     },
     "devfolio": {
       "ok": true,
-      "count": 25
+      "count": 26
     },
     "mlh": {
       "ok": true,
-      "count": 72
+      "count": 73
     },
     "devpost": {
       "ok": true,
-      "count": 51
+      "count": 48
     },
     "curated": {
       "ok": true,
