@@ -26,9 +26,10 @@ function curatedVerdict(row) {
 }
 
 // Curated rows come from data/international.json (intl-*, tier
-// international) and data/fests.json (fest-*, the domestic fest watchlist),
-// same row shape; a row may carry its own `tier`.
-const CURATED_ID = /^(intl|fest)-/;
+// international), data/fests.json (fest-*, the domestic fest watchlist) and
+// data/hack-curated.json (hk-*, hackathons; hack-run.js sets their kind and
+// verdict), same row shape; a row may carry its own `tier`.
+const CURATED_ID = /^(intl|fest|hk)-/;
 const ROW_TIERS = new Set(['iit', 'iim', 'national', 'bschool', 'corporate', 'international']);
 
 // `confirmedDates` comes from the Supabase intl_dates table: { [id]: { regn_close, comp_end, confirmed_on } }.
