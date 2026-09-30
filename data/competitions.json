@@ -100,40 +100,6 @@
     "closed_on": null
   },
   {
-    "id": 1762608,
-    "pinned": false,
-    "url": "https://unstop.com/competitions/national-startup-pitching-competition-20-validate-your-startup-idea-yai-infraventure-1762608",
-    "title": "National Startup Pitching Competition 2.0 | Validate Your Startup Idea ",
-    "host": "YAI Infraventure",
-    "regn_close": "2026-09-30",
-    "comp_end": "2026-09-30",
-    "mode": "online",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 7,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "general_competition",
-    "format_kind": "business",
-    "is_case": true,
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": 1762517,
     "pinned": false,
     "url": "https://unstop.com/quiz/national-aptitude-reasoning-challenge-2026-inspire-leap-private-limited-1762517",
@@ -523,42 +489,6 @@
     "closed_on": null
   },
   {
-    "id": 1757944,
-    "pinned": false,
-    "url": "https://unstop.com/competitions/innovation-challenge-saveetha-engineering-college-1757944",
-    "title": "Innovation Challenge",
-    "host": "Saveetha Engineering College",
-    "regn_close": "2026-09-30",
-    "comp_end": "2026-09-30",
-    "mode": "online",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 4,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Experienced Professionals",
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Fresher",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "general_competition",
-    "format_kind": "other",
-    "is_case": false,
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": 1756446,
     "pinned": false,
     "url": "https://unstop.com/competitions/manakriti-2026-xavier-school-of-management-xlri-1756446",
@@ -689,42 +619,6 @@
       "reasons": []
     },
     "first_seen": "2026-09-29",
-    "closed_on": null
-  },
-  {
-    "id": 1757025,
-    "pinned": false,
-    "url": "https://unstop.com/competitions/erapreneur-building-beyond-time-kirori-mal-college-kmc-du-delhi-1757025",
-    "title": "EraPreneur: Building Beyond Time powered by Uplearn by Upstox",
-    "host": "Kirori Mal College (KMC), University of Delhi, Delhi",
-    "regn_close": "2026-09-30",
-    "comp_end": "2026-10-08",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 2,
-    "team_max": 4,
-    "prize_total": 6000,
-    "eligible_filters": [
-      "Experienced Professionals",
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Fresher",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "general_competition",
-    "format_kind": "business",
-    "is_case": true,
-    "tier": "bschool",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "first_seen": "2026-09-30",
     "closed_on": null
   },
   {
@@ -1596,6 +1490,78 @@
     "closed_on": null
   },
   {
+    "id": 1757944,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/innovation-challenge-saveetha-engineering-college-1757944",
+    "title": "Innovation Challenge",
+    "host": "Saveetha Engineering College",
+    "regn_close": "2026-09-30",
+    "comp_end": "2026-09-30",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Experienced Professionals",
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Fresher",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": "2026-09-30"
+  },
+  {
+    "id": 1757025,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/erapreneur-building-beyond-time-kirori-mal-college-kmc-du-delhi-1757025",
+    "title": "EraPreneur: Building Beyond Time powered by Uplearn by Upstox",
+    "host": "Kirori Mal College (KMC), University of Delhi, Delhi",
+    "regn_close": "2026-09-30",
+    "comp_end": "2026-10-08",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 4,
+    "prize_total": 6000,
+    "eligible_filters": [
+      "Experienced Professionals",
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Fresher",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "format_kind": "business",
+    "is_case": true,
+    "tier": "bschool",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": "2026-09-30"
+  },
+  {
     "id": 1752004,
     "pinned": false,
     "url": "https://unstop.com/quiz/code-logic-blitz-10-lal-bahadur-shastri-institute-of-management-and-development-studies-lucknow-uttar-pradesh-1752004",
@@ -1932,6 +1898,36 @@
       ]
     },
     "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": 1758551,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/the-black-box-protocol-stage-02-system-matrix-techhelp4u-1758551",
+    "title": "The Black-Box Protocol: Stage 02 -  System Matrix",
+    "host": "TECHhelp4U",
+    "regn_close": "2026-10-01",
+    "comp_end": "2026-10-02",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "first_seen": "2026-09-30",
     "closed_on": null
   },
   {
@@ -2455,6 +2451,36 @@
     "closed_on": null
   },
   {
+    "id": 1747911,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/hackpulse-university-of-engineering-management-uem-jaipur-1747911",
+    "title": "Hackpulse",
+    "host": "University of Engineering & Management (UEM), Jaipur",
+    "regn_close": "2026-10-01",
+    "comp_end": "2026-10-01",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1750139,
     "pinned": false,
     "url": "https://unstop.com/hackathons/build-with-bharat-40-codeverse-1750139",
@@ -2649,6 +2675,36 @@
     "verdict": {
       "level": "fits",
       "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1763560,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/skillinf-digital-marketing-challenge-2026-create-a-linkedin-post-skillinf-1763560",
+    "title": "SkillInf Digital Marketing Challenge 2026 – Create a LinkedIn Post",
+    "host": "Skillinf",
+    "regn_close": "2026-10-02",
+    "comp_end": "2026-10-06",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
     },
     "first_seen": "2026-09-30",
     "closed_on": null
@@ -3664,7 +3720,7 @@
     "fee": false,
     "team_min": 6,
     "team_max": 6,
-    "prize_total": 0,
+    "prize_total": 10000,
     "eligible_filters": [
       "Engineering Students",
       "Postgraduate",
@@ -3802,6 +3858,40 @@
       "Postgraduate",
       "Undergraduate",
       "School Students",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "format_kind": "business",
+    "is_case": true,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1762608,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/national-startup-pitching-competition-20-validate-your-startup-idea-yai-infraventure-1762608",
+    "title": "National Startup Pitching Competition 2.0 | Validate Your Startup Idea ",
+    "host": "YAI Infraventure",
+    "regn_close": "2026-10-03",
+    "comp_end": "2026-10-03",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 7,
+    "prize_total": 1000000,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
       "Management",
       "Medical",
       "Law",
@@ -3981,7 +4071,7 @@
     "mode": "offline",
     "fee": true,
     "team_min": 1,
-    "team_max": 5,
+    "team_max": 6,
     "prize_total": 10000,
     "eligible_filters": [
       "Engineering Students",
@@ -6257,6 +6347,40 @@
     "closed_on": null
   },
   {
+    "id": 1761453,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/odyssey-26-dr-mahalingam-college-of-engineering-and-technology-mcet-tamil-nadu-1761453",
+    "title": "Odyssey '26",
+    "host": "Dr. Mahalingam College of Engineering and Technology (MCET), Tamil Nadu",
+    "regn_close": "2026-10-05",
+    "comp_end": "2026-10-05",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 2,
+    "prize_total": 2500,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1759745,
     "pinned": false,
     "url": "https://unstop.com/hackathons/mozilla-christ-human-scale-ai-buildathon-2026-christ-deemed-to-be-university-1759745",
@@ -7862,6 +7986,40 @@
     "closed_on": null
   },
   {
+    "id": 1754985,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/parallax-2026-reality-reimagined-noida-institute-of-engineering-and-technology-niet-greater-noida-1754985",
+    "title": "Parallax 2026 – Reality, Reimagined",
+    "host": "Noida Institute of Engineering And Technology (NIET), Greater Noida",
+    "regn_close": "2026-10-06",
+    "comp_end": "2026-10-09",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1754695,
     "pinned": false,
     "url": "https://unstop.com/competitions/gyanotsav-60-budget-battle-royale-finance-rukmini-devi-institute-of-advanced-studies-rdias-delhi-1754695",
@@ -8139,6 +8297,70 @@
     "closed_on": null
   },
   {
+    "id": 1758719,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/quantum-cryptography-challenge-qiskit-fall-fest-2026-srm-university-ap-1758719",
+    "title": "Quantum Cryptography Challenge  ",
+    "host": "SRM University - AP",
+    "regn_close": "2026-10-07",
+    "comp_end": "2026-10-07",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 3,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1759466,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/tech-reels-competition-qiskit-fall-fest-2026-srm-university-ap-1759466",
+    "title": "Tech Reels Competition",
+    "host": "SRM University - AP",
+    "regn_close": "2026-10-07",
+    "comp_end": "2026-10-07",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1762159,
     "pinned": false,
     "url": "https://unstop.com/competitions/off-brand-the-marketing-case-competition-autumn-carnival-40-mhc-du-1762159",
@@ -8287,7 +8509,7 @@
     "mode": "offline",
     "fee": false,
     "team_min": 2,
-    "team_max": 2,
+    "team_max": 3,
     "prize_total": 0,
     "eligible_filters": [
       "Engineering Students",
@@ -8428,6 +8650,140 @@
     "format_kind": "other",
     "is_case": false,
     "tier": "iit",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1758799,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/python-coding-challenge-in-qiskit-srm-university-ap-1758799",
+    "title": "Python Coding Challenge in Qiskit",
+    "host": "SRM University - AP",
+    "regn_close": "2026-10-07",
+    "comp_end": "2026-10-07",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1758828,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/quantum-magnetometry-challenge-qiskit-fall-fest-2026-srm-university-ap-1758828",
+    "title": "Quantum Magnetometry Challenge",
+    "host": "SRM University - AP",
+    "regn_close": "2026-10-07",
+    "comp_end": "2026-10-07",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1758822,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/ml-competition-qiskit-fall-fest-2026-srm-university-ap-1758822",
+    "title": "ML Competition",
+    "host": "SRM University - AP",
+    "regn_close": "2026-10-07",
+    "comp_end": "2026-10-07",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1758795,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/hackathon-phase-1-qiskit-fall-fest-2026-srm-university-ap-1758795",
+    "title": "Hackathon ",
+    "host": "SRM University - AP",
+    "regn_close": "2026-10-07",
+    "comp_end": "2026-10-07",
+    "mode": "online",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
     "verdict": {
       "level": "fits",
       "reasons": []
@@ -8738,6 +9094,102 @@
     "format_kind": "other",
     "is_case": false,
     "tier": "bschool",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1763517,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/triwizathon-cliffesto26-national-institute-of-technology-nit-uttarakhand-1763517",
+    "title": "Gold Pass",
+    "host": "National Institute of Technology (NIT), Uttarakhand",
+    "regn_close": "2026-10-08",
+    "comp_end": "2026-10-08",
+    "mode": "offline",
+    "fee": true,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "national",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "entry fee"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1763511,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/blash-cliffesto26-national-institute-of-technology-nit-uttarakhand-1763511",
+    "title": "Platinum Pass",
+    "host": "National Institute of Technology (NIT), Uttarakhand",
+    "regn_close": "2026-10-08",
+    "comp_end": "2026-10-08",
+    "mode": "offline",
+    "fee": true,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "national",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "entry fee",
+        "eligibility not stated"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1763503,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/ideathon-tulsiramji-gaikwad-patil-college-of-engineering-and-technology-polytechnic-1763503",
+    "title": "Tech Fusion 2026 - Ideathon",
+    "host": "Tulsiramji Gaikwad Patil College of Engineering and Technology, Polytechnic",
+    "regn_close": "2026-10-08",
+    "comp_end": "2026-10-08",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Undergraduate"
+    ],
+    "details_fetched": true,
+    "format": "innovation_challenge",
+    "format_kind": "business",
+    "is_case": true,
+    "tier": "other",
     "verdict": {
       "level": "fits",
       "reasons": []
@@ -9407,102 +9859,6 @@
     "closed_on": null
   },
   {
-    "id": 1763517,
-    "pinned": false,
-    "url": "https://unstop.com/competitions/triwizathon-cliffesto26-national-institute-of-technology-nit-uttarakhand-1763517",
-    "title": "Gold Pass",
-    "host": "National Institute of Technology (NIT), Uttarakhand",
-    "regn_close": "2026-10-08",
-    "comp_end": "2026-10-08",
-    "mode": "offline",
-    "fee": true,
-    "team_min": 1,
-    "team_max": 1,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "general_competition",
-    "format_kind": "other",
-    "is_case": false,
-    "tier": "national",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "entry fee"
-      ]
-    },
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
-    "id": 1763511,
-    "pinned": false,
-    "url": "https://unstop.com/competitions/blash-cliffesto26-national-institute-of-technology-nit-uttarakhand-1763511",
-    "title": "Platinum Pass",
-    "host": "National Institute of Technology (NIT), Uttarakhand",
-    "regn_close": "2026-10-08",
-    "comp_end": "2026-10-08",
-    "mode": "offline",
-    "fee": true,
-    "team_min": 1,
-    "team_max": 1,
-    "prize_total": 0,
-    "eligible_filters": [
-      "All"
-    ],
-    "details_fetched": true,
-    "format": "general_competition",
-    "format_kind": "other",
-    "is_case": false,
-    "tier": "national",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "entry fee",
-        "eligibility not stated"
-      ]
-    },
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
-    "id": 1763503,
-    "pinned": false,
-    "url": "https://unstop.com/competitions/ideathon-tulsiramji-gaikwad-patil-college-of-engineering-and-technology-polytechnic-1763503",
-    "title": "Tech Fusion 2026 - Ideathon",
-    "host": "Tulsiramji Gaikwad Patil College of Engineering and Technology, Polytechnic",
-    "regn_close": "2026-10-08",
-    "comp_end": "2026-10-08",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 4,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Engineering Students",
-      "Undergraduate"
-    ],
-    "details_fetched": true,
-    "format": "innovation_challenge",
-    "format_kind": "business",
-    "is_case": true,
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": 1761135,
     "pinned": false,
     "url": "https://unstop.com/hackathons/national-young-programmers-olympiad-polaris-school-of-technology-1761135",
@@ -9744,7 +10100,7 @@
     "fee": true,
     "team_min": 3,
     "team_max": 3,
-    "prize_total": 15000,
+    "prize_total": 20000,
     "eligible_filters": [
       "Engineering Students",
       "Postgraduate",
@@ -10189,6 +10545,74 @@
     "closed_on": null
   },
   {
+    "id": 1762752,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/qblueprint-indian-institute-of-technology-indian-school-of-mines-dhanbad-1762752",
+    "title": "QBlueprint",
+    "host": "Indian Institute of Technology Indian School of Mines Dhanbad",
+    "regn_close": "2026-10-09",
+    "comp_end": "2026-10-09",
+    "mode": "hybrid",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "iit",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1763529,
+    "pinned": false,
+    "url": "https://unstop.com/quiz/quantum-mania-indian-institute-of-technology-indian-school-of-mines-dhanbad-1763529",
+    "title": "Quantum Mania",
+    "host": "Indian Institute of Technology Indian School of Mines Dhanbad",
+    "regn_close": "2026-10-09",
+    "comp_end": "2026-10-09",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "quizzes",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "iit",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1763183,
     "pinned": false,
     "url": "https://unstop.com/quiz/algoverse-the-dsa-challenge-techverse-solutions-1763183",
@@ -10351,40 +10775,6 @@
     "closed_on": null
   },
   {
-    "id": 1761453,
-    "pinned": false,
-    "url": "https://unstop.com/competitions/odyssey-26-dr-mahalingam-college-of-engineering-and-technology-mcet-tamil-nadu-1761453",
-    "title": "Odyssey '26",
-    "host": "Dr. Mahalingam College of Engineering and Technology (MCET), Tamil Nadu",
-    "regn_close": "2026-10-09",
-    "comp_end": "2026-10-09",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 2,
-    "prize_total": 2500,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "general_competition",
-    "format_kind": "other",
-    "is_case": false,
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": 1761331,
     "pinned": false,
     "url": "https://unstop.com/competitions/raksham-ai-cybersecurity-hackathon-iit-delhi-1761331",
@@ -10503,6 +10893,36 @@
     "verdict": {
       "level": "fits",
       "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1755980,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/build-battle-frontend-arena-1755980",
+    "title": "Build Battle",
+    "host": "Frontend Arena",
+    "regn_close": "2026-10-09",
+    "comp_end": "2026-10-10",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
     },
     "first_seen": "2026-09-30",
     "closed_on": null
@@ -10678,6 +11098,72 @@
     "closed_on": null
   },
   {
+    "id": 1763450,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/bull-vs-bear-the-live-mockstock-exchange-shaheed-rajguru-college-of-applied-sciences-for-women-delhi-univer-1763450",
+    "title": "Bull-vs-Bear: The Live Mockstock Exchange",
+    "host": "Shaheed Rajguru College of Applied Sciences for Women, Delhi University",
+    "regn_close": "2026-10-10",
+    "comp_end": "2026-10-16",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 3,
+    "prize_total": 3500,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "format_kind": "business",
+    "is_case": true,
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1763252,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/robowars-2026-indian-institute-of-technology-indian-school-of-mines-iit-ism-dhanbad-1763252",
+    "title": "Robowars 2026",
+    "host": "Indian Institute of Technology, Indian School of Mines (IIT ISM), Dhanbad",
+    "regn_close": "2026-10-10",
+    "comp_end": "2026-10-10",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 5,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "iit",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1763444,
     "pinned": false,
     "url": "https://unstop.com/quiz/mathalon-indian-institute-of-technology-indian-school-of-mines-iit-ism-dhanbad-1763444",
@@ -10741,66 +11227,30 @@
     "closed_on": null
   },
   {
-    "id": 1763450,
+    "id": 1759851,
     "pinned": false,
-    "url": "https://unstop.com/competitions/bull-vs-bear-the-live-mockstock-exchange-shaheed-rajguru-college-of-applied-sciences-for-women-delhi-univer-1763450",
-    "title": "Bull-vs-Bear: The Live Mockstock Exchange",
-    "host": "Shaheed Rajguru College of Applied Sciences for Women, Delhi University",
-    "regn_close": "2026-10-10",
-    "comp_end": "2026-10-15",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 2,
-    "team_max": 3,
-    "prize_total": 3500,
-    "eligible_filters": [
-      "All"
-    ],
-    "details_fetched": true,
-    "format": "general_competition",
-    "format_kind": "business",
-    "is_case": true,
-    "tier": "other",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "eligibility not stated"
-      ]
-    },
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
-    "id": 1763252,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/robowars-2026-indian-institute-of-technology-indian-school-of-mines-iit-ism-dhanbad-1763252",
-    "title": "Robowars 2026",
-    "host": "Indian Institute of Technology, Indian School of Mines (IIT ISM), Dhanbad",
+    "url": "https://unstop.com/hackathons/comfest26-hackom-seth-anandram-jaipuria-school-kanpur-1759851",
+    "title": "Comfest26' Hackom",
+    "host": "Seth Anandram Jaipuria School, Kanpur",
     "regn_close": "2026-10-10",
     "comp_end": "2026-10-10",
-    "mode": "offline",
+    "mode": "online",
     "fee": false,
-    "team_min": 2,
-    "team_max": 5,
+    "team_min": 1,
+    "team_max": 4,
     "prize_total": 0,
     "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
+      "School Students"
     ],
     "details_fetched": true,
     "format": "online_coding_challenge",
     "format_kind": "other",
     "is_case": false,
-    "tier": "iit",
+    "tier": "other",
     "verdict": {
-      "level": "check",
+      "level": "out",
       "reasons": [
-        "eligibility not stated"
+        "not open to students"
       ]
     },
     "first_seen": "2026-09-30",
@@ -10938,36 +11388,6 @@
     "verdict": {
       "level": "fits",
       "reasons": []
-    },
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
-    "id": 1759851,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/comfest26-hackom-seth-anandram-jaipuria-school-kanpur-1759851",
-    "title": "Comfest26' Hackom",
-    "host": "Seth Anandram Jaipuria School, Kanpur",
-    "regn_close": "2026-10-10",
-    "comp_end": "2026-10-10",
-    "mode": "online",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 4,
-    "prize_total": 0,
-    "eligible_filters": [
-      "School Students"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "format_kind": "other",
-    "is_case": false,
-    "tier": "other",
-    "verdict": {
-      "level": "out",
-      "reasons": [
-        "not open to students"
-      ]
     },
     "first_seen": "2026-09-30",
     "closed_on": null
@@ -13720,6 +14140,36 @@
     "closed_on": null
   },
   {
+    "id": 1748430,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/ethical-crosstalk-sant-longowal-institute-of-engineering-and-technology-longowal-punjab-1748430",
+    "title": "Ethical Crosstalk",
+    "host": "Sant Longowal Institute of Engineering and Technology, Longowal, Punjab",
+    "regn_close": "2026-10-10",
+    "comp_end": "2026-10-10",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 3000,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1747629,
     "pinned": false,
     "url": "https://unstop.com/competitions/the-quantitative-code-conflux-iit-bombay-1747629",
@@ -14349,6 +14799,66 @@
     "closed_on": null
   },
   {
+    "id": 1762843,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/2nd-laserhack-2026-lasell-university-1762843",
+    "title": "2nd LaserHack 2026",
+    "host": "Lasell University",
+    "regn_close": "2026-10-12",
+    "comp_end": "2026-10-12",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 2,
+    "prize_total": 1500,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1762519,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/anna-ai-os-founding-builder-challenge-2026-talentsec-technology-hong-kong-limited-1762519",
+    "title": "Anna AI OS Founding Builder Challenge 2026",
+    "host": "Talentsec Technology (Hong Kong) Limited",
+    "regn_close": "2026-10-12",
+    "comp_end": "2026-10-12",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 80000,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1762674,
     "pinned": false,
     "url": "https://unstop.com/hackathons/zero-to-chat-cometchat-hackathon-zero-to-chat-cometchat-hackathon-cometchat-1762674",
@@ -14771,6 +15281,36 @@
     "closed_on": null
   },
   {
+    "id": 1763112,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/pitch-perfect-the-worst-product-wins-shaheed-rajguru-college-of-applied-sciences-for-women-delhi-university-1763112",
+    "title": "Pitch Perfect : The Worst Product Wins",
+    "host": "Shaheed Rajguru College of Applied Sciences for Women, Delhi University",
+    "regn_close": "2026-10-13",
+    "comp_end": "2026-10-15",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 4,
+    "prize_total": 3500,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "innovation_challenge",
+    "format_kind": "business",
+    "is_case": true,
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1763470,
     "pinned": false,
     "url": "https://unstop.com/competitions/bio-economy-hackathon-delhi-indian-institute-of-forest-management-1763470",
@@ -14966,6 +15506,74 @@
       "reasons": [
         "eligibility not stated"
       ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1763542,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/reverse-tank-strategia27-the-annual-business-strategy-fest-of-loyola-college-loyola-college-lc-chennai-1763542",
+    "title": "Reverse Tank",
+    "host": "Loyola College (LC), Chennai",
+    "regn_close": "2026-10-14",
+    "comp_end": "2026-10-14",
+    "mode": "hybrid",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 2,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "format_kind": "business",
+    "is_case": true,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1763548,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/the-financial-efficiency-case-challenge-cephas-consultancy-services-private-limited-1763548",
+    "title": "The Financial Efficiency Case Challenge",
+    "host": "Cephas Consultancy Services Private Limited",
+    "regn_close": "2026-10-14",
+    "comp_end": "2026-10-14",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "case_competition",
+    "format_kind": "case",
+    "is_case": true,
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
     },
     "first_seen": "2026-09-30",
     "closed_on": null
@@ -15934,7 +16542,7 @@
     "pinned": false,
     "url": "https://unstop.com/quiz/stellar-iq-space-quiz-army-institute-of-technology-pune-1763317",
     "title": "Stellar IQ: Space Quiz",
-    "host": "Army Institute Of Technology pune",
+    "host": "Army Institute of Technology (AIT), Pune",
     "regn_close": "2026-10-16",
     "comp_end": "2026-10-17",
     "mode": "hybrid",
@@ -16344,6 +16952,36 @@
     ],
     "details_fetched": true,
     "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1750722,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/technology-solutions-challenge-panimalar-engineering-college-pec-chennai-1750722",
+    "title": "Technology Solutions Challenge",
+    "host": "Panimalar Engineering College (PEC), Chennai",
+    "regn_close": "2026-10-17",
+    "comp_end": "2026-10-17",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "innovation_challenge",
     "format_kind": "other",
     "is_case": false,
     "tier": "other",
@@ -16782,6 +17420,36 @@
       ]
     },
     "first_seen": "2026-09-29",
+    "closed_on": null
+  },
+  {
+    "id": 1763060,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/building-medical-tourism-platform-ethaum-venture-partners-1763060",
+    "title": "Building Medical Tourism Platform",
+    "host": "EthAum Venture Partners",
+    "regn_close": "2026-10-19",
+    "comp_end": "2026-10-19",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 5,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "first_seen": "2026-09-30",
     "closed_on": null
   },
   {
@@ -17664,36 +18332,6 @@
     "closed_on": null
   },
   {
-    "id": 1758535,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/buildx-36-hours-online-hackathon-code-a-nova-1758535",
-    "title": "BUiLDX 36 Hours Online Hackathon",
-    "host": "Code-A-Nova",
-    "regn_close": "2026-10-20",
-    "comp_end": "2026-10-20",
-    "mode": "online",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 4,
-    "prize_total": 0,
-    "eligible_filters": [
-      "All"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "format_kind": "other",
-    "is_case": false,
-    "tier": "other",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "eligibility not stated"
-      ]
-    },
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": 1761970,
     "pinned": false,
     "url": "https://unstop.com/competitions/bluff-bargain-aissms-institute-of-information-technology-pune-maharashtra-1761970",
@@ -17718,6 +18356,36 @@
       "level": "check",
       "reasons": [
         "entry fee",
+        "eligibility not stated"
+      ]
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1758535,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/buildx-36-hours-online-hackathon-code-a-nova-1758535",
+    "title": "BUiLDX 36 Hours Online Hackathon",
+    "host": "Code-A-Nova",
+    "regn_close": "2026-10-20",
+    "comp_end": "2026-10-20",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
         "eligibility not stated"
       ]
     },
@@ -20676,6 +21344,40 @@
     "closed_on": null
   },
   {
+    "id": 1763510,
+    "pinned": false,
+    "url": "https://unstop.com/competitions/wiki-race-synergy-26-international-institute-of-information-technology-iiit-bangalore-1763510",
+    "title": "Wiki-Race",
+    "host": "International Institute of Information Technology (IIIT), Bangalore",
+    "regn_close": "2026-11-12",
+    "comp_end": "2026-11-12",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 3,
+    "team_max": 3,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "format_kind": "other",
+    "is_case": false,
+    "tier": "national",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1763268,
     "pinned": false,
     "url": "https://unstop.com/hackathons/cipher-chase-capture-the-flag-synergy-26-international-institute-of-information-technology-iiit-bangalore-1763268",
@@ -20735,40 +21437,6 @@
       "reasons": [
         "eligibility not stated"
       ]
-    },
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
-    "id": 1763510,
-    "pinned": false,
-    "url": "https://unstop.com/competitions/wiki-race-synergy-26-international-institute-of-information-technology-iiit-bangalore-1763510",
-    "title": "Wiki-Race",
-    "host": "International Institute of Information Technology (IIIT), Bangalore",
-    "regn_close": "2026-11-12",
-    "comp_end": "2026-11-12",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 3,
-    "team_max": 3,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "general_competition",
-    "format_kind": "other",
-    "is_case": false,
-    "tier": "national",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
     },
     "first_seen": "2026-09-30",
     "closed_on": null

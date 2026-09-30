@@ -900,37 +900,6 @@
     "closed_on": null
   },
   {
-    "id": "dp-31301",
-    "source": "devpost",
-    "pinned": false,
-    "url": "https://bic.devpost.com/",
-    "title": "Bharat Innovation Challenge 2.0",
-    "host": "Lovely Professional University",
-    "location": "Lovely Professional University",
-    "country": null,
-    "regn_close": "2026-09-30",
-    "comp_start": null,
-    "comp_end": "2026-09-30",
-    "mode": "offline",
-    "fee": false,
-    "team_min": null,
-    "team_max": null,
-    "prize_total": null,
-    "format": "devpost",
-    "hack_kind": "ideathon",
-    "tier": "global",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "eligibility not stated",
-        "in-person abroad (Lovely Professional University)"
-      ]
-    },
-    "main": true,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": 1760514,
     "pinned": false,
     "url": "https://unstop.com/hackathons/adhigamai-inter-college-hackathon-2026-adhigam-ai-1760514",
@@ -1107,6 +1076,38 @@
       "reasons": [
         "entry fee"
       ]
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1747911,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/hackpulse-university-of-engineering-management-uem-jaipur-1747911",
+    "title": "Hackpulse",
+    "host": "University of Engineering & Management (UEM), Jaipur",
+    "regn_close": "2026-10-01",
+    "comp_end": "2026-10-01",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "build",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
     },
     "main": false,
     "first_seen": "2026-09-30",
@@ -1458,7 +1459,7 @@
     "title": "SkillInf Digital Marketing Challenge 2026 – Create a LinkedIn Post",
     "host": "Skillinf",
     "regn_close": "2026-10-02",
-    "comp_end": "2026-10-02",
+    "comp_end": "2026-10-06",
     "mode": "online",
     "fee": false,
     "team_min": 1,
@@ -1785,6 +1786,37 @@
       "reasons": []
     },
     "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": "dp-31301",
+    "source": "devpost",
+    "pinned": false,
+    "url": "https://bic.devpost.com/",
+    "title": "Bharat Innovation Challenge 2.0",
+    "host": "Lovely Professional University",
+    "location": "Lovely Professional University",
+    "country": null,
+    "regn_close": "2026-10-02",
+    "comp_start": null,
+    "comp_end": "2026-10-02",
+    "mode": "offline",
+    "fee": false,
+    "team_min": null,
+    "team_max": null,
+    "prize_total": null,
+    "format": "devpost",
+    "hack_kind": "ideathon",
+    "tier": "global",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated",
+        "in-person abroad (Lovely Professional University)"
+      ]
+    },
+    "main": true,
     "first_seen": "2026-09-30",
     "closed_on": null
   },
@@ -3949,6 +3981,44 @@
     "closed_on": null
   },
   {
+    "id": 1758719,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/quantum-cryptography-challenge-qiskit-fall-fest-2026-srm-university-ap-1758719",
+    "title": "Quantum Cryptography Challenge  ",
+    "host": "SRM University - AP",
+    "regn_close": "2026-10-07",
+    "comp_end": "2026-10-07",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 3,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1761309,
     "pinned": false,
     "url": "https://unstop.com/hackathons/ieee-synapse-hackathon-aissms-ioit-pune-1761309",
@@ -4021,6 +4091,118 @@
       "reasons": []
     },
     "main": true,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1758799,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/python-coding-challenge-in-qiskit-srm-university-ap-1758799",
+    "title": "Python Coding Challenge in Qiskit",
+    "host": "SRM University - AP",
+    "regn_close": "2026-10-07",
+    "comp_end": "2026-10-07",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": "Online",
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1758828,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/quantum-magnetometry-challenge-qiskit-fall-fest-2026-srm-university-ap-1758828",
+    "title": "Quantum Magnetometry Challenge",
+    "host": "SRM University - AP",
+    "regn_close": "2026-10-07",
+    "comp_end": "2026-10-07",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": "Online",
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1758822,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/ml-competition-qiskit-fall-fest-2026-srm-university-ap-1758822",
+    "title": "ML Competition",
+    "host": "SRM University - AP",
+    "regn_close": "2026-10-07",
+    "comp_end": "2026-10-07",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": "Online",
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
     "first_seen": "2026-09-30",
     "closed_on": null
   },
@@ -4635,6 +4817,44 @@
       ]
     },
     "main": true,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1762752,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/qblueprint-indian-institute-of-technology-indian-school-of-mines-dhanbad-1762752",
+    "title": "QBlueprint",
+    "host": "Indian Institute of Technology Indian School of Mines Dhanbad",
+    "regn_close": "2026-10-09",
+    "comp_end": "2026-10-09",
+    "mode": "hybrid",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "iit",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
     "first_seen": "2026-09-30",
     "closed_on": null
   },
