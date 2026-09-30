@@ -24,7 +24,7 @@ export function hashText(text) {
   return crypto.createHash('sha256').update(text).digest('hex');
 }
 
-// `list` is data/international.json plus data/fests.json; `prev` is the previous data/watch.json
+// `list` is data/international.json plus data/fests.json and data/hack-curated.json; `prev` is the previous data/watch.json
 // (`{ [id]: { hash, changed_on, last_checked, last_error } }`). Only rows
 // with `verified !== false`, a string `id` and a string `watch_url` are
 // checked. A fetch error keeps the previous hash and changed_on, records
@@ -90,15 +90,18 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
     return 1;
   }
   const prev = read('watch.json', {});
-  // The fest watchlist is optional (missing = no rows). If it is broken, its
-  // previous entries are kept as they were instead of dropped.
-  const festFile = readList(dataDir, 'fests.json');
-  const fests = festFile.value || [];
-  const next = await watchAll([...listFile.value, ...fests], prev, { now, ...deps });
-  if (festFile.error) {
-    console.error(`watch: fests.json ${festFile.error}; previous fest- entries kept`);
+  // Optional curated lists (missing = no rows): the fest watchlist and the
+  // hackathon curated list. A broken one keeps its previous entries as they
+  // were instead of dropping them.
+  const optional = [{ f: 'fests.json', prefix: 'fest-' }, { f: 'hack-curated.json', prefix: 'hk-' }]
+    .map(o => ({ ...o, list: readList(dataDir, o.f) }));
+  const rows = [...listFile.value, ...optional.flatMap(o => o.list.value || [])];
+  const next = await watchAll(rows, prev, { now, ...deps });
+  for (const { f, prefix, list } of optional) {
+    if (!list.error) continue;
+    console.error(`watch: ${f} ${list.error}; previous ${prefix} entries kept`);
     for (const [id, v] of Object.entries(prev && typeof prev === 'object' ? prev : {})) {
-      if (id.startsWith('fest-') && !(id in next)) next[id] = v;
+      if (id.startsWith(prefix) && !(id in next)) next[id] = v;
     }
   }
   fs.writeFileSync(file('watch.json'), JSON.stringify(next, null, 2) + '\n');

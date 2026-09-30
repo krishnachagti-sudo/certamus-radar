@@ -180,3 +180,24 @@ test('main: a broken fests.json keeps the previous fest- entries and still watch
     assert.equal(written['intl-a'].hash, sha256('text'));
   }
 });
+
+// ---- hackathon curated list (data/hack-curated.json) --------------------------
+
+test('main watches hack-curated.json rows too, skipping unverified rows and rows with no watch_url', async () => {
+  const dir = tmpDataDir({ 'international.json': [row('intl-a')], 'fests.json': [row('fest-a')],
+    'hack-curated.json': [row('hk-a'), row('hk-b', 'https://example.com/hk-b', false), { id: 'hk-c', watch_url: null, verified: true }] });
+  const seen = [];
+  assert.equal(await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async u => { seen.push(u); return 'text'; }, pause: async () => {} } }), 0);
+  const written = JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8'));
+  assert.deepEqual(Object.keys(written).sort(), ['fest-a', 'hk-a', 'intl-a']);
+  assert.deepEqual(seen, ['https://example.com/intl-a', 'https://example.com/fest-a', 'https://example.com/hk-a']);
+});
+
+test('main: a broken hack-curated.json keeps the previous hk- entries; fests and international still watched', async () => {
+  const dir = tmpDataDir({ 'international.json': [row('intl-a')], 'fests.json': [row('fest-a')], 'hack-curated.json': '{bad',
+    'watch.json': { 'hk-a': { hash: 'h1', changed_on: null, last_checked: '2026-09-22' } } });
+  assert.equal(await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async () => 'text', pause: async () => {} } }), 0);
+  const written = JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8'));
+  assert.deepEqual(written['hk-a'], { hash: 'h1', changed_on: null, last_checked: '2026-09-22' });
+  assert.ok(written['fest-a'] && written['intl-a']);
+});

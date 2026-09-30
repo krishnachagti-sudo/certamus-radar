@@ -1,0 +1,7 @@
+{
+  "members": [
+    { "name": "Krishna", "level": "ug", "streams": ["management", "science"], "year": 2029 },
+    { "name": "Akshit", "level": "ug", "streams": ["engineering"], "year": 2028 }
+  ],
+  "can_grow": true
+}
