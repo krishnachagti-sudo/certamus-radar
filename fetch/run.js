@@ -3,40 +3,22 @@
 // Listing body text (details_text) and the raw eligibility blob are used only
 // for classification here and never written: the body text carries
 // organisers' personal phone numbers and emails, and the file is public.
-import fs from 'node:fs';
-import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { fetchAll } from './unstop.js';
 import { tier, verdict } from './classify.js';
-import { merge, appendArchive } from './merge.js';
-import { curatedRecords, oppdeskRecords } from './intl.js';
+import { oppdeskRecords } from './intl.js';
 import { fetchOppDesk } from './oppdesk.js';
 import { fetchInsideIim, parseInsideIim, insideiimRecords } from './insideiim.js';
 import { defaultConfig, readTables } from './supabase.js';
+import { dataStore, fromRemote, readDecisions, curatedFromLists, commit } from './pipeline.js';
 import { dayDiff, todayIST } from '../dates.js';
 import { unstopId } from '../urls.js';
-
-const PRIVATE_FIELDS = ['details_text', 'eligibility', 'carried_over'];
-const publishable = r => {
-  const out = { ...r };
-  for (const k of PRIVATE_FIELDS) delete out[k];
-  return out;
-};
 
 const DEFAULT_DIR = fileURLToPath(new URL('../data/', import.meta.url));
 
 export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} } = {}) {
-  const file = f => path.join(dataDir, f);
-  const read = (f, fallback) => {
-    try { return JSON.parse(fs.readFileSync(file(f), 'utf8')); } catch { return fallback; }
-  };
-  const write = (f, v) => fs.writeFileSync(file(f), JSON.stringify(v, null, 2) + '\n');
-  // Tells "missing" apart from "there but broken", for files we must not clobber.
-  const readStrict = f => {
-    let raw;
-    try { raw = fs.readFileSync(file(f), 'utf8'); } catch { return { missing: true }; }
-    try { return { value: JSON.parse(raw) }; } catch (e) { return { error: `unparseable (${e.message})` }; }
-  };
+  const store = dataStore(dataDir);
+  const { read, write } = store;
 
   const { supabase = defaultConfig(), ...fetchDeps } = deps;
   const team = read('team.json');
@@ -51,17 +33,8 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
   // curated records keep yesterday's dates; each case is a warning.
   const remote = await readTables(supabase);
   const remoteWarnings = [];
-  const fromRemote = (name, file, fallback) => {
-    if (remote[name].value !== undefined) return remote[name].value;
-    const local = readStrict(file);
-    const usable = 'value' in local;
-    remoteWarnings.push(`${name}: ${remote[name].error}; ${usable ? `using data/${file}` : 'none'}`);
-    return usable ? local.value : fallback;
-  };
-  const isObject = v => v !== null && typeof v === 'object' && !Array.isArray(v);
-  const decisionsRaw = fromRemote('decisions', 'decisions.json', {});
-  const decisions = isObject(decisionsRaw) ? decisionsRaw : {};
-  const manualRaw = fromRemote('manual', 'manual.json', []);
+  const decisions = readDecisions(remote, store, remoteWarnings);
+  const manualRaw = fromRemote(remote, 'manual', store, 'manual.json', [], remoteWarnings);
   const manualIds = (Array.isArray(manualRaw) ? manualRaw : []).map(m => unstopId(m?.url ?? '')).filter(Boolean);
 
   try {
@@ -69,28 +42,11 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
     warnings.unshift(...remoteWarnings);
     const today = todayIST(now);
     // Two curated lists, same row shape: international (required) and the
-    // domestic fest watchlist (optional: missing means no rows). A problem
-    // with either keeps yesterday's records from that list (and their dates)
-    // rather than closing them.
-    for (const { f, prefix, label, optional } of [
+    // domestic fest watchlist (optional: missing means no rows).
+    records.push(...curatedFromLists([
       { f: 'international.json', prefix: 'intl-', label: 'curated list' },
       { f: 'fests.json', prefix: 'fest-', label: 'fest watchlist', optional: true },
-    ]) {
-      const listFile = readStrict(f);
-      if (optional && listFile.missing) continue;
-      const problem =
-        listFile.missing ? `${f} missing`
-          : listFile.error ? `${f} ${listFile.error}`
-            : !Array.isArray(listFile.value) ? `${f} is not an array`
-              : remote.intlDates.error ? `confirmed dates unavailable (${remote.intlDates.error})`
-                : null;
-      if (problem) {
-        warnings.push(`${label}: ${problem}; previous ${prefix} records kept`);
-        records.push(...existing.filter(r => r.source === 'curated' && String(r.id).startsWith(prefix)));
-      } else {
-        records.push(...curatedRecords(listFile.value, remote.intlDates.value, today));
-      }
-    }
+    ], { store, remote, existing, today, warnings }));
     try {
       const posts = await fetchOppDesk({ getJson: deps.getJson, pause: deps.pause, today });
       const fresh = oppdeskRecords(posts, today);
@@ -124,17 +80,11 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
         warnings.push(`classify ${r.id}: ${e.message}`);
       }
     }
-    const { next, pruned } = merge(existing.map(publishable), records.map(publishable), decisions, today, { prune: remote.decisions.value !== undefined });
-    // Archive first: if the run dies between the two writes, a pruned record
-    // is archived and still live, never lost.
-    if (pruned.length) {
-      const arch = readStrict('archive.json');
-      if (arch.missing) write('archive.json', appendArchive([], pruned));
-      else if (arch.error || !Array.isArray(arch.value)) {
-        warnings.push(`archive.json ${arch.error || 'is not an array'}; archive not written this run`);
-      } else write('archive.json', appendArchive(arch.value, pruned));
-    }
-    write('competitions.json', next);
+    commit(store, {
+      existing, records, decisions, today, warnings,
+      prune: remote.decisions.value !== undefined,
+      liveFile: 'competitions.json', archiveFile: 'archive.json',
+    });
     write('status.json', { last_run: stamp, last_ok: stamp, last_error: null, warnings });
     console.log(`ok: ${records.length} fetched, ${warnings.length} warnings`);
     return 0;

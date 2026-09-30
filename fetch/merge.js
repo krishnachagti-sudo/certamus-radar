@@ -47,11 +47,12 @@ export function merge(existing, fetched, decisions, today, { prune = true } = {}
 // The archive keeps only what the Hosts page needs: never body text,
 // eligibility or verdict reasons. Append-only, deduped by archive_key:
 // the id, or id@regn_close for a curated edition.
-const ARCHIVE_FIELDS = ['id', 'title', 'host', 'tier', 'url', 'regn_close', 'comp_end', 'first_seen', 'closed_on', 'format', 'is_case', 'source'];
+export const ARCHIVE_FIELDS = ['id', 'title', 'host', 'tier', 'url', 'regn_close', 'comp_end', 'first_seen', 'closed_on', 'format', 'is_case', 'source'];
 
 export const archiveKey = r => (r.source === 'curated' && r.regn_close ? `${r.id}@${r.regn_close}` : String(r.id));
 
-export function appendArchive(archive, pruned) {
+// `fields` lets the hackathon archive keep hack_kind instead of is_case.
+export function appendArchive(archive, pruned, fields = ARCHIVE_FIELDS) {
   if (!pruned.length) return archive;
   const have = new Set(archive.map(a => a?.archive_key ?? String(a?.id)));
   const out = [...archive];
@@ -60,7 +61,7 @@ export function appendArchive(archive, pruned) {
     if (have.has(key)) continue;
     have.add(key);
     const slim = { archive_key: key };
-    for (const k of ARCHIVE_FIELDS) slim[k] = p[k] ?? null;
+    for (const k of fields) slim[k] = p[k] ?? null;
     out.push(slim);
   }
   return out;
