@@ -30,6 +30,59 @@ Board: https://krishnachagti-sudo.github.io/certamus-radar/
 
 A shared nav appears on all five pages.
 
+### Sections: Case comps | Hackathons
+
+The nav starts with a two-way switch, **Case comps | Hackathons**
+(`aria-current` on the active one). Every page takes the section from a
+`?s=hack` query parameter; without it the page shows case comps exactly as
+before. Switching keeps the page (Board ↔ Board, Calendar ↔ Calendar; the
+competition page switches to the other Board), and every internal link
+(nav, card titles, inbox rows, calendar events, host and archive rows)
+carries the section. A competition link that lost its `s=hack` still opens
+as a hackathon when its id starts `df-`, `mlh-`, `dp-` or `hk-`
+(`lib/section.js` holds the data files, wording, tiers, rule table and link
+builder for each section).
+
+The Hackathons side has the same five pages over `hackathons.json`,
+`hack-status.json`, `hack-archive.json` and `hack-curated.json`:
+
+- **Cards** show a kind chip (**Build** or **Ideathon**), where it happens
+  ("Online", the city, or the country), the team size from
+  `team_min`/`team_max`, and the source link: "Open on Unstop / Devfolio /
+  Devpost", "Open on MLH" (or "Official site (listed on MLH)" when MLH
+  links to the event's own site), "Official site" for curated rows.
+- **Board tiers:** IIT, IIM, national institutes, B-school, Corporate and
+  **Global online & abroad**; All adds Other.
+- **Other formats** (off by default): coding contests, CTFs, datathons,
+  quizzes and other `hack_kind: 'other'` records, like case comps'
+  "Quizzes and other formats".
+- **Include in-person abroad** (off by default, Board and All): hides
+  in-person and hybrid events outside India (mostly MLH and Devpost in the
+  US and Canada). Online events and events in India always show. The count
+  line says how many it hides.
+- **Duplicates across sources** (display only): an event listed on more
+  than one source (Devfolio and MLH, Unstop and Devpost...) shows once when
+  the titles match after dropping case, punctuation, years and edition
+  numbers and a registration, start or end date is within 3 days. The kept
+  record is one with a team decision, else curated, Unstop, Devfolio, MLH,
+  Devpost in that order; it takes the most specific tier of the group.
+- **What needs attention** works per section with its own "seen" list
+  (`certamus-radar.seen.hack`), same rules; in-person-abroad items are left
+  out of both lists unless the abroad toggle is on.
+- **Clashes use one committed set across both sections**: anything
+  Entering or Registered in either section clashes with the other, and the
+  warning names the section ("Clashes with HaritVitt (case comp)"). The
+  calendar shows this section's Watching items plus both sections'
+  Entering and Registered items; the other section's items carry a small
+  "Case" or "Hack" marker.
+- **Competition page:** the hackathon eligibility table (the checks of
+  `fetch/hack-classify.js`, in its order), kind, place, team, fee, prizes
+  and source. Curated `hk-` rows show the curated facts (entry route, who
+  applies, undergraduates, last edition, official page check) and the
+  watcher flag. "Set dates" is case comps only (the `intl_dates` table
+  accepts `intl-` ids).
+- Adding a link by hand is case comps only.
+
 ## What gets fetched
 
 ### Sources
@@ -119,7 +172,7 @@ tier except Other.
 
 ## Hackathons data
 
-The Hackathons section (front end not built yet) reads `data/hackathons.json`,
+The Hackathons section (see "Sections" above) reads `data/hackathons.json`,
 `data/hack-status.json` and `data/hack-archive.json`, written only by
 `fetch/hack-run.js` in the same `fetch.yml` job as the case comps, with the
 same merge, 60-day archive, Supabase-decision and privacy rules (shared
@@ -263,7 +316,8 @@ emails.
    Registered, that this device has not seen; on a device's first visit,
    anything first seen in the last 7 days) and **Closing within 10 days, not
    registered yet**. "Mark all seen" is remembered in this browser's
-   localStorage (`certamus-radar.seen`), so each device keeps its own list.
+   localStorage (`certamus-radar.seen`; the Hackathons Board keeps its own in
+   `certamus-radar.seen.hack`), so each device keeps its own list.
    With the edit link, each row has a Registered checkbox. Nothing to set up.
    The digest can still be built by hand: `node digest/email.js` prints it,
    and the `digest` workflow can be run manually from the Actions tab.

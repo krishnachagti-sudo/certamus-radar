@@ -1,7 +1,9 @@
 // Hosts & archive (hosts.html). Read-only: a row per host (live + archive +
 // curated international and fest watchlist), and a searchable list of closed competitions.
+// ?s=hack: hackathon hosts (live + hack archive + hack-curated) and archive.
 import { dayDiff, todayIST } from '../dates.js';
-import { TIERS, pagesJson } from '../lib/data.js';
+import { pagesJson } from '../lib/data.js';
+import { currentSection, sectionOf } from '../lib/section.js';
 import { esc, compHref } from '../lib/card.js';
 import { hostRows, archiveList } from '../lib/hosts.js';
 import { captureFocus } from '../lib/focus.js';
@@ -10,7 +12,11 @@ import { bannersHtml, istTime } from '../lib/session.js';
 import { initEditor } from '../lib/editor.js';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const ARCHIVE_STARTED = '2026-09-29';
+const sec = sectionOf(currentSection());
+const TIERS = sec.tiers;
+const ARCHIVE_STARTED = sec.key === 'hack' ? '2026-09-30' : '2026-09-29';
+const CLOSED_NOUN = sec.key === 'hack' ? 'hackathons' : 'competitions';
+const ARCHIVE_STARTED_TEXT = sec.key === 'hack' ? '30 Sep 2026' : '29 Sep 2026';
 const ARCHIVE_HISTORY_DAYS = 30;
 
 const state = {
@@ -20,17 +26,16 @@ const state = {
 
 async function load() {
   state.error = null;
-  let intl, fests;
-  [state.comps, state.archive, intl, fests, state.status] = await Promise.all([
-    pagesJson('competitions.json', []),
-    pagesJson('archive.json', []),
-    pagesJson('international.json', []),
-    pagesJson('fests.json', []),
-    pagesJson('status.json', {}),
+  let curated;
+  [state.comps, state.archive, curated, state.status] = await Promise.all([
+    pagesJson(sec.files.items, []),
+    pagesJson(sec.files.archive, []),
+    Promise.all(sec.files.curated.map(f => pagesJson(f, []))),
+    pagesJson(sec.files.status, {}),
   ]);
   if (!Array.isArray(state.comps)) state.comps = [];
   if (!Array.isArray(state.archive)) state.archive = [];
-  state.curated = [...(Array.isArray(intl) ? intl : []), ...(Array.isArray(fests) ? fests : [])];
+  state.curated = curated.flatMap(list => (Array.isArray(list) ? list : []));
   render();
 }
 
@@ -90,8 +95,8 @@ function archiveSectionHtml(today) {
   const young = dayDiff(ARCHIVE_STARTED, today) < ARCHIVE_HISTORY_DAYS;
   return `<section class="archive-sec" aria-label="Archive">
       <h2>Archive</h2>
-      ${young ? '<p class="archive-note">The archive started on 29 Sep 2026; it fills as competitions close.</p>' : ''}
-      <div class="row"><input id="archive-q" class="search" type="search" placeholder="Search closed competitions" aria-label="Search closed competitions" value="${esc(state.archiveQuery)}"></div>
+      ${young ? `<p class="archive-note">The archive started on ${ARCHIVE_STARTED_TEXT}; it fills as ${CLOSED_NOUN} close.</p>` : ''}
+      <div class="row"><input id="archive-q" class="search" type="search" placeholder="Search closed ${CLOSED_NOUN}" aria-label="Search closed ${CLOSED_NOUN}" value="${esc(state.archiveQuery)}"></div>
       <p class="count">${list.length} closed</p>
       <ul class="alist">${list.map(archiveRowHtml).join('') || '<li class="empty">Nothing archived yet.</li>'}</ul>
     </section>`;

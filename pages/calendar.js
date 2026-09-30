@@ -3,10 +3,14 @@
 // Registered: ⏰ registration closes, 🏁 competition ends, clash days tinted,
 // and dashed "expected" markers for curated international items (§9.10).
 // Decisions load like the Board: live from the store (public reads).
+// Section (?s=hack): this section's Watching items, plus the Entering and
+// Registered items of BOTH sections (one committed set, one clash rule);
+// the other section's items carry a small section marker.
 import { todayIST } from '../dates.js';
-import { committedSet, expectedText, monthsText, pagesJson, sameId } from '../lib/data.js';
+import { committedSet, expectedText, monthsText, pagesJson, sameId, recordSection } from '../lib/data.js';
 import { initEditor } from '../lib/editor.js';
-import { esc, compHref } from '../lib/card.js';
+import { esc, recordHref } from '../lib/card.js';
+import { SECTIONS, currentSection, otherSection, pageHref, sectionOf } from '../lib/section.js';
 import { captureFocus } from '../lib/focus.js';
 import { mountNav } from '../lib/nav.js';
 import { loadDecisions, bannersHtml, istTime } from '../lib/session.js';
@@ -37,15 +41,30 @@ const startMonth = () => {
   return { year: Number(t.slice(0, 4)), month: Number(t.slice(5, 7)) };
 };
 
-const state = { comps: [], status: {}, decisions: {}, error: null, notice: null, view: storedView(), ...startMonth() };
+const sec = sectionOf(currentSection());
+const other = sectionOf(otherSection(sec.key));
+
+const state = { comps: [], own: [], otherItems: [], status: {}, decisions: {}, error: null, notice: null, view: storedView(), ...startMonth() };
 
 async function load() {
   state.error = null;
-  [state.comps, state.status] = await Promise.all([pagesJson('competitions.json', []), pagesJson('status.json', {})]);
-  if (!Array.isArray(state.comps)) state.comps = [];
+  [state.own, state.status, state.otherItems] = await Promise.all([
+    pagesJson(sec.files.items, []), pagesJson(sec.files.status, {}), pagesJson(other.files.items, [])]);
+  if (!Array.isArray(state.own)) state.own = [];
+  if (!Array.isArray(state.otherItems)) state.otherItems = [];
   await loadDecisions(state);
+  // The other section contributes only what the team is entering or registered for.
+  state.comps = [...state.own, ...committedSet(state.otherItems, state.decisions)];
   render();
 }
+
+// A marker for items from the other section: "Hack" on the case-comp
+// calendar, "Case" on the hackathon one.
+const foreign = c => !!c && recordSection(c) !== sec.key;
+const SHORT = { case: 'Case', hack: 'Hack' };
+const secMark = c => (foreign(c)
+  ? `<span class="secmark" aria-hidden="true">${SHORT[recordSection(c)]}</span><span class="sr"> (${esc(SECTIONS[recordSection(c)].noun)})</span>` : '');
+const titleWithSection = (c, title) => (foreign(c) ? `${title} (${SECTIONS[recordSection(c)].noun})` : title);
 
 const dayParts = d => {
   const t = new Date(`${d}T00:00:00Z`);
@@ -61,7 +80,7 @@ function clashTitle(pairs) {
     const key = [String(p.id), String(p.otherId)].sort().join('\u0000');
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push(`${p.title} and ${p.other}, ${plural(p.apart, 'day')} apart`);
+    out.push(`${titleWithSection(compById(p.id), p.title)} and ${titleWithSection(compById(p.otherId), p.other)}, ${plural(p.apart, 'day')} apart`);
   }
   return out.join('; ');
 }
@@ -73,11 +92,11 @@ const statusOfId = id => { const c = compById(id); return c ? statusLabel(state.
 
 function eventLink(e) {
   const [icon, kind] = KIND[e.kind];
-  const tip = `${kind}: ${e.title} (${e.status})`;
-  return `<a class="ev tag ${e.tone}${e.kind === 'close' ? ' deadline' : ''}" href="${esc(compHref(e.id))}" title="${esc(tip)}"><span aria-hidden="true">${icon}</span> <span class="sr">${esc(kind)}: </span><span class="t">${esc(e.title)}</span><span class="sr"> (${esc(e.status)})</span></a>`;
+  const tip = `${kind}: ${titleWithSection(e.c, e.title)} (${e.status})`;
+  return `<a class="ev tag ${e.tone}${e.kind === 'close' ? ' deadline' : ''}" href="${esc(recordHref(e.c))}" title="${esc(tip)}"><span aria-hidden="true">${icon}</span> <span class="sr">${esc(kind)}: </span>${secMark(e.c)}<span class="t">${esc(e.title)}</span><span class="sr"> (${esc(e.status)})</span></a>`;
 }
 
-const expectedLink = m => `<a class="ev tag exp x-${m.tone}" href="${esc(compHref(m.id))}" title="${esc(m.label)}"><span aria-hidden="true">◇</span> <span class="t">${esc(m.label)}</span></a>`;
+const expectedLink = m => `<a class="ev tag exp x-${m.tone}" href="${esc(recordHref(m.c))}" title="${esc(m.label)}"><span aria-hidden="true">◇</span> ${secMark(m.c)}<span class="t">${esc(m.label)}</span></a>`;
 
 const clashLabel = pairs => {
   const t = clashTitle(pairs);
@@ -102,7 +121,7 @@ function gridHtml(today) {
     ].join('');
     return `<div class="${cls}" role="listitem"${d === today ? ' aria-current="date"' : ''}><span class="n"><span class="sr">${p.weekday} </span>${p.day}<span class="sr"> ${p.mon}${d === today ? ', today' : ''}</span></span>${items}</div>`;
   }).join('');
-  return `<div class="legend" aria-hidden="true"><span class="tag reg">✓ Registered</span><span class="tag ent">Entering</span><span class="tag wat">Watching</span><span class="tag exp">Expected (international)</span><span class="tag clashc">⚠ Clash</span><span>⏰ registration closes · 🏁 competition ends</span></div>
+  return `<div class="legend" aria-hidden="true"><span class="tag reg">✓ Registered</span><span class="tag ent">Entering</span><span class="tag wat">Watching</span><span class="tag exp">Expected (international)</span><span class="tag clashc">⚠ Clash</span><span><span class="secmark">${SHORT[other.key]}</span> = ${esc(other.noun)}, entering or registered</span><span>⏰ registration closes · 🏁 competition ends</span></div>
     <div class="grid" role="list" aria-label="${esc(monthTitle(year, month))}">${DOW.map(d => `<div class="dow" aria-hidden="true">${d}</div>`).join('')}${cells}</div>`;
 }
 
@@ -114,7 +133,7 @@ const chip = tone => (tone === 'reg' ? '<span class="tag reg">✓ Registered</sp
 
 function clashText(e, pairs) {
   const mine = (pairs.get(e.date) || []).filter(p => sameId(p.id, e.id));
-  return mine.map(p => `⚠ Clashes with ${p.other} (${plural(p.apart, 'day')} apart). ${p.other} is ${statusOfId(p.otherId)}, ${p.title} is ${e.status}.`);
+  return mine.map(p => `⚠ Clashes with ${titleWithSection(compById(p.otherId), p.other)} (${plural(p.apart, 'day')} apart). ${p.other} is ${statusOfId(p.otherId)}, ${p.title} is ${e.status}.`);
 }
 
 function agendaRow(e, pairs) {
@@ -122,7 +141,7 @@ function agendaRow(e, pairs) {
   const warns = clashText(e, pairs);
   return `<li class="item">
       <div class="date">${p.day} ${p.mon}<small>${p.weekday}</small></div>
-      <div class="what"><a href="${esc(compHref(e.id))}">${esc(e.title)}</a><small>${esc(KIND[e.kind][1])}${e.host ? ` · ${esc(e.host)}` : ''}</small></div>
+      <div class="what"><a href="${esc(recordHref(e.c))}">${secMark(e.c)}${esc(e.title)}</a><small>${esc(KIND[e.kind][1])}${e.host ? ` · ${esc(e.host)}` : ''}</small></div>
       ${chip(e.tone)}
       ${warns.map(w => `<p class="warn">${esc(w)}</p>`).join('')}
     </li>`;
@@ -134,7 +153,7 @@ function expectedRow(c) {
   const text = (expectedText(c) || '').replace(/^./, s => s.toUpperCase());
   return `<li class="item exp">
       <div class="date">${esc(app || monthsText(c.expected?.finals_months) || '')}<small>${app ? 'applications' : 'finals'}</small></div>
-      <div class="what"><a href="${esc(compHref(c.id))}">${esc(c.title)}</a><small>${esc(text)}${c.host ? ` · ${esc(c.host)}` : ''}</small></div>
+      <div class="what"><a href="${esc(recordHref(c))}">${secMark(c)}${esc(c.title)}</a><small>${esc(text)}${c.host ? ` · ${esc(c.host)}` : ''}</small></div>
       ${chip(tone)}
     </li>`;
 }
@@ -157,7 +176,8 @@ function agendaHtml(today, marked) {
 
 // ---- page -----------------------------------------------------------------
 
-const emptyHtml = () => '<p class="empty cal-empty">Nothing on the calendar yet. Mark competitions Watching, Entering or Registered on the <a href="index.html">Board</a>.</p>';
+const boardHref = pageHref('index.html', sec.key);
+const emptyHtml = () => `<p class="empty cal-empty">Nothing on the calendar yet. Mark ${sec.key === 'hack' ? 'hackathons' : 'competitions'} Watching, Entering or Registered on the <a href="${boardHref}">Board</a>.</p>`;
 
 function render() {
   const focus = captureFocus();
@@ -183,7 +203,7 @@ function render() {
       ${marked ? '' : emptyHtml()}
       ${anything ? (grid ? gridHtml(today) : agendaHtml(today, marked)) : ''}
     </div>
-    <footer><span>Read-only. Change statuses on the <a href="index.html">Board</a>.</span><span>Updated ${esc(istTime(state.status?.last_ok))}</span></footer>`;
+    <footer><span>Read-only. Change statuses on the <a href="${boardHref}">Board</a>.</span><span>Updated ${esc(istTime(state.status?.last_ok))}</span></footer>`;
   focus.restore();
 }
 

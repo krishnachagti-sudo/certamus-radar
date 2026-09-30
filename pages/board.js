@@ -1,5 +1,7 @@
-// Board: top hosts, case competitions only, v1 order.
-import { BOARD_TIERS } from '../lib/data.js';
+// Board: top hosts, v1 order. Case comps only by default; hackathons
+// (?s=hack) with their own Board tiers.
+import { currentSection, sectionOf } from '../lib/section.js';
 import { startListPage } from '../lib/listpage.js';
 
-startListPage({ page: 'board', tiers: BOARD_TIERS, startups: false, search: false, allowAdd: true, sort: false, inbox: true });
+const sec = sectionOf(currentSection());
+startListPage({ page: 'board', tiers: sec.boardTiers, startups: false, search: false, allowAdd: true, sort: false, inbox: true });

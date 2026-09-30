@@ -51,6 +51,12 @@ footer { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; color: 
 .nav strong { margin-right: 12px; }
 .nav a { color: var(--ink-2); text-decoration: none; font-weight: 600; font-size: .92rem; padding-bottom: 4px; }
 .nav a[aria-current] { color: var(--accent); border-bottom: 2px solid var(--accent); }
+.nav .pages { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; }
+.nav .sw { display: inline-flex; flex: none; border: 1px solid var(--rule); border-radius: 999px; padding: 2px; background: var(--panel); }
+.nav .sw a { padding: 3px 12px; border-radius: 999px; border-bottom: 0; font-size: .85rem; white-space: nowrap; }
+.nav .sw a[aria-current] { background: var(--accent); color: var(--on-accent); border-bottom: 0; }
+.chip.kind { background: #E4E8FF; color: var(--accent); }
+.secmark { display: inline-block; font-size: .62rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; line-height: 1.4; padding: 0 4px; border-radius: 4px; background: var(--ink); color: var(--panel); margin-right: 4px; vertical-align: 1px; }
 .search { flex: 1 1 16rem; min-width: 0; font: inherit; padding: 6px 10px; border: 1px solid var(--rule); border-radius: 8px; }
 .chip.registered { background: var(--fits-bg); color: var(--fits); }
 .chip.startup { background: var(--check-bg); color: var(--check); }

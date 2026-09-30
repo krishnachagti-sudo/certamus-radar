@@ -5,30 +5,37 @@
 // in edit mode a curated record also gets "Set dates". Ids are strings.
 // Dates confirmed with "Set dates" show here at once (an overlay from the
 // store); the calendar and board get them from the next fetch.
-import { clashes } from '../clash.js';
+// Hackathons (?s=hack, or an id starting df-/mlh-/dp-/hk-): the hackathon
+// rule table, team size, online/place and source; curated hk- rows show the
+// curated facts and the watcher flag. Clashes count both sections.
 import { dayDiff, todayIST } from '../dates.js';
 import {
-  STATUSES, sameId, statusOf, isRegistered, committedSet, expectedText, whoAppliesText, watchChanged,
-  needsFullRender, pagesJson,
+  STATUSES, sameId, statusOf, isRegistered, committedAcross, clashLabels, expectedText, whoAppliesText, watchChanged,
+  needsFullRender, pagesJson, recordSection,
 } from '../lib/data.js';
 import {
   KeyRejected, KEY_REJECTED, clearKey, createDecisionSaver, editable, readIntlDates, setIntlDates,
 } from '../lib/store.js';
 import { initEditor } from '../lib/editor.js';
-import { esc, safeHref, teamText, linkLabel, tierChipHtml, verdictChipHtml, formatChipHtml, startupChipHtml } from '../lib/card.js';
-import { eligibilityRows } from '../lib/eligibility.js';
+import {
+  esc, safeHref, teamText, linkLabel, tierChipHtml, verdictChipHtml, formatChipHtml, startupChipHtml,
+  kindChipHtml, hackTeamText, placeText, KIND_LABEL,
+} from '../lib/card.js';
+import { currentSection, otherSection, pageHref, sectionOf } from '../lib/section.js';
 import { captureFocus } from '../lib/focus.js';
 import { mountNav } from '../lib/nav.js';
 import { loadDecisions, bannersHtml, editFooterHtml } from '../lib/session.js';
 
 const ID = new URLSearchParams(location.search).get('id') ?? '';
 const SITE = 'Certamus Radar';
+const sec = sectionOf(currentSection());
+const other = sectionOf(otherSection(sec.key));
 
 const state = {
-  comps: [], archive: [], intl: [], watch: {}, status: {}, decisions: {}, intlDates: {}, error: null, notice: null, datesMsg: '',
+  comps: [], otherItems: [], archive: [], intl: [], watch: {}, status: {}, decisions: {}, intlDates: {}, error: null, notice: null, datesMsg: '',
 };
 
-const ENTRY = { open: 'Open entry', invite: 'By invitation', qualifier: 'Qualifier round', unclear: 'Entry route unclear' };
+const ENTRY = { open: 'Open entry', invite: 'By invitation', qualifier: 'Qualifier round', institute: 'Through your institute', unclear: 'Entry route unclear' };
 const INDIAN_UG = { yes: 'Open to Indian undergraduates', no: 'Not open to Indian undergraduates', unclear: 'Unclear for Indian undergraduates' };
 const ICON = { ok: '✅', check: '⚠️', out: '❌', unchecked: '–' };
 const ICON_LABEL = { ok: 'Passed', check: 'Check', out: 'Fails', unchecked: 'Not checked' };
@@ -47,15 +54,18 @@ async function keyRejected() {
 
 async function load() {
   state.error = null;
-  let intl, fests;
-  [state.comps, state.archive, intl, fests, state.watch, state.status] = await Promise.all([
-    pagesJson('competitions.json', []), pagesJson('archive.json', []), pagesJson('international.json', []),
-    pagesJson('fests.json', []), pagesJson('watch.json', {}), pagesJson('status.json', {})]);
-  state.intl = [...(Array.isArray(intl) ? intl : []), ...(Array.isArray(fests) ? fests : [])];
-  const curated = /^(intl|fest)-/.test(String(ID));
+  let curated;
+  [state.comps, state.archive, curated, state.watch, state.status, state.otherItems] = await Promise.all([
+    pagesJson(sec.files.items, []), pagesJson(sec.files.archive, []), Promise.all(sec.files.curated.map(f => pagesJson(f, []))),
+    pagesJson('watch.json', {}), pagesJson(sec.files.status, {}), pagesJson(other.files.items, [])]);
+  state.intl = curated.flatMap(list => (Array.isArray(list) ? list : []));
+  if (!Array.isArray(state.otherItems)) state.otherItems = [];
+  // Confirmed dates exist for the case-comp curated lists only (the store's
+  // intl_dates table); curated hackathons take dates from the next fetch.
+  const withDatesStore = sec.key === 'case' && /^(intl|fest)-/.test(String(ID));
   await loadDecisions(state, {
     overlay: d => saver.overlay(d),
-    readMore: async () => { if (curated) state.intlDates = { ...await readIntlDates(), ...localDates }; },
+    readMore: async () => { if (withDatesStore) state.intlDates = { ...await readIntlDates(), ...localDates }; },
   });
   render();
 }
@@ -75,7 +85,7 @@ const curatedRow = c => (Array.isArray(state.intl) ? state.intl : []).find(r => 
 // ---- left column --------------------------------------------------------
 
 function eligibilityHtml(c) {
-  const rows = eligibilityRows(c);
+  const rows = sec.eligibilityRows(c);
   if (rows) {
     return `<section class="sec" aria-labelledby="h-elig"><h2 id="h-elig">Eligibility, rule by rule</h2>
       ${rows.map(r => `<div class="rule r-${esc(r.state)}"><span class="ico" aria-hidden="true">${ICON[r.state]}</span><div><b>${esc(r.name)}</b><span class="sr"> ${ICON_LABEL[r.state]}:</span><small>${esc(r.detail)}</small></div></div>`).join('')}
@@ -96,7 +106,10 @@ function eligibilityHtml(c) {
   } else {
     facts.push(['Source', 'Opportunity Desk listing']);
   }
-  const reasons = (c.verdict?.reasons || []).filter(r => r !== whoAppliesText(c));
+  // A curated hackathon's verdict reason is its Indian-undergraduates note,
+  // already shown above.
+  const shown = [whoAppliesText(c), recordSection(c) === 'hack' ? c.intl?.indian_ug_note : null];
+  const reasons = (c.verdict?.reasons || []).filter(r => !shown.includes(r));
   return `<section class="sec" aria-labelledby="h-elig"><h2 id="h-elig">Eligibility and entry</h2>
     <dl class="dl">${facts.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
     ${reasons.length ? `<ul class="reasons">${reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>` : ''}
@@ -106,6 +119,7 @@ function eligibilityHtml(c) {
 function datesHtml(c, missing) {
   return `<section class="sec" aria-labelledby="h-dates"><h2 id="h-dates">Dates</h2><dl class="dl">
     <dt>Registration closes</dt><dd>${dateOr(c.regn_close, missing)}</dd>
+    ${c.comp_start ? `<dt>Starts</dt><dd>${dateOr(c.comp_start, '')}</dd>` : ''}
     <dt>Competition ends</dt><dd>${dateOr(c.comp_end, missing)}</dd>
     <dt>First seen</dt><dd>${dateOr(c.first_seen, 'not recorded')}</dd>
     ${c.closed_on ? `<dt>Closed on</dt><dd>${dateOr(c.closed_on, '')}</dd>` : ''}
@@ -134,7 +148,23 @@ function countdownHtml(c, today) {
   return '<div class="countdown">Dates<small>dates not confirmed</small></div>';
 }
 
+const SOURCE_NAME = { unstop: 'Unstop', devfolio: 'Devfolio', mlh: 'MLH', devpost: 'Devpost', curated: 'Curated list, checked by hand' };
+
+function hackFactsHtml(c) {
+  const curated = c.source === 'curated';
+  const size = curated ? curatedRow(c)?.team_size : null;
+  const team = curated ? (size ? String(size) : 'not listed') : hackTeamText(c);
+  const where = curated ? (curatedRow(c)?.country || 'see the official page') : placeText(c);
+  const fee = curated ? (c.intl?.fee || 'not listed') : (c.fee ? 'paid entry' : 'free');
+  const prizes = c.prize_total ? `₹${Number(c.prize_total).toLocaleString('en-IN')}` : 'not listed';
+  return `<dl class="dl"><dt>Kind</dt><dd>${esc(KIND_LABEL[c.hack_kind] || 'not classified')}</dd>
+    <dt>Where</dt><dd>${esc(where)}</dd><dt>Team</dt><dd>${esc(team)}</dd>
+    <dt>Fee</dt><dd>${esc(fee)}</dd><dt>Prizes</dt><dd>${esc(prizes)}</dd>
+    <dt>Source</dt><dd>${esc(SOURCE_NAME[c.source] || 'Unstop')}</dd></dl>`;
+}
+
 function factsHtml(c) {
+  if (recordSection(c) === 'hack') return hackFactsHtml(c);
   let team = teamText(c);
   let format = c.mode || 'not listed';
   let fee = c.fee ? 'paid entry' : 'free';
@@ -171,7 +201,7 @@ function statusHtml(c) {
 }
 
 function datesFormHtml(c) {
-  if (c.source !== 'curated' || !editable()) return '';
+  if (c.source !== 'curated' || !editable() || sec.key !== 'case') return '';
   return `<form class="setdates" id="setdates">
       <h3>Set dates</h3>
       <label>Registration closes <input type="date" name="regn_close" value="${esc(c.regn_close || '')}"></label>
@@ -182,7 +212,7 @@ function datesFormHtml(c) {
 }
 
 function panelHtml(c, today) {
-  const clash = clashes(c, committedSet(state.comps, state.decisions), today);
+  const clash = clashLabels(c, committedAcross(state.comps, state.otherItems, state.decisions), today);
   const changed = c.source === 'curated' ? watchChanged(state.watch, c, today) : null;
   return `<aside class="panel" aria-label="Decision">
     ${countdownHtml(c, today)}
@@ -202,7 +232,7 @@ function liveHtml(c) {
   const missing = c.source === 'curated' ? 'not confirmed' : 'not listed';
   return `<div class="cols">
     <div class="main">
-      <div class="chips">${tierChipHtml(c)} ${verdictChipHtml(c)} ${formatChipHtml(c)} ${startupChipHtml(c)}</div>
+      <div class="chips">${tierChipHtml(c)} ${verdictChipHtml(c)} ${kindChipHtml(c)} ${formatChipHtml(c)} ${startupChipHtml(c)}</div>
       <h1>${esc(c.title)}</h1>
       <p class="host">${esc(c.host)}</p>
       ${eligibilityHtml(c)}
@@ -229,7 +259,7 @@ function archivedHtml(a) {
 }
 
 const notFoundHtml = () => `<section class="sec notfound"><h1>Not found, it may have been archived</h1>
-  <p>No competition with this id is on the radar now. <a href="hosts.html">See Hosts &amp; archive</a>.</p></section>`;
+  <p>No ${sec.key === 'hack' ? 'hackathon' : 'competition'} with this id is on the radar now. <a href="${pageHref('hosts.html', sec.key)}">See Hosts &amp; archive</a>.</p></section>`;
 
 function render() {
   const focus = captureFocus();
