@@ -386,3 +386,17 @@ test('is_case means "belongs on the main list": case and business are true, othe
   assert.equal(kind({ title: 'B-Plan' }).is_case, true);
   assert.equal(kind({ title: 'Gold Pass' }).is_case, false);
 });
+
+test('opportunity option: a hackathons scan pages opportunity=hackathons the same way', async () => {
+  const http = fakeHttp([['search-result', { data: { data: [item(1)], last_page: 1 } }]]);
+  const { records } = await fetchAll(new Map(), [], opts(http, { opportunity: 'hackathons' }));
+  const url = new URL(http.calls[0]);
+  assert.equal(url.searchParams.get('opportunity'), 'hackathons');
+  assert.equal(url.searchParams.get('oppstatus'), 'open');
+  assert.equal(records.length, 1);
+});
+
+test('opportunity option: an empty hackathons scan names hackathons in the error', async () => {
+  const http = fakeHttp([['search-result', { data: { data: [], last_page: 1 } }]]);
+  await assert.rejects(fetchAll(new Map(), [], opts(http, { opportunity: 'hackathons' })), /no hackathons/);
+});

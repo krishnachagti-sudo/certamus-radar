@@ -11,8 +11,10 @@ const PER_PAGE = 30;
 const MAX_PAGES = 60;
 export const UA = 'CertamusRadar/1.0 (+https://github.com/krishnachagti-sudo/certamus-radar)';
 
-const searchUrl = page =>
-  `${BASE}/opportunity/search-result?opportunity=competitions&oppstatus=open&per_page=${PER_PAGE}&page=${page}`;
+// `opportunity` is Unstop's listing type: 'competitions' (case comps) or
+// 'hackathons' (the Hackathons section); both page the same way.
+const searchUrl = (page, opportunity = 'competitions') =>
+  `${BASE}/opportunity/search-result?opportunity=${encodeURIComponent(opportunity)}&oppstatus=open&per_page=${PER_PAGE}&page=${page}`;
 const detailUrl = id => `${BASE}/competition/${id}`;
 
 export async function defaultGetJson(url) {
@@ -168,6 +170,7 @@ export async function fetchAll(existingById, manualIds, opts) {
   const getJson = opts.getJson || defaultGetJson;
   const pause = opts.pause || defaultPause;
   const backoff = opts.backoff ?? 3000;
+  const opportunity = opts.opportunity || 'competitions';
   const warnings = [];
   manualIds = [...new Set(manualIds)];
 
@@ -188,7 +191,7 @@ export async function fetchAll(existingById, manualIds, opts) {
   for (let page = 1; page <= MAX_PAGES; page++) {
     let body;
     try {
-      body = await getSearch(searchUrl(page));
+      body = await getSearch(searchUrl(page, opportunity));
     } finally {
       await pause();
     }
@@ -209,7 +212,7 @@ export async function fetchAll(existingById, manualIds, opts) {
     if (page === 1 && lastPage > MAX_PAGES) warnings.push(`last_page ${lastPage} exceeds MAX_PAGES ${MAX_PAGES}`);
     if (list.length === 0 || page >= lastPage) break;
   }
-  if (items.size === 0) throw new Error('Unstop search returned no competitions');
+  if (items.size === 0) throw new Error(`Unstop search returned no ${opportunity}`);
 
   const detail = async id => {
     try {

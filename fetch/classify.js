@@ -3,7 +3,7 @@
 
 const IIT = /indian institute of technology|\bIIT\b/i;
 const IIM = /indian institute of management(?! (and|&) commerce)|\bIIM\b/i;
-const IS_COLLEGE = /universit|college|institute|school|\bIIT\b|\bIIM\b|\bNIT\b|\bIIIT\b|\bBITS\b/i;
+export const IS_COLLEGE = /universit|college|institute|school|\bIIT\b|\bIIM\b|\bNIT\b|\bIIIT\b|\bBITS\b/i;
 
 const hostIn = (list, host) => (Array.isArray(list) ? list : []).some(b => new RegExp(b.host, 'i').test(host));
 
@@ -28,9 +28,9 @@ export function tier(rec, lists) {
   return 'other';
 }
 
-const COURSE_LISTS = ['bSchools', 'engineering', 'arts', 'medicine', 'law'];
-const BSCHOOL_OPEN = ['all', 'allCourses', 'bSchoolOthers'];
-const BSCHOOL_UG = ['bba', 'ipm', 'bcom'];
+export const COURSE_LISTS = ['bSchools', 'engineering', 'arts', 'medicine', 'law'];
+export const BSCHOOL_OPEN = ['all', 'allCourses', 'bSchoolOthers'];
+export const BSCHOOL_UG = ['bba', 'ipm', 'bcom'];
 const COURSE_LABEL = {
   mba1: 'MBA', mba2: 'MBA', pgdm: 'PGDM', execMba: 'Executive MBA', phdManagement: 'PhD', mcom: 'M.Com',
   btech: 'B.Tech', mtech: 'M.Tech', mca: 'MCA', mca1: 'MCA', bba: 'BBA', ipm: 'IPM', bcom: 'B.Com',
@@ -52,7 +52,7 @@ const DETAIL_FLAGS = [
   /\b(pursuing|enrolled in)\b[^.;]{0,20}\b(MBA|PGDM|PGP)\b/i,
 ];
 
-function courses(el, key) {
+export function courses(el, key) {
   const list = Array.isArray(el?.[key]) ? el[key] : [];
   return list.map(x => (typeof x === 'string' ? x : x?.course)).filter(Boolean);
 }
@@ -77,7 +77,7 @@ function detailFlag(detailsText) {
 // Names a populated course list for the "open to X only" reason: a list
 // containing 'all'/'allCourses' is named by its category, otherwise by the
 // specific course codes it lists. Capped at 6 names, then "and N more".
-function courseNames(el, populated) {
+export function courseNames(el, populated) {
   const names = [];
   for (const key of populated) {
     const list = courses(el, key);
