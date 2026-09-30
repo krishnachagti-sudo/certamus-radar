@@ -117,6 +117,55 @@ The Board's "Quizzes and other formats" toggle shows the rest.
 The Board, the "What needs attention" panel and the digest cover every
 tier except Other.
 
+## Hackathons data
+
+The Hackathons section (front end not built yet) reads `data/hackathons.json`,
+`data/hack-status.json` and `data/hack-archive.json`, written only by
+`fetch/hack-run.js` in the same `fetch.yml` job as the case comps, with the
+same merge, 60-day archive, Supabase-decision and privacy rules (shared
+code in `fetch/pipeline.js`). Each run records its own result in its own
+status file; the job goes red only when both sections fail. Every source is
+optional: a failing one is a warning in `hack-status.json` (which also
+carries a per-source `sources` count) and its previous records pass
+through. The run fails, leaving the files alone, only when all four fetched
+sources fail or `hackathons.json` is unreadable.
+
+| Source | id | Tier | Notes |
+|---|---|---|---|
+| Unstop `opportunity=hackathons` full scan | numeric | by host | ~230 open on 8 pages; eligibility from course lists, stream filters and passout years |
+| Devfolio search API (`application_open`, POST, pages of 50) | `df-<uuid>` | by venue, `global` outside India | url `https://<slug>.devfolio.co/`; team_min/team_size |
+| MLH current season page (`mlh.com/seasons/<year>/events`, Inertia JSON) | `mlh-<slug>` | `global` | registration taken to close at the start date |
+| Devpost `/api/hackathons?status[]=open` (JSON; robots allows) | `dp-<id>` | `global` | deadline = submission end |
+| `data/hack-curated.json` (fest row shape, verified by hand) | `hk-<name>` | row's `corporate` / `national` | watched weekly by `fetch/watch.js`; Unstop-hosted rows have no `watch_url` (Unstop serves the same script shell for every listing) |
+
+**Kinds** (`hack_kind`, `fetch/hack-classify.js`): `build` (hackathons,
+buildathons, make-a-thons, game jams) and `ideathon` (ideathons, pitch /
+B-plan / startup / innovation challenges). Everything else is `other`:
+coding contests, CTFs, Kaggle-style datathons, quizzes, robotics, esports,
+posters, passes, and Unstop titles that say nothing whose body doesn't say
+hackathon or ideathon. `other` records stay in the file, hidden from the main
+list, like case comps' `format_kind: 'other'`: a regex change never "closes"
+a record someone has a decision on, and a mis-sorted item is one toggle away.
+
+**Tiers:** iit, iim, national, bschool as for case comps, `corporate` from
+`data/hack-corporates.json`, `global` (MLH, Devpost, non-Indian Devfolio
+hosts) and `other`. `main: true` means tier is not `other` and kind is not
+`other`: the Board's default list.
+
+**Eligibility** against `data/hack-team.json` (Krishna: UG, management +
+science, 2029; Akshit: UG, engineering, 2028; `can_grow`):
+
+- *out*: not open to students; school students only; postgraduate only;
+  the listed years or courses exclude every member.
+- *check*: only some members eligible ("only Akshit is eligible by
+  course"); same-college teams; `team_min` above 2 ("needs 3 members,
+  recruit"); entry fee; eligibility not stated; in-person abroad; women
+  only; invite only.
+- *fits*: otherwise.
+
+Only the verdict and reasons are stored: body text, FAQ answers and the raw
+eligibility blob are read in memory and dropped.
+
 ## Registered ✓
 
 Independent of Watching / Entering / Skipped: a competition can be marked

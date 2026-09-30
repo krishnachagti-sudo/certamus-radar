@@ -133,5 +133,25 @@
     "hash": "82882f13a8617448063bbc8f84eb9c56756ffaa238c6cf9ca2f6317fe29e5fb5",
     "changed_on": null,
     "last_checked": "2026-09-30"
+  },
+  "hk-sih": {
+    "hash": "728bd29800516edd6d4c2322050b84775adb3057cfe731394897672c5caa919c",
+    "changed_on": null,
+    "last_checked": "2026-09-30"
+  },
+  "hk-flipkart-grid": {
+    "hash": "8b9d36e2a632a28c74f7a5d80ff7ee6c4b337b63a23ae364ce3b315eb02aa379",
+    "changed_on": null,
+    "last_checked": "2026-09-30"
+  },
+  "hk-samsung-sft": {
+    "hash": "2855abf25b81f92b469f763083d97544ea7b2685e2d803bd516d6788dfa453ce",
+    "changed_on": null,
+    "last_checked": "2026-09-30"
+  },
+  "hk-imagine-cup": {
+    "hash": "58a0567bcc5339b47352fdc9f837d979c7a4cb354b8a1fa663993095bd949bd8",
+    "changed_on": null,
+    "last_checked": "2026-09-30"
   }
 }

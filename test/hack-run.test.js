@@ -232,3 +232,28 @@ test('unverified curated rows are left out', async () => {
   await main({ dataDir: dir, now, deps: deps() });
   assert.equal(read(dir, 'hackathons.json').some(r => r.id === 'hk-x'), false);
 });
+
+test('data/hack-curated.json rows are well-formed (hk- ids, build/ideathon, corporate/national, https urls)', () => {
+  const rows = JSON.parse(fs.readFileSync(new URL('../data/hack-curated.json', import.meta.url), 'utf8'));
+  assert.ok(Array.isArray(rows) && rows.length > 0);
+  const ids = new Set();
+  for (const r of rows) {
+    assert.match(r.id, /^hk-[a-z0-9-]+$/);
+    assert.equal(ids.has(r.id), false, `duplicate ${r.id}`);
+    ids.add(r.id);
+    assert.ok(['build', 'ideathon'].includes(r.kind), r.id);
+    assert.ok(['corporate', 'national'].includes(r.tier), r.id);
+    assert.match(r.url, /^https:\/\//);
+    assert.ok(r.watch_url === null || /^https:\/\//.test(r.watch_url), r.id);
+    assert.equal(typeof r.verified, 'boolean');
+    for (const k of ['application_months', 'finals_months']) {
+      assert.ok(r[k] === null || (Array.isArray(r[k]) && r[k].every(m => Number.isInteger(m) && m >= 1 && m <= 12)), `${r.id} ${k}`);
+    }
+  }
+});
+
+test('data/hack-team.json is the two-member growable team', () => {
+  const t = JSON.parse(fs.readFileSync(new URL('../data/hack-team.json', import.meta.url), 'utf8'));
+  assert.equal(t.can_grow, true);
+  assert.deepEqual(t.members.map(m => [m.name, m.level, m.year]), [['Krishna', 'ug', 2029], ['Akshit', 'ug', 2028]]);
+});

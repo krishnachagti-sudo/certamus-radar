@@ -95,22 +95,23 @@ const entryCode = x => (typeof x === 'string' ? x : x?.course);
 const entryYears = x => (x && typeof x === 'object' && Array.isArray(x.passoutYear) ? x.passoutYear.map(String) : ['all']);
 const rawList = (el, key) => (Array.isArray(el?.[key]) ? el[key] : []);
 
-// { course, year } for one member against Unstop course lists and years.
+// { course, year } for one member against Unstop course lists, stream filters
+// and years. Unstop often leaves others:["all"] on a listing whose filters
+// say "Engineering Students" only, so stream filters restrict on their own.
 function memberAdmitted(member, el, filters) {
   const years = Array.isArray(el?.studentPassoutYearsSelected) ? el.studentPassoutYearsSelected.map(String) : [];
   const topYear = !years.length || years.includes('all') || years.includes(String(member.year));
+  const streamFilters = filters.includes('All') ? [] : filters.filter(f => STREAM_FILTERS.includes(f));
+  const byFilter = !streamFilters.length || member.streams.some(s => STREAMS[s] && streamFilters.includes(STREAMS[s].filter));
   const populated = COURSE_LISTS.filter(k => courses(el, k).length);
   const othersAll = courses(el, 'others').some(c => c === 'all' || c === 'allCourses');
   if (populated.length && !othersAll) {
     const entries = member.streams.flatMap(s => (STREAMS[s] ? rawList(el, STREAMS[s].list).filter(x => STREAMS[s].codes.includes(entryCode(x))) : []));
     const course = entries.length > 0;
     const courseYear = !course || entries.some(x => { const y = entryYears(x); return y.includes('all') || y.includes(String(member.year)); });
-    return { course, year: topYear && courseYear };
+    return { course: course && byFilter, year: topYear && courseYear };
   }
-  if (!populated.length && !othersAll && filters.length && !filters.includes('All') && filters.some(f => STREAM_FILTERS.includes(f))) {
-    return { course: member.streams.some(s => STREAMS[s] && filters.includes(STREAMS[s].filter)), year: topYear };
-  }
-  return { course: true, year: topYear };
+  return { course: byFilter, year: topYear };
 }
 
 const names = ms => ms.map(m => m.name).join(' and ');

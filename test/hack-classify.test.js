@@ -135,6 +135,13 @@ test('check: courses admit only some members (engineering-only listing)', () => 
   assert.deepEqual(v({ eligibility: null, eligible_filters: ['Engineering Students', 'Undergraduate'] }), { level: 'check', reasons: ['only Akshit is eligible by course'] });
 });
 
+test('check: stream filters still restrict when Unstop leaves others:["all"] on an engineering-only listing', () => {
+  const eng = el({ engineering: [{ course: 'btech', passoutYear: ['all'] }], others: ['all'] });
+  assert.deepEqual(v({ eligibility: eng, eligible_filters: ['Engineering Students', 'Postgraduate', 'Undergraduate'] }), { level: 'check', reasons: ['only Akshit is eligible by course'] });
+  const open = ['Engineering Students', 'Postgraduate', 'Undergraduate', 'Management', 'Medical', 'Law', 'Arts, Commerce, Sciences & Others'];
+  assert.deepEqual(v({ eligibility: el(), eligible_filters: open }), { level: 'fits', reasons: [] });
+});
+
 test('check: a science (BS/B.Sc) or management (BBA/BMS) listing admits Krishna only', () => {
   assert.deepEqual(v({ eligibility: el({ others: [], arts: ['bs', 'bsc'] }) }), { level: 'check', reasons: ['only Krishna is eligible by course'] });
   assert.deepEqual(v({ eligibility: el({ others: [], bSchools: ['bba'] }) }), { level: 'check', reasons: ['only Krishna is eligible by course'] });
