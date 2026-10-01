@@ -1,9 +1,8 @@
 {
-  "last_run": "2026-10-01T06:26:31.161Z",
-  "last_ok": "2026-10-01T06:26:31.161Z",
+  "last_run": "2026-10-01T18:29:56.421Z",
+  "last_ok": "2026-10-01T18:29:56.421Z",
   "last_error": null,
   "warnings": [
-    "Opportunity Desk: HTTP 403 for https://opportunitydesk.org/wp-json/wp/v2/posts?categories=11&after=2026-06-03T00%3A00%3A00&per_page=50&_fields=id%2Clink%2Ctitle%2Ccontent%2Cdate&page=1",
-    "InsideIIM: InsideIIM page shape changed (no competitions found)"
+    "Opportunity Desk: HTTP 403 for https://opportunitydesk.org/wp-json/wp/v2/posts?categories=11&after=2026-06-03T00%3A00%3A00&per_page=50&_fields=id%2Clink%2Ctitle%2Ccontent%2Cdate&page=1"
   ]
 }
