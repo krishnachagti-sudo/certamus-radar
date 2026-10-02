@@ -683,41 +683,6 @@
     "closed_on": "2026-10-02"
   },
   {
-    "id": 1746239,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/coderumble-40-indian-institute-of-information-technology-design-and-manufacturing-iiitdm-jabalpur-1746239",
-    "title": "CodeRumble 4.0",
-    "host": "Indian Institute of Information Technology, Design and Manufacturing (IIITDM), Jabalpur",
-    "regn_close": "2026-10-01",
-    "comp_end": "2026-10-01",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 2,
-    "team_max": 3,
-    "prize_total": 20000,
-    "eligible_filters": [
-      "Engineering Students",
-      "Undergraduate"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": null,
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "other",
-    "tier": "national",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "only Akshit is eligible by course"
-      ]
-    },
-    "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": "2026-10-02"
-  },
-  {
     "id": "dp-31262",
     "source": "devpost",
     "pinned": false,
@@ -965,38 +930,6 @@
     "closed_on": "2026-10-01"
   },
   {
-    "id": 1751879,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/crsu-hackathon-2026-romeo-juliet-ltd-1751879",
-    "title": "CRSU Hackathon 2026",
-    "host": "Romeo & Juliet Ltd",
-    "regn_close": "2026-10-02",
-    "comp_end": "2026-10-02",
-    "mode": "online",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 3,
-    "prize_total": 0,
-    "eligible_filters": [
-      "All"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": "Online",
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "build",
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": 1758463,
     "pinned": false,
     "url": "https://unstop.com/hackathons/ideaforge-2026-from-problems-to-possibilities-online-ideathon-noida-institue-of-engineering-tecnology-1758463",
@@ -1073,120 +1006,6 @@
     "closed_on": null
   },
   {
-    "id": 1751780,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/hack-n-build-srm-university-modinagar-ghaziabad-1751780",
-    "title": "Hack N Build",
-    "host": "SRM University, Modinagar, Ghaziabad",
-    "regn_close": "2026-10-02",
-    "comp_end": "2026-10-13",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 3,
-    "team_max": 5,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": null,
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "build",
-    "tier": "other",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "needs 3 members, recruit"
-      ]
-    },
-    "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
-    "id": 1756708,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/datathon-26-27-pccoe-inns-student-chapter-1756708",
-    "title": "Datathon 26–27",
-    "host": "PCCOE INNS STUDENT CHAPTER",
-    "regn_close": "2026-10-02",
-    "comp_end": "2026-10-09",
-    "mode": "hybrid",
-    "fee": true,
-    "team_min": 1,
-    "team_max": 2,
-    "prize_total": 30000,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": null,
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "other",
-    "tier": "other",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "entry fee"
-      ]
-    },
-    "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
-    "id": 1754908,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/kurukshetra-ctf-pimpri-chinchwad-college-of-engineering-pccoe-pune-1754908",
-    "title": "Kurukshetra CTF",
-    "host": "Pimpri Chinchwad College of Engineering (PCCOE), Pune",
-    "regn_close": "2026-10-02",
-    "comp_end": "2026-10-11",
-    "mode": "offline",
-    "fee": true,
-    "team_min": 1,
-    "team_max": 4,
-    "prize_total": 20000,
-    "eligible_filters": [
-      "All"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": null,
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "other",
-    "tier": "other",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "entry fee"
-      ]
-    },
-    "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": 1748402,
     "pinned": false,
     "url": "https://unstop.com/hackathons/navonmesh-26-a-national-level-hackathon-shri-shankaracharya-institute-of-professional-management-and-technolo-1748402",
@@ -1222,44 +1041,6 @@
       "reasons": [
         "needs 3 members, recruit",
         "entry fee"
-      ]
-    },
-    "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
-    "id": 1746960,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/scratch-to-hack-akal-university-talwandi-sabo-1746960",
-    "title": "Scratch to Hack",
-    "host": "Akal University, Talwandi Sabo",
-    "regn_close": "2026-10-02",
-    "comp_end": "2026-10-09",
-    "mode": "online",
-    "fee": false,
-    "team_min": 6,
-    "team_max": 6,
-    "prize_total": 10000,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": "Online",
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "build",
-    "tier": "other",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "needs 6 members, recruit"
       ]
     },
     "main": false,
@@ -1371,94 +1152,6 @@
     "closed_on": null
   },
   {
-    "id": "df-1063827b27854568b65b08b5cab55030",
-    "source": "devfolio",
-    "pinned": false,
-    "url": "https://hackify-3.devfolio.co/",
-    "title": "Hackify 3.0",
-    "host": "Mar Athanasius College of Engineering Kothamangalam",
-    "location": "Kothamangalam, India",
-    "country": "India",
-    "regn_close": "2026-10-02",
-    "comp_start": "2026-10-09",
-    "comp_end": "2026-10-11",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 4,
-    "prize_total": null,
-    "format": "devfolio",
-    "hack_kind": "build",
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
-    "id": "dp-30408",
-    "source": "devpost",
-    "pinned": false,
-    "url": "https://gibc-v2.devpost.com/",
-    "title": "Global Innovation Build Challenge V2",
-    "host": "Kang Chiao International School Student",
-    "location": "Online",
-    "country": null,
-    "regn_close": "2026-10-02",
-    "comp_start": null,
-    "comp_end": "2026-10-02",
-    "mode": "online",
-    "fee": false,
-    "team_min": null,
-    "team_max": null,
-    "prize_total": null,
-    "format": "devpost",
-    "hack_kind": "build",
-    "tier": "global",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "eligibility not stated"
-      ]
-    },
-    "main": true,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
-    "id": "dp-30892",
-    "source": "devpost",
-    "pinned": false,
-    "url": "https://firstcommit.devpost.com/",
-    "title": "Beginner's Paradise - FirstCommit",
-    "host": "FirstCommit",
-    "location": "Online",
-    "country": null,
-    "regn_close": "2026-10-02",
-    "comp_start": null,
-    "comp_end": "2026-10-02",
-    "mode": "online",
-    "fee": false,
-    "team_min": null,
-    "team_max": null,
-    "prize_total": null,
-    "format": "devpost",
-    "hack_kind": "build",
-    "tier": "global",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "eligibility not stated"
-      ]
-    },
-    "main": true,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": "dp-31588",
     "source": "devpost",
     "pinned": false,
@@ -1488,6 +1181,218 @@
     "main": true,
     "first_seen": "2026-10-02",
     "closed_on": null
+  },
+  {
+    "id": 1751780,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/hack-n-build-srm-university-modinagar-ghaziabad-1751780",
+    "title": "Hack N Build",
+    "host": "SRM University, Modinagar, Ghaziabad",
+    "regn_close": "2026-10-02",
+    "comp_end": "2026-10-13",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 3,
+    "team_max": 5,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "build",
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "needs 3 members, recruit"
+      ]
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": "2026-10-02"
+  },
+  {
+    "id": 1756708,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/datathon-26-27-pccoe-inns-student-chapter-1756708",
+    "title": "Datathon 26–27",
+    "host": "PCCOE INNS STUDENT CHAPTER",
+    "regn_close": "2026-10-02",
+    "comp_end": "2026-10-09",
+    "mode": "hybrid",
+    "fee": true,
+    "team_min": 1,
+    "team_max": 2,
+    "prize_total": 30000,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "entry fee"
+      ]
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": "2026-10-02"
+  },
+  {
+    "id": 1754908,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/kurukshetra-ctf-pimpri-chinchwad-college-of-engineering-pccoe-pune-1754908",
+    "title": "Kurukshetra CTF",
+    "host": "Pimpri Chinchwad College of Engineering (PCCOE), Pune",
+    "regn_close": "2026-10-02",
+    "comp_end": "2026-10-11",
+    "mode": "offline",
+    "fee": true,
+    "team_min": 1,
+    "team_max": 4,
+    "prize_total": 20000,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "entry fee"
+      ]
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": "2026-10-02"
+  },
+  {
+    "id": 1746960,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/scratch-to-hack-akal-university-talwandi-sabo-1746960",
+    "title": "Scratch to Hack",
+    "host": "Akal University, Talwandi Sabo",
+    "regn_close": "2026-10-02",
+    "comp_end": "2026-10-09",
+    "mode": "online",
+    "fee": false,
+    "team_min": 6,
+    "team_max": 6,
+    "prize_total": 10000,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": "Online",
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "build",
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "needs 6 members, recruit"
+      ]
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": "2026-10-02"
+  },
+  {
+    "id": "dp-30408",
+    "source": "devpost",
+    "pinned": false,
+    "url": "https://gibc-v2.devpost.com/",
+    "title": "Global Innovation Build Challenge V2",
+    "host": "Kang Chiao International School Student",
+    "location": "Online",
+    "country": null,
+    "regn_close": "2026-10-02",
+    "comp_start": null,
+    "comp_end": "2026-10-02",
+    "mode": "online",
+    "fee": false,
+    "team_min": null,
+    "team_max": null,
+    "prize_total": null,
+    "format": "devpost",
+    "hack_kind": "build",
+    "tier": "global",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "main": true,
+    "first_seen": "2026-09-30",
+    "closed_on": "2026-10-02"
+  },
+  {
+    "id": "dp-30892",
+    "source": "devpost",
+    "pinned": false,
+    "url": "https://firstcommit.devpost.com/",
+    "title": "Beginner's Paradise - FirstCommit",
+    "host": "FirstCommit",
+    "location": "Online",
+    "country": null,
+    "regn_close": "2026-10-02",
+    "comp_start": null,
+    "comp_end": "2026-10-02",
+    "mode": "online",
+    "fee": false,
+    "team_min": null,
+    "team_max": null,
+    "prize_total": null,
+    "format": "devpost",
+    "hack_kind": "build",
+    "tier": "global",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "main": true,
+    "first_seen": "2026-09-30",
+    "closed_on": "2026-10-02"
   },
   {
     "id": 1762040,
@@ -1919,6 +1824,41 @@
     "closed_on": null
   },
   {
+    "id": 1746239,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/coderumble-40-indian-institute-of-information-technology-design-and-manufacturing-iiitdm-jabalpur-1746239",
+    "title": "CodeRumble 4.0",
+    "host": "Indian Institute of Information Technology, Design and Manufacturing (IIITDM), Jabalpur",
+    "regn_close": "2026-10-03",
+    "comp_end": "2026-10-03",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 3,
+    "prize_total": 20000,
+    "eligible_filters": [
+      "Engineering Students",
+      "Undergraduate"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "national",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "only Akshit is eligible by course"
+      ]
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1736048,
     "pinned": false,
     "url": "https://unstop.com/hackathons/idea-competition-2026-fr-conceicao-rodrigues-college-of-engineering-frcrce-bandra-1736048",
@@ -1985,6 +1925,64 @@
     "closed_on": null
   },
   {
+    "id": "df-1063827b27854568b65b08b5cab55030",
+    "source": "devfolio",
+    "pinned": false,
+    "url": "https://hackify-3.devfolio.co/",
+    "title": "Hackify 3.0",
+    "host": "Mar Athanasius College of Engineering Kothamangalam",
+    "location": "Kothamangalam, India",
+    "country": "India",
+    "regn_close": "2026-10-03",
+    "comp_start": "2026-10-09",
+    "comp_end": "2026-10-11",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 4,
+    "prize_total": null,
+    "format": "devfolio",
+    "hack_kind": "build",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": "df-0204a886396a4f5b91f45a99a5209499",
+    "source": "devfolio",
+    "pinned": false,
+    "url": "https://hackverse-19.devfolio.co/",
+    "title": "Hackverse.2026",
+    "host": "",
+    "location": "Navi Mumbai, India",
+    "country": "India",
+    "regn_close": "2026-10-03",
+    "comp_start": "2026-10-05",
+    "comp_end": "2026-10-06",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 4,
+    "prize_total": null,
+    "format": "devfolio",
+    "hack_kind": "build",
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated"
+      ]
+    },
+    "main": false,
+    "first_seen": "2026-10-01",
+    "closed_on": null
+  },
+  {
     "id": "mlh-bigred-hacks-2026",
     "source": "mlh",
     "pinned": false,
@@ -2047,37 +2045,6 @@
     "closed_on": null
   },
   {
-    "id": "mlh-stormhacks-52",
-    "source": "mlh",
-    "pinned": false,
-    "url": "https://www.stormhacks.com/",
-    "title": "StormHacks",
-    "host": "MLH member event",
-    "location": "Burnaby, British Columbia",
-    "country": "CA",
-    "regn_close": "2026-10-03",
-    "comp_start": "2026-10-03",
-    "comp_end": "2026-10-05",
-    "mode": "offline",
-    "fee": false,
-    "team_min": null,
-    "team_max": null,
-    "prize_total": null,
-    "format": "mlh",
-    "hack_kind": "build",
-    "tier": "global",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "eligibility not stated",
-        "in-person abroad (CA)"
-      ]
-    },
-    "main": true,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": "mlh-mhacks-51",
     "source": "mlh",
     "pinned": false,
@@ -2102,6 +2069,37 @@
       "reasons": [
         "eligibility not stated",
         "in-person abroad (US)"
+      ]
+    },
+    "main": true,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": "mlh-stormhacks-52",
+    "source": "mlh",
+    "pinned": false,
+    "url": "https://www.stormhacks.com/",
+    "title": "StormHacks",
+    "host": "MLH member event",
+    "location": "Burnaby, British Columbia",
+    "country": "CA",
+    "regn_close": "2026-10-03",
+    "comp_start": "2026-10-03",
+    "comp_end": "2026-10-05",
+    "mode": "offline",
+    "fee": false,
+    "team_min": null,
+    "team_max": null,
+    "prize_total": null,
+    "format": "mlh",
+    "hack_kind": "build",
+    "tier": "global",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated",
+        "in-person abroad (CA)"
       ]
     },
     "main": true,
@@ -2295,38 +2293,6 @@
     "closed_on": null
   },
   {
-    "id": "dp-28278",
-    "source": "devpost",
-    "pinned": false,
-    "url": "https://product-hackathon-uiuc.devpost.com/",
-    "title": "UIUC Product Hackathon - Hack to the Future",
-    "host": "Product Space UIUC",
-    "location": "Campus Instructional Facility",
-    "country": null,
-    "regn_close": "2026-10-03",
-    "comp_start": null,
-    "comp_end": "2026-10-03",
-    "mode": "offline",
-    "fee": false,
-    "team_min": null,
-    "team_max": null,
-    "prize_total": null,
-    "format": "devpost",
-    "hack_kind": "build",
-    "tier": "global",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "eligibility not stated",
-        "in-person abroad (Campus Instructional Facility)",
-        "invite only"
-      ]
-    },
-    "main": true,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": "dp-31513",
     "source": "devpost",
     "pinned": false,
@@ -2356,6 +2322,38 @@
     },
     "main": true,
     "first_seen": "2026-10-02",
+    "closed_on": null
+  },
+  {
+    "id": "dp-28278",
+    "source": "devpost",
+    "pinned": false,
+    "url": "https://product-hackathon-uiuc.devpost.com/",
+    "title": "UIUC Product Hackathon - Hack to the Future",
+    "host": "Product Space UIUC",
+    "location": "Campus Instructional Facility",
+    "country": null,
+    "regn_close": "2026-10-03",
+    "comp_start": null,
+    "comp_end": "2026-10-03",
+    "mode": "offline",
+    "fee": false,
+    "team_min": null,
+    "team_max": null,
+    "prize_total": null,
+    "format": "devpost",
+    "hack_kind": "build",
+    "tier": "global",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated",
+        "in-person abroad (Campus Instructional Facility)",
+        "invite only"
+      ]
+    },
+    "main": true,
+    "first_seen": "2026-09-30",
     "closed_on": null
   },
   {
@@ -2537,38 +2535,6 @@
     "closed_on": null
   },
   {
-    "id": 1762222,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/icc-codeclash-2026-chandigarh-university-uttar-pradesh-1762222",
-    "title": "ICC CodeClash 2026",
-    "host": "Chandigarh University uttar pradesh",
-    "regn_close": "2026-10-04",
-    "comp_end": "2026-10-09",
-    "mode": "online",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 1,
-    "prize_total": 0,
-    "eligible_filters": [
-      "All"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": "Online",
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "other",
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": 1761145,
     "pinned": false,
     "url": "https://unstop.com/hackathons/sangyan-iit-bhu-1761145",
@@ -2652,7 +2618,7 @@
     "fee": false,
     "team_min": 2,
     "team_max": 3,
-    "prize_total": 0,
+    "prize_total": 6000,
     "eligible_filters": [
       "All"
     ],
@@ -2774,43 +2740,6 @@
     "verdict": {
       "level": "fits",
       "reasons": []
-    },
-    "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
-    "id": 1756226,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/hackdays-20-galgotias-college-of-engineering-technology-gcet-greater-noida-1756226",
-    "title": "Hackdays 2.0",
-    "host": "Galgotias College of Engineering & Technology (GCET), Greater Noida",
-    "regn_close": "2026-10-04",
-    "comp_end": "2026-10-10",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 2,
-    "team_max": 4,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": null,
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "build",
-    "tier": "other",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "only Akshit is eligible by course",
-        "form a same-college team"
-      ]
     },
     "main": false,
     "first_seen": "2026-09-30",
@@ -3007,36 +2936,6 @@
     "closed_on": null
   },
   {
-    "id": "df-0204a886396a4f5b91f45a99a5209499",
-    "source": "devfolio",
-    "pinned": false,
-    "url": "https://hackverse-19.devfolio.co/",
-    "title": "Hackverse.2026",
-    "host": "",
-    "location": "Navi Mumbai, India",
-    "country": "India",
-    "regn_close": "2026-10-04",
-    "comp_start": "2026-10-05",
-    "comp_end": "2026-10-06",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 2,
-    "team_max": 4,
-    "prize_total": null,
-    "format": "devfolio",
-    "hack_kind": "build",
-    "tier": "other",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "eligibility not stated"
-      ]
-    },
-    "main": false,
-    "first_seen": "2026-10-01",
-    "closed_on": null
-  },
-  {
     "id": "dp-31324",
     "source": "devpost",
     "pinned": false,
@@ -3128,40 +3027,34 @@
     "closed_on": null
   },
   {
-    "id": 1764069,
+    "id": "dp-31598",
+    "source": "devpost",
     "pinned": false,
-    "url": "https://unstop.com/hackathons/rethink-26-adhunik26-maharaja-agrasen-college-mac-university-of-delhi-du-delhi-1764069",
-    "title": "Rethink 26",
-    "host": "Maharaja Agrasen College (MAC), University of Delhi (DU), Delhi",
-    "regn_close": "2026-10-05",
-    "comp_end": "2026-10-07",
+    "url": "https://codeml-31598.devpost.com/",
+    "title": "CodeML",
+    "host": "PolyAI",
+    "location": "Polytechnique Montreal",
+    "country": null,
+    "regn_close": "2026-10-04",
+    "comp_start": null,
+    "comp_end": "2026-10-04",
     "mode": "offline",
     "fee": false,
-    "team_min": 2,
-    "team_max": 5,
-    "prize_total": 2000,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": null,
-    "country": null,
-    "comp_start": null,
+    "team_min": null,
+    "team_max": null,
+    "prize_total": null,
+    "format": "devpost",
     "hack_kind": "build",
-    "tier": "other",
+    "tier": "global",
     "verdict": {
-      "level": "fits",
-      "reasons": []
+      "level": "check",
+      "reasons": [
+        "eligibility not stated",
+        "in-person abroad (Polytechnique Montreal)",
+        "invite only"
+      ]
     },
-    "main": false,
+    "main": true,
     "first_seen": "2026-10-02",
     "closed_on": null
   },
@@ -3200,6 +3093,44 @@
       "reasons": [
         "entry fee"
       ]
+    },
+    "main": false,
+    "first_seen": "2026-10-02",
+    "closed_on": null
+  },
+  {
+    "id": 1764069,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/rethink-26-adhunik26-maharaja-agrasen-college-mac-university-of-delhi-du-delhi-1764069",
+    "title": "Rethink 26",
+    "host": "Maharaja Agrasen College (MAC), University of Delhi (DU), Delhi",
+    "regn_close": "2026-10-05",
+    "comp_end": "2026-10-07",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 5,
+    "prize_total": 2000,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "build",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
     },
     "main": false,
     "first_seen": "2026-10-02",
@@ -3319,6 +3250,38 @@
     "closed_on": null
   },
   {
+    "id": 1751879,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/crsu-hackathon-2026-romeo-juliet-ltd-1751879",
+    "title": "CRSU Hackathon 2026",
+    "host": "Romeo & Juliet Ltd",
+    "regn_close": "2026-10-05",
+    "comp_end": "2026-10-05",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 3,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": "Online",
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "build",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1757504,
     "pinned": false,
     "url": "https://unstop.com/hackathons/byteathon-noorul-islam-center-for-higher-education-1757504",
@@ -3432,44 +3395,6 @@
     "closed_on": null
   },
   {
-    "id": 1760436,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/reconctf26-indian-institute-of-technology-indian-school-of-mines-iit-ism-dhanbad-1760436",
-    "title": "ReConCTF'26",
-    "host": "Indian Institute of Technology, Indian School of Mines (IIT ISM), Dhanbad",
-    "regn_close": "2026-10-05",
-    "comp_end": "2026-10-05",
-    "mode": "online",
-    "fee": false,
-    "team_min": 3,
-    "team_max": 4,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": "Online",
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "other",
-    "tier": "iit",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "needs 3 members, recruit"
-      ]
-    },
-    "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": 1759901,
     "pinned": false,
     "url": "https://unstop.com/hackathons/conv-cup-26-fifa-of-bots-indian-institute-of-technology-indian-school-of-mines-iit-ism-dhanbad-1759901",
@@ -3544,40 +3469,6 @@
     "closed_on": null
   },
   {
-    "id": 1751766,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/fusion-2026-iic-ecell-skncoe-x-skn-ieee-student-branch-1751766",
-    "title": "Fusion 2026",
-    "host": "IIC ECELL SKNCOE X SKN IEEE Student Branch",
-    "regn_close": "2026-10-05",
-    "comp_end": "2026-10-10",
-    "mode": "offline",
-    "fee": true,
-    "team_min": 1,
-    "team_max": 4,
-    "prize_total": 160000,
-    "eligible_filters": [
-      "All"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": null,
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "build",
-    "tier": "other",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "entry fee"
-      ]
-    },
-    "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": 1758206,
     "pinned": false,
     "url": "https://unstop.com/hackathons/game-jam-tantrafiesta-2026-iiitn-1758206",
@@ -3614,6 +3505,43 @@
       "reasons": []
     },
     "main": true,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1756226,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/hackdays-20-galgotias-college-of-engineering-technology-gcet-greater-noida-1756226",
+    "title": "Hackdays 2.0",
+    "host": "Galgotias College of Engineering & Technology (GCET), Greater Noida",
+    "regn_close": "2026-10-05",
+    "comp_end": "2026-10-10",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "build",
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "only Akshit is eligible by course",
+        "form a same-college team"
+      ]
+    },
+    "main": false,
     "first_seen": "2026-09-30",
     "closed_on": null
   },
@@ -3919,6 +3847,37 @@
     "closed_on": null
   },
   {
+    "id": "dp-31398",
+    "source": "devpost",
+    "pinned": false,
+    "url": "https://daisisg26.devpost.com/",
+    "title": "Databricks AI Social Impact (DAISI) Challenge - Singapore",
+    "host": "Databricks",
+    "location": "Databricks Singapore",
+    "country": null,
+    "regn_close": "2026-10-06",
+    "comp_start": null,
+    "comp_end": "2026-10-06",
+    "mode": "offline",
+    "fee": false,
+    "team_min": null,
+    "team_max": null,
+    "prize_total": null,
+    "format": "devpost",
+    "hack_kind": "build",
+    "tier": "global",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated",
+        "in-person abroad (Databricks Singapore)"
+      ]
+    },
+    "main": true,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1752038,
     "pinned": false,
     "url": "https://unstop.com/hackathons/hacknext-20-sns-college-of-technology-snsct-coimbatore-tamil-nadu-1752038",
@@ -3954,38 +3913,7 @@
     },
     "main": false,
     "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
-    "id": "dp-31398",
-    "source": "devpost",
-    "pinned": false,
-    "url": "https://daisisg26.devpost.com/",
-    "title": "Databricks AI Social Impact (DAISI) Challenge - Singapore",
-    "host": "Databricks",
-    "location": "Databricks Singapore",
-    "country": null,
-    "regn_close": "2026-10-06",
-    "comp_start": null,
-    "comp_end": "2026-10-06",
-    "mode": "offline",
-    "fee": false,
-    "team_min": null,
-    "team_max": null,
-    "prize_total": null,
-    "format": "devpost",
-    "hack_kind": "build",
-    "tier": "global",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "eligibility not stated",
-        "in-person abroad (Databricks Singapore)"
-      ]
-    },
-    "main": true,
-    "first_seen": "2026-09-30",
-    "closed_on": null
+    "closed_on": "2026-10-02"
   },
   {
     "id": 1760987,
@@ -4355,18 +4283,18 @@
     "closed_on": "2026-09-30"
   },
   {
-    "id": 1758795,
+    "id": 1764841,
     "pinned": false,
-    "url": "https://unstop.com/hackathons/hackathon-phase-1-qiskit-fall-fest-2026-srm-university-ap-1758795",
-    "title": "Hackathon ",
-    "host": "SRM University - AP",
-    "regn_close": "2026-10-07",
-    "comp_end": "2026-10-07",
-    "mode": "online",
+    "url": "https://unstop.com/hackathons/codeastra-20-24-hour-offline-hackathon-association-of-budding-information-technocrats-abit-rgit-1764841",
+    "title": "CodeAstra 2.0 – 24-Hour Offline Hackathon",
+    "host": "Association of Budding Information Technocrats (ABIT), RGIT",
+    "regn_close": "2026-10-08",
+    "comp_end": "2026-10-13",
+    "mode": "offline",
     "fee": false,
-    "team_min": 2,
+    "team_min": 3,
     "team_max": 4,
-    "prize_total": 0,
+    "prize_total": 100000,
     "eligible_filters": [
       "Engineering Students",
       "Postgraduate",
@@ -4379,18 +4307,20 @@
     "details_fetched": true,
     "format": "online_coding_challenge",
     "source": "unstop",
-    "location": "Online",
+    "location": null,
     "country": null,
     "comp_start": null,
     "hack_kind": "build",
     "tier": "other",
     "verdict": {
-      "level": "fits",
-      "reasons": []
+      "level": "check",
+      "reasons": [
+        "needs 3 members, recruit"
+      ]
     },
     "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": "2026-09-30"
+    "first_seen": "2026-10-02",
+    "closed_on": null
   },
   {
     "id": 1763393,
@@ -4580,45 +4510,6 @@
     "closed_on": null
   },
   {
-    "id": 1761017,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/hac-tic-thon-come-with-ideas-leave-with-bugs-shaheed-rajguru-college-of-applied-sciences-for-women-delhi-univ-1761017",
-    "title": "HAC - TIC - THON :- Come With Ideas, Leave With Bugs.",
-    "host": "Shaheed Rajguru College of Applied Sciences for Women, Delhi University",
-    "regn_close": "2026-10-08",
-    "comp_end": "2026-10-15",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 2,
-    "team_max": 3,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Fresher",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": null,
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "ideathon",
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": 1760313,
     "pinned": false,
     "url": "https://unstop.com/hackathons/hackrobo-20-pillai-university-navi-mumbai-1760313",
@@ -4652,6 +4543,45 @@
         "form a same-college team",
         "entry fee"
       ]
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1761017,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/hac-tic-thon-come-with-ideas-leave-with-bugs-shaheed-rajguru-college-of-applied-sciences-for-women-delhi-univ-1761017",
+    "title": "HAC - TIC - THON :- Come With Ideas, Leave With Bugs.",
+    "host": "Shaheed Rajguru College of Applied Sciences for Women, Delhi University",
+    "regn_close": "2026-10-08",
+    "comp_end": "2026-10-15",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 3,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Fresher",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "ideathon",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
     },
     "main": false,
     "first_seen": "2026-09-30",
@@ -4752,6 +4682,40 @@
     "verdict": {
       "level": "fits",
       "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1751766,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/fusion-2026-iic-ecell-skncoe-x-skn-ieee-student-branch-1751766",
+    "title": "Fusion 2026",
+    "host": "IIC ECELL SKNCOE X SKN IEEE Student Branch",
+    "regn_close": "2026-10-08",
+    "comp_end": "2026-10-10",
+    "mode": "offline",
+    "fee": true,
+    "team_min": 1,
+    "team_max": 4,
+    "prize_total": 160000,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "build",
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "entry fee"
+      ]
     },
     "main": false,
     "first_seen": "2026-09-30",
@@ -5113,38 +5077,6 @@
     "closed_on": "2026-10-02"
   },
   {
-    "id": 1764120,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/vortexa-30-12-hour-hackathon-dr-d-y-patil-institute-technology-pimpri-pune-1764120",
-    "title": "Vortexa 3.0- 12 Hour Hackathon",
-    "host": "Dr D Y Patil Institute Technology, Pimpri, Pune",
-    "regn_close": "2026-10-09",
-    "comp_end": "2026-10-12",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 2,
-    "team_max": 4,
-    "prize_total": 75000,
-    "eligible_filters": [
-      "All"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": null,
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "build",
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "main": false,
-    "first_seen": "2026-10-02",
-    "closed_on": null
-  },
-  {
     "id": 1762752,
     "pinned": false,
     "url": "https://unstop.com/hackathons/qblueprint-indian-institute-of-technology-indian-school-of-mines-dhanbad-1762752",
@@ -5183,6 +5115,38 @@
     "closed_on": null
   },
   {
+    "id": 1764120,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/vortexa-30-12-hour-hackathon-dr-d-y-patil-institute-technology-pimpri-pune-1764120",
+    "title": "Vortexa 3.0- 12 Hour Hackathon",
+    "host": "Dr D Y Patil Institute Technology, Pimpri, Pune",
+    "regn_close": "2026-10-09",
+    "comp_end": "2026-10-12",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 4,
+    "prize_total": 75000,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "build",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-10-02",
+    "closed_on": null
+  },
+  {
     "id": 1761925,
     "pinned": false,
     "url": "https://unstop.com/hackathons/webweave-2k26-innovex-2026-rvr-jc-college-of-engineering-rvrjcce-guntur-1761925",
@@ -5218,6 +5182,44 @@
     "verdict": {
       "level": "fits",
       "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1760436,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/reconctf26-indian-institute-of-technology-indian-school-of-mines-iit-ism-dhanbad-1760436",
+    "title": "ReConCTF'26",
+    "host": "Indian Institute of Technology, Indian School of Mines (IIT ISM), Dhanbad",
+    "regn_close": "2026-10-09",
+    "comp_end": "2026-10-09",
+    "mode": "hybrid",
+    "fee": false,
+    "team_min": 3,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "iit",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "needs 3 members, recruit"
+      ]
     },
     "main": false,
     "first_seen": "2026-09-30",
@@ -5519,15 +5521,15 @@
     "closed_on": null
   },
   {
-    "id": 1763378,
+    "id": 1764861,
     "pinned": false,
-    "url": "https://unstop.com/hackathons/jai-2026-hackathon-jaypee-agentic-ai-hackathon-2026-jaypee-institute-of-information-technology-jiit-noida-1763378",
-    "title": "JAI 2026 Hackathon - Jaypee Agentic AI Hackathon 2026",
-    "host": "Jaypee Institute of Information Technology (JIIT), Noida",
+    "url": "https://unstop.com/hackathons/wildhack-2k26-ballarpur-institute-of-technology-bit-1764861",
+    "title": "Wildhack 2k26",
+    "host": "Ballarpur Institute of Technology (BIT)",
     "regn_close": "2026-10-10",
-    "comp_end": "2026-10-30",
-    "mode": "hybrid",
-    "fee": false,
+    "comp_end": "2026-10-10",
+    "mode": "offline",
+    "fee": true,
     "team_min": 2,
     "team_max": 5,
     "prize_total": 0,
@@ -5549,8 +5551,10 @@
     "hack_kind": "build",
     "tier": "other",
     "verdict": {
-      "level": "fits",
-      "reasons": []
+      "level": "check",
+      "reasons": [
+        "entry fee"
+      ]
     },
     "main": false,
     "first_seen": "2026-10-02",
@@ -5585,6 +5589,44 @@
     "country": null,
     "comp_start": null,
     "hack_kind": "other",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-10-02",
+    "closed_on": null
+  },
+  {
+    "id": 1763378,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/jai-2026-hackathon-jaypee-agentic-ai-hackathon-2026-jaypee-institute-of-information-technology-jiit-noida-1763378",
+    "title": "JAI 2026 Hackathon - Jaypee Agentic AI Hackathon 2026",
+    "host": "Jaypee Institute of Information Technology (JIIT), Noida",
+    "regn_close": "2026-10-10",
+    "comp_end": "2026-10-30",
+    "mode": "hybrid",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 5,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "build",
     "tier": "other",
     "verdict": {
       "level": "fits",
@@ -6700,6 +6742,44 @@
     "closed_on": null
   },
   {
+    "id": 1762328,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/edge-ai-challenge-electronics-iot-club-iit-ism-dhanbad-1762328",
+    "title": "Edge AI Challenge",
+    "host": "Electronics & IoT Club, IIT (ISM) Dhanbad",
+    "regn_close": "2026-10-11",
+    "comp_end": "2026-10-11",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 3,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "iit",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": 1761560,
     "pinned": false,
     "url": "https://unstop.com/hackathons/winter-coding-contest-60-acm-student-chapter-vnrvjiet-1761560",
@@ -6767,44 +6847,6 @@
       "reasons": [
         "needs 4 members, recruit"
       ]
-    },
-    "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
-    "id": 1762328,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/edge-ai-challenge-electronics-iot-club-iit-ism-dhanbad-1762328",
-    "title": "Edge AI Challenge",
-    "host": "Electronics & IoT Club, IIT (ISM) Dhanbad",
-    "regn_close": "2026-10-11",
-    "comp_end": "2026-10-11",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 3,
-    "prize_total": 0,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": null,
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "other",
-    "tier": "iit",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
     },
     "main": false,
     "first_seen": "2026-09-30",
@@ -7042,7 +7084,7 @@
     "title": "Malanhack",
     "host": "Malan Softech private limited",
     "regn_close": "2026-10-12",
-    "comp_end": "2026-10-12",
+    "comp_end": "2026-10-24",
     "mode": "online",
     "fee": false,
     "team_min": 1,
@@ -7310,6 +7352,44 @@
       "reasons": [
         "entry fee"
       ]
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1758795,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/hackathon-phase-1-qiskit-fall-fest-2026-srm-university-ap-1758795",
+    "title": "Hackathon - Project Q ",
+    "host": "SRM University - AP",
+    "regn_close": "2026-10-12",
+    "comp_end": "2026-10-29",
+    "mode": "hybrid",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 6,
+    "prize_total": 100000,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "build",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
     },
     "main": false,
     "first_seen": "2026-09-30",
@@ -7710,6 +7790,44 @@
     "closed_on": null
   },
   {
+    "id": 1764493,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/break-the-code-tech-melange-2026-shaheed-rajguru-college-of-applied-sciences-for-women-delhi-university-1764493",
+    "title": "Break the Code",
+    "host": "Shaheed Rajguru College of Applied Sciences for Women, Delhi University",
+    "regn_close": "2026-10-15",
+    "comp_end": "2026-10-15",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-10-02",
+    "closed_on": null
+  },
+  {
     "id": 1755715,
     "pinned": false,
     "url": "https://unstop.com/hackathons/codesprint-rankup-1755715",
@@ -7788,7 +7906,7 @@
     "title": "Web Home UI Designer Challenge",
     "host": "UPSC ZONE AI",
     "regn_close": "2026-10-15",
-    "comp_end": "2026-10-16",
+    "comp_end": "2026-10-25",
     "mode": "online",
     "fee": false,
     "team_min": 1,
@@ -8170,7 +8288,7 @@
     "id": 1749756,
     "pinned": false,
     "url": "https://unstop.com/hackathons/hack-the-issue26-hackathon-techtrix26-navrachna-foundation-for-entrepreneurship-development-1749756",
-    "title": "Hack-the-issue'26 Hackathon",
+    "title": "Hackathon",
     "host": "Navrachna Foundation For Entrepreneurship Development",
     "regn_close": "2026-10-15",
     "comp_end": "2026-10-15",
@@ -8275,48 +8393,6 @@
       "level": "check",
       "reasons": [
         "needs 5 members, recruit",
-        "entry fee"
-      ]
-    },
-    "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
-    "id": 1749775,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/bgmi-tournament-battle-zone-techtrix26-navrachna-foundation-for-entrepreneurship-development-1749775",
-    "title": "BGMI Tournament – Battle Zone",
-    "host": "Navrachna Foundation For Entrepreneurship Development",
-    "regn_close": "2026-10-15",
-    "comp_end": "2026-10-15",
-    "mode": "offline",
-    "fee": true,
-    "team_min": 4,
-    "team_max": 4,
-    "prize_total": 15000,
-    "eligible_filters": [
-      "Engineering Students",
-      "Postgraduate",
-      "Undergraduate",
-      "School Students",
-      "Management",
-      "Medical",
-      "Law",
-      "Arts, Commerce, Sciences & Others"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": null,
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "other",
-    "tier": "other",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "needs 4 members, recruit",
         "entry fee"
       ]
     },
@@ -8483,7 +8559,7 @@
     "title": "Spectrona Hackathon 2026",
     "host": "National Forensic Sciences University, Guwahati",
     "regn_close": "2026-10-15",
-    "comp_end": "2026-10-15",
+    "comp_end": "2026-10-22",
     "mode": "hybrid",
     "fee": false,
     "team_min": 1,
@@ -8569,6 +8645,48 @@
     "verdict": {
       "level": "check",
       "reasons": [
+        "entry fee"
+      ]
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1749775,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/bgmi-tournament-battle-zone-techtrix26-navrachna-foundation-for-entrepreneurship-development-1749775",
+    "title": "BGMI Tournament – Battle Zone",
+    "host": "Navrachna Foundation For Entrepreneurship Development",
+    "regn_close": "2026-10-15",
+    "comp_end": "2026-10-15",
+    "mode": "offline",
+    "fee": true,
+    "team_min": 4,
+    "team_max": 4,
+    "prize_total": 15000,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "School Students",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "other",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "needs 4 members, recruit",
         "entry fee"
       ]
     },
@@ -9481,6 +9599,44 @@
     "closed_on": null
   },
   {
+    "id": 1764749,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/prompt-ae-thon-bharati-vidyapeeths-college-of-engineering-1764749",
+    "title": "Prompt-ae-thon",
+    "host": "Bharati Vidyapeeth's College of Engineering",
+    "regn_close": "2026-10-17",
+    "comp_end": "2026-10-23",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "general_competition",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "build",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-10-02",
+    "closed_on": null
+  },
+  {
     "id": 1763810,
     "pinned": false,
     "url": "https://unstop.com/hackathons/the-code-voyage-ieee-day-2026-guru-tegh-bahadur-institute-of-technology-gtbit-new-delhi-1763810",
@@ -9864,37 +10020,6 @@
     "closed_on": null
   },
   {
-    "id": "mlh-dubhacks-97",
-    "source": "mlh",
-    "pinned": false,
-    "url": "https://dh26.dubhacks.co/",
-    "title": "DubHacks",
-    "host": "MLH member event",
-    "location": "Seattle, Washington",
-    "country": "US",
-    "regn_close": "2026-10-17",
-    "comp_start": "2026-10-17",
-    "comp_end": "2026-10-19",
-    "mode": "offline",
-    "fee": false,
-    "team_min": null,
-    "team_max": null,
-    "prize_total": null,
-    "format": "mlh",
-    "hack_kind": "build",
-    "tier": "global",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "eligibility not stated",
-        "in-person abroad (US)"
-      ]
-    },
-    "main": true,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": "mlh-iku-womxn-in-stem-hackathon",
     "source": "mlh",
     "pinned": false,
@@ -9919,6 +10044,37 @@
       "reasons": [
         "eligibility not stated",
         "in-person abroad (GB)"
+      ]
+    },
+    "main": true,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": "mlh-dubhacks-97",
+    "source": "mlh",
+    "pinned": false,
+    "url": "https://dh26.dubhacks.co/",
+    "title": "DubHacks",
+    "host": "MLH member event",
+    "location": "Seattle, Washington",
+    "country": "US",
+    "regn_close": "2026-10-17",
+    "comp_start": "2026-10-17",
+    "comp_end": "2026-10-19",
+    "mode": "offline",
+    "fee": false,
+    "team_min": null,
+    "team_max": null,
+    "prize_total": null,
+    "format": "mlh",
+    "hack_kind": "build",
+    "tier": "global",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated",
+        "in-person abroad (US)"
       ]
     },
     "main": true,
@@ -10480,6 +10636,44 @@
     "closed_on": null
   },
   {
+    "id": 1758572,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/shakti-hackathon-bubblesort-1758572",
+    "title": "Shakti Hackathon",
+    "host": "BUBBLESORT",
+    "regn_close": "2026-10-20",
+    "comp_end": "2026-10-25",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 3,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": "Online",
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "build",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-10-02",
+    "closed_on": null
+  },
+  {
     "id": 1758535,
     "pinned": false,
     "url": "https://unstop.com/hackathons/buildx-36-hours-online-hackathon-code-a-nova-1758535",
@@ -10914,6 +11108,38 @@
       ]
     },
     "main": true,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": 1762222,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/icc-codeclash-2026-chandigarh-university-uttar-pradesh-1762222",
+    "title": "ICC CodeClash 2026",
+    "host": "Chandigarh University uttar pradesh",
+    "regn_close": "2026-10-21",
+    "comp_end": "2026-10-25",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": "Online",
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
     "first_seen": "2026-09-30",
     "closed_on": null
   },
@@ -11656,34 +11882,6 @@
     "closed_on": null
   },
   {
-    "id": "df-40f5203a0b9842038b51dd3f73236690",
-    "source": "devfolio",
-    "pinned": false,
-    "url": "https://genarrative-clash.devfolio.co/",
-    "title": "GeNarrative Clash",
-    "host": "Techno India University",
-    "location": "Kolkata, India",
-    "country": "India",
-    "regn_close": "2026-10-27",
-    "comp_start": "2026-10-31",
-    "comp_end": "2026-10-31",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 2,
-    "team_max": 4,
-    "prize_total": null,
-    "format": "devfolio",
-    "hack_kind": "build",
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "main": false,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": "dp-30984",
     "source": "devpost",
     "pinned": false,
@@ -11946,6 +12144,44 @@
     "closed_on": null
   },
   {
+    "id": 1764913,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/sea-of-secrets-ctf-hackitup-1764913",
+    "title": "Sea of Secrets CTF",
+    "host": "HackitUp",
+    "regn_close": "2026-10-30",
+    "comp_end": "2026-11-01",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 1,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Medical",
+      "Law",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": "Online",
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-10-02",
+    "closed_on": null
+  },
+  {
     "id": 1764453,
     "pinned": false,
     "url": "https://unstop.com/hackathons/codeverse-2026-open-innovation-hackathon-codeverse-community-1764453",
@@ -11990,7 +12226,7 @@
     "title": "Craft N Code (West Bengal)",
     "host": "International Institute of Information Technology (IIIT), Bhubaneswar",
     "regn_close": "2026-10-30",
-    "comp_end": "2026-10-31",
+    "comp_end": "2027-02-06",
     "mode": "offline",
     "fee": true,
     "team_min": 2,
@@ -12283,7 +12519,7 @@
     "title": "Nexus InnovateX 2026",
     "host": "Nexus",
     "regn_close": "2026-10-31",
-    "comp_end": "2026-11-01",
+    "comp_end": "2026-11-03",
     "mode": "online",
     "fee": false,
     "team_min": 1,
@@ -12469,6 +12705,42 @@
     "closed_on": "2026-10-01"
   },
   {
+    "id": 1764747,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/codenexus-india-2026-national-hackathon-wecodecoders-1764747",
+    "title": "CodeNexus India 2026 - National Hackathon",
+    "host": "WeCodeCoders",
+    "regn_close": "2026-11-02",
+    "comp_end": "2026-11-15",
+    "mode": "online",
+    "fee": false,
+    "team_min": 1,
+    "team_max": 4,
+    "prize_total": 0,
+    "eligible_filters": [
+      "Engineering Students",
+      "Postgraduate",
+      "Undergraduate",
+      "Management",
+      "Arts, Commerce, Sciences & Others"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": "Online",
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "build",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-10-02",
+    "closed_on": null
+  },
+  {
     "id": "dp-31400",
     "source": "devpost",
     "pinned": false,
@@ -12624,37 +12896,6 @@
     "closed_on": null
   },
   {
-    "id": "mlh-hackrpi-2026",
-    "source": "mlh",
-    "pinned": false,
-    "url": "https://hackrpi.com/",
-    "title": "HackRPI 2026",
-    "host": "MLH member event",
-    "location": "Troy, New York",
-    "country": "US",
-    "regn_close": "2026-11-07",
-    "comp_start": "2026-11-07",
-    "comp_end": "2026-11-09",
-    "mode": "offline",
-    "fee": false,
-    "team_min": null,
-    "team_max": null,
-    "prize_total": null,
-    "format": "mlh",
-    "hack_kind": "build",
-    "tier": "global",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "eligibility not stated",
-        "in-person abroad (US)"
-      ]
-    },
-    "main": true,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
     "id": "mlh-makecu-5d",
     "source": "mlh",
     "pinned": false,
@@ -12686,14 +12927,14 @@
     "closed_on": null
   },
   {
-    "id": "mlh-communihacks",
+    "id": "mlh-hackrpi-2026",
     "source": "mlh",
     "pinned": false,
-    "url": "https://www.communihacks.ca/",
-    "title": "CommuniHacks",
+    "url": "https://hackrpi.com/",
+    "title": "HackRPI 2026",
     "host": "MLH member event",
-    "location": "Kitchener, Ontario",
-    "country": "CA",
+    "location": "Troy, New York",
+    "country": "US",
     "regn_close": "2026-11-07",
     "comp_start": "2026-11-07",
     "comp_end": "2026-11-09",
@@ -12709,7 +12950,7 @@
       "level": "check",
       "reasons": [
         "eligibility not stated",
-        "in-person abroad (CA)"
+        "in-person abroad (US)"
       ]
     },
     "main": true,
@@ -12744,6 +12985,37 @@
       ]
     },
     "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": "mlh-communihacks",
+    "source": "mlh",
+    "pinned": false,
+    "url": "https://www.communihacks.ca/",
+    "title": "CommuniHacks",
+    "host": "MLH member event",
+    "location": "Kitchener, Ontario",
+    "country": "CA",
+    "regn_close": "2026-11-07",
+    "comp_start": "2026-11-07",
+    "comp_end": "2026-11-09",
+    "mode": "offline",
+    "fee": false,
+    "team_min": null,
+    "team_max": null,
+    "prize_total": null,
+    "format": "mlh",
+    "hack_kind": "build",
+    "tier": "global",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated",
+        "in-person abroad (CA)"
+      ]
+    },
+    "main": true,
     "first_seen": "2026-09-30",
     "closed_on": null
   },
@@ -12903,6 +13175,34 @@
       "reasons": [
         "eligibility not stated"
       ]
+    },
+    "main": false,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
+    "id": "df-40f5203a0b9842038b51dd3f73236690",
+    "source": "devfolio",
+    "pinned": false,
+    "url": "https://genarrative-clash.devfolio.co/",
+    "title": "GeNarrative Clash",
+    "host": "Techno India University",
+    "location": "Kolkata, India",
+    "country": "India",
+    "regn_close": "2026-11-10",
+    "comp_start": "2026-11-21",
+    "comp_end": "2026-11-21",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 4,
+    "prize_total": null,
+    "format": "devfolio",
+    "hack_kind": "build",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
     },
     "main": false,
     "first_seen": "2026-09-30",
@@ -13121,70 +13421,6 @@
     "closed_on": null
   },
   {
-    "id": 1764167,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/product-challenge-techkriti27-techkriti-1764167",
-    "title": "Product Challenge | TECHKRITI | IIT KANPUR",
-    "host": "Techkriti",
-    "regn_close": "2026-11-14",
-    "comp_end": "2026-11-14",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 2,
-    "team_max": 5,
-    "prize_total": 0,
-    "eligible_filters": [
-      "All"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": null,
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "ideathon",
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "main": false,
-    "first_seen": "2026-10-02",
-    "closed_on": null
-  },
-  {
-    "id": 1764445,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/robo-race-techkriti27-techkriti-1764445",
-    "title": "Robo Race | TECHKRITI | IIT KANPUR",
-    "host": "Techkriti",
-    "regn_close": "2026-11-14",
-    "comp_end": "2026-11-14",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 2,
-    "team_max": 6,
-    "prize_total": 0,
-    "eligible_filters": [
-      "All"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": null,
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "other",
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "main": false,
-    "first_seen": "2026-10-02",
-    "closed_on": null
-  },
-  {
     "id": 1764446,
     "pinned": false,
     "url": "https://unstop.com/hackathons/drone-soccer-techkriti27-techkriti-1764446",
@@ -13377,6 +13613,102 @@
     "closed_on": null
   },
   {
+    "id": 1764188,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/strategy-sprint-techkriti27-techkriti-1764188",
+    "title": "Strategy Sprint | TECHKRITI | IIT KANPUR",
+    "host": "Techkriti",
+    "regn_close": "2026-11-14",
+    "comp_end": "2026-11-14",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 5,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-10-02",
+    "closed_on": null
+  },
+  {
+    "id": 1764167,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/product-challenge-techkriti27-techkriti-1764167",
+    "title": "Product Challenge | TECHKRITI | IIT KANPUR",
+    "host": "Techkriti",
+    "regn_close": "2026-11-14",
+    "comp_end": "2026-11-14",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 5,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "ideathon",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-10-02",
+    "closed_on": null
+  },
+  {
+    "id": 1764445,
+    "pinned": false,
+    "url": "https://unstop.com/hackathons/robo-race-techkriti27-techkriti-1764445",
+    "title": "Robo Race | TECHKRITI | IIT KANPUR",
+    "host": "Techkriti",
+    "regn_close": "2026-11-14",
+    "comp_end": "2026-11-14",
+    "mode": "offline",
+    "fee": false,
+    "team_min": 2,
+    "team_max": 6,
+    "prize_total": 0,
+    "eligible_filters": [
+      "All"
+    ],
+    "details_fetched": true,
+    "format": "online_coding_challenge",
+    "source": "unstop",
+    "location": null,
+    "country": null,
+    "comp_start": null,
+    "hack_kind": "other",
+    "tier": "other",
+    "verdict": {
+      "level": "fits",
+      "reasons": []
+    },
+    "main": false,
+    "first_seen": "2026-10-02",
+    "closed_on": null
+  },
+  {
     "id": 1764469,
     "pinned": false,
     "url": "https://unstop.com/hackathons/manoeuvre-techkriti27-techkriti-1764469",
@@ -13426,38 +13758,6 @@
     "fee": false,
     "team_min": 2,
     "team_max": 6,
-    "prize_total": 0,
-    "eligible_filters": [
-      "All"
-    ],
-    "details_fetched": true,
-    "format": "online_coding_challenge",
-    "source": "unstop",
-    "location": null,
-    "country": null,
-    "comp_start": null,
-    "hack_kind": "other",
-    "tier": "other",
-    "verdict": {
-      "level": "fits",
-      "reasons": []
-    },
-    "main": false,
-    "first_seen": "2026-10-02",
-    "closed_on": null
-  },
-  {
-    "id": 1764471,
-    "pinned": false,
-    "url": "https://unstop.com/hackathons/speed-quant-techkriti27-techkriti-1764471",
-    "title": "Speed Quant | TECHKRITI | IIT KANPUR",
-    "host": "Techkriti",
-    "regn_close": "2026-11-14",
-    "comp_end": "2026-11-16",
-    "mode": "offline",
-    "fee": false,
-    "team_min": 1,
-    "team_max": 1,
     "prize_total": 0,
     "eligible_filters": [
       "All"
@@ -13701,17 +14001,17 @@
     "closed_on": null
   },
   {
-    "id": 1764188,
+    "id": 1764471,
     "pinned": false,
-    "url": "https://unstop.com/hackathons/strategy-sprint-techkriti27-techkriti-1764188",
-    "title": "Strategy Sprint | TECHKRITI | IIT KANPUR",
+    "url": "https://unstop.com/hackathons/speed-quant-techkriti27-techkriti-1764471",
+    "title": "Speed Quant | TECHKRITI | IIT KANPUR",
     "host": "Techkriti",
     "regn_close": "2026-11-14",
-    "comp_end": "2026-11-14",
+    "comp_end": "2026-11-16",
     "mode": "offline",
     "fee": false,
-    "team_min": 2,
-    "team_max": 5,
+    "team_min": 1,
+    "team_max": 1,
     "prize_total": 0,
     "eligible_filters": [
       "All"
@@ -14933,13 +15233,13 @@
     "closed_on": null
   },
   {
-    "id": "mlh-uottahack-9",
+    "id": "mlh-uofthacks-99",
     "source": "mlh",
     "pinned": false,
-    "url": "https://2027.uottahack.ca/",
-    "title": "uOttaHack 9",
+    "url": "https://uofthacks.com/",
+    "title": "UofTHacks",
     "host": "MLH member event",
-    "location": "Ottawa, Ontario",
+    "location": "Toronto, Ontario",
     "country": "CA",
     "regn_close": "2027-01-15",
     "comp_start": "2027-01-15",
@@ -14964,13 +15264,13 @@
     "closed_on": null
   },
   {
-    "id": "mlh-uofthacks-99",
+    "id": "mlh-uottahack-9",
     "source": "mlh",
     "pinned": false,
-    "url": "https://uofthacks.com/",
-    "title": "UofTHacks",
+    "url": "https://2027.uottahack.ca/",
+    "title": "uOttaHack 9",
     "host": "MLH member event",
-    "location": "Toronto, Ontario",
+    "location": "Ottawa, Ontario",
     "country": "CA",
     "regn_close": "2027-01-15",
     "comp_start": "2027-01-15",
@@ -15150,6 +15450,37 @@
     "closed_on": null
   },
   {
+    "id": "mlh-ugahacks-ec",
+    "source": "mlh",
+    "pinned": false,
+    "url": "https://ugahacks.com/",
+    "title": "UGAHacks",
+    "host": "MLH member event",
+    "location": "Athens , Georgia",
+    "country": "US",
+    "regn_close": "2027-02-05",
+    "comp_start": "2027-02-05",
+    "comp_end": "2027-02-08",
+    "mode": "offline",
+    "fee": false,
+    "team_min": null,
+    "team_max": null,
+    "prize_total": null,
+    "format": "mlh",
+    "hack_kind": "build",
+    "tier": "global",
+    "verdict": {
+      "level": "check",
+      "reasons": [
+        "eligibility not stated",
+        "in-person abroad (US)"
+      ]
+    },
+    "main": true,
+    "first_seen": "2026-09-30",
+    "closed_on": null
+  },
+  {
     "id": "mlh-hack-brown-2027",
     "source": "mlh",
     "pinned": false,
@@ -15181,16 +15512,16 @@
     "closed_on": null
   },
   {
-    "id": "mlh-ugahacks-ec",
+    "id": "mlh-hack_ncstate-e7",
     "source": "mlh",
     "pinned": false,
-    "url": "https://ugahacks.com/",
-    "title": "UGAHacks",
+    "url": "https://hackncstate.org/",
+    "title": "Hack_NCState",
     "host": "MLH member event",
-    "location": "Athens , Georgia",
+    "location": "Raleigh, North Carolina",
     "country": "US",
-    "regn_close": "2027-02-05",
-    "comp_start": "2027-02-05",
+    "regn_close": "2027-02-06",
+    "comp_start": "2027-02-06",
     "comp_end": "2027-02-08",
     "mode": "offline",
     "fee": false,
@@ -15250,37 +15581,6 @@
     "title": "InnovateHer",
     "host": "MLH member event",
     "location": "West Lafayette, Indiana",
-    "country": "US",
-    "regn_close": "2027-02-06",
-    "comp_start": "2027-02-06",
-    "comp_end": "2027-02-08",
-    "mode": "offline",
-    "fee": false,
-    "team_min": null,
-    "team_max": null,
-    "prize_total": null,
-    "format": "mlh",
-    "hack_kind": "build",
-    "tier": "global",
-    "verdict": {
-      "level": "check",
-      "reasons": [
-        "eligibility not stated",
-        "in-person abroad (US)"
-      ]
-    },
-    "main": true,
-    "first_seen": "2026-09-30",
-    "closed_on": null
-  },
-  {
-    "id": "mlh-hack_ncstate-e7",
-    "source": "mlh",
-    "pinned": false,
-    "url": "https://hackncstate.org/",
-    "title": "Hack_NCState",
-    "host": "MLH member event",
-    "location": "Raleigh, North Carolina",
     "country": "US",
     "regn_close": "2027-02-06",
     "comp_start": "2027-02-06",

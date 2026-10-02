@@ -1,12 +1,12 @@
 {
-  "last_run": "2026-10-02T06:05:49.263Z",
-  "last_ok": "2026-10-02T06:05:49.263Z",
+  "last_run": "2026-10-02T17:58:30.023Z",
+  "last_ok": "2026-10-02T17:58:30.023Z",
   "last_error": null,
   "warnings": [],
   "sources": {
     "unstop": {
       "ok": true,
-      "count": 248
+      "count": 252
     },
     "devfolio": {
       "ok": true,
@@ -18,7 +18,7 @@
     },
     "devpost": {
       "ok": true,
-      "count": 52
+      "count": 51
     },
     "curated": {
       "ok": true,
