@@ -333,10 +333,15 @@ without writing.
 **Seeding (once, at cutover).** `supabase/seed/` holds the last committed
 data files (`competitions.json`, `hackathons.json`, the two status files,
 the two archives and `watch.json`, exported from `main` on 2026-10-05).
-After `supabase/v3.sql` is applied and before the first fetch runs against
-it:
+`main` keeps fetching until cutover, so refresh the export right before
+seeding, then (after `supabase/v3.sql` is applied and before the first
+fetch runs against it) seed:
 
 ```bash
+git fetch origin main
+for f in competitions hackathons status hack-status archive hack-archive watch; do
+  git show origin/main:data/$f.json > supabase/seed/$f.json
+done
 SUPABASE_SERVICE_KEY=sb_secret_... node supabase/seed-from-json.mjs --dry-run
 SUPABASE_SERVICE_KEY=sb_secret_... node supabase/seed-from-json.mjs
 ```
