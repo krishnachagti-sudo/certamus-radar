@@ -18,15 +18,39 @@ const curatedRow = (over = {}) => ({
   indian_ug_note: 'enter through your institute', application_months: null, finals_months: [12], team_size: null, fee: null, last_edition: null, verified: true, ...over,
 });
 
-function dataDir(over = {}) {
+// In-memory stand-in for fetch/db.js (same contract as sync_section).
+function fakeDb({ listings = [], status = null, tables = {}, fail = {} } = {}) {
+  const db = {
+    configured: true, listings, status, archive: new Map(), syncs: [], statusWrites: [],
+    async readListings(section) {
+      assert.equal(section, 'hack');
+      if (fail.listings) throw fail.listings;
+      return structuredClone(db.listings);
+    },
+    async readTable(name) {
+      if (tables[name] instanceof Error) throw tables[name];
+      return tables[name] ?? [];
+    },
+    async readStatus() { return db.status; },
+    async syncSection(section, rows, archive, st) {
+      if (!rows.length && db.listings.length) throw new Error('refusing to empty section hack');
+      db.syncs.push(structuredClone({ section, rows, archive, status: st }));
+      for (const a of archive) if (!db.archive.has(a.archive_key)) db.archive.set(a.archive_key, a);
+      db.listings = structuredClone(rows);
+      db.status = st;
+    },
+    async setStatus(section, st) { db.statusWrites.push({ section, status: st }); db.status = st; },
+  };
+  return db;
+}
+
+function setup(over = {}, { listings = [], status = { last_ok: '2026-09-28T00:30:00.000Z' }, tables = {}, fail = {} } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'radar-hack-'));
   const files = {
     'hack-team.json': TEAM,
     'national.json': [{ name: 'NIT', host: '\\bNITs?\\b|National Institute of Technology' }],
     'bschools.json': [],
     'hack-corporates.json': [{ name: 'Flipkart', host: '\\bFlipkart\\b' }],
-    'hackathons.json': [],
-    'hack-status.json': { last_ok: '2026-09-28T00:30:00.000Z' },
     'hack-curated.json': [curatedRow()],
     ...over,
   };
@@ -34,17 +58,8 @@ function dataDir(over = {}) {
     if (v === undefined) continue;
     fs.writeFileSync(path.join(dir, f), typeof v === 'string' ? v : JSON.stringify(v));
   }
-  return dir;
+  return { dir, db: fakeDb({ listings, status, tables, fail }) };
 }
-const read = (dir, f) => JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
-const sb = (tables = {}) => ({
-  url: 'https://test.supabase.co', anonKey: 'anon',
-  getJson: async url => {
-    const t = new URL(url).pathname.split('/').pop();
-    if (tables[t] instanceof Error) throw tables[t];
-    return tables[t] ?? [];
-  },
-});
 const now = new Date('2026-09-30T00:30:00Z');
 
 const unstopItem = (id, over = {}) => ({
@@ -67,10 +82,10 @@ const dpItem = (over = {}) => ({ id: 29969, title: 'RevenueCat Shipaton 2026', d
   url: 'https://revenuecat-shipaton-2026.devpost.com/', submission_period_dates: 'Jul 31 - Oct 20, 2026', organization_name: 'RevenueCat', invite_only: false, ...over });
 
 // Stubs for all four sources; `fail` names sources that throw.
-function deps({ unstop = [unstopItem(1)], devfolio = [dfHit()], mlh = [mlhEvent()], devpost = [dpItem()], fail = [], supabase = sb() } = {}) {
+function deps(db, { unstop = [unstopItem(1)], devfolio = [dfHit()], mlh = [mlhEvent()], devpost = [dpItem()], fail = [] } = {}) {
   const boom = name => { throw new Error(`${name} down`); };
   return {
-    supabase,
+    db,
     pause: async () => {},
     backoff: 0,
     getJson: async url => {
@@ -83,11 +98,14 @@ function deps({ unstop = [unstopItem(1)], devfolio = [dfHit()], mlh = [mlhEvent(
   };
 }
 
-test('success: all sources land in hackathons.json with source, kind, tier, verdict and main', async () => {
-  const dir = dataDir();
-  const code = await main({ dataDir: dir, now, deps: deps() });
-  assert.equal(code, 0);
-  const recs = read(dir, 'hackathons.json');
+const go = (dir, db, opts) => main({ dataDir: dir, now, deps: deps(db, opts) });
+
+test('success: all sources land in one hack sync with source, kind, tier, verdict and main', async () => {
+  const { dir, db } = setup();
+  assert.equal(await go(dir, db), 0);
+  assert.equal(db.syncs.length, 1);
+  assert.equal(db.syncs[0].section, 'hack');
+  const recs = db.listings;
   const by = id => recs.find(r => r.id === id);
   assert.deepEqual(recs.map(r => r.source).sort(), ['curated', 'devfolio', 'devpost', 'mlh', 'unstop']);
   const u = by(1);
@@ -110,7 +128,7 @@ test('success: all sources land in hackathons.json with source, kind, tier, verd
   assert.equal(c.tier, 'national');
   assert.equal(c.hack_kind, 'build');
   assert.deepEqual(c.verdict, { level: 'check', reasons: ['enter through your institute'] });
-  const st = read(dir, 'hack-status.json');
+  const st = db.status;
   assert.equal(st.last_ok, now.toISOString());
   assert.equal(st.last_error, null);
   assert.deepEqual(st.warnings, []);
@@ -118,32 +136,31 @@ test('success: all sources land in hackathons.json with source, kind, tier, verd
   assert.ok(Object.values(st.sources).every(s => s.ok));
 });
 
-test('privacy: no body text, FAQ answers, facts, raw eligibility or contact details are written', async () => {
-  const dir = dataDir();
-  await main({ dataDir: dir, now, deps: deps() });
-  const raw = fs.readFileSync(path.join(dir, 'hackathons.json'), 'utf8');
+test('privacy: no body text, FAQ answers, facts, raw eligibility or contact details are stored', async () => {
+  const { dir, db } = setup();
+  await go(dir, db);
+  const raw = JSON.stringify(db.syncs[0]);
   assert.doesNotMatch(raw, /\b[6-9][0-9]{9}\b/);
   assert.doesNotMatch(raw, /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+\.[A-Za-z.]{2,}/);
-  for (const r of JSON.parse(raw)) {
+  for (const r of db.syncs[0].rows) {
     for (const k of ['details_text', 'eligibility', 'facts', 'carried_over']) assert.equal(k in r, false, `${r.id} has ${k}`);
   }
 });
 
-test('kinds: excluded formats stay in the file as hack_kind other, off the main list; ideathons are kept', async () => {
-  const dir = dataDir();
+test('kinds: excluded formats stay as hack_kind other, off the main list; ideathons are kept', async () => {
+  const { dir, db } = setup();
   const unstop = [unstopItem(1), unstopItem(2, { title: 'Capture The Flag (CTF)' }), unstopItem(3, { title: 'Junior Ideathon' })];
-  await main({ dataDir: dir, now, deps: deps({ unstop }) });
-  const recs = read(dir, 'hackathons.json');
-  const ctf = recs.find(r => r.id === 2);
+  await go(dir, db, { unstop });
+  const ctf = db.listings.find(r => r.id === 2);
   assert.equal(ctf.hack_kind, 'other');
   assert.equal(ctf.main, false);
-  assert.equal(recs.find(r => r.id === 3).hack_kind, 'ideathon');
+  assert.equal(db.listings.find(r => r.id === 3).hack_kind, 'ideathon');
 });
 
 test('tiers: an unlisted host is tier other and off the main list', async () => {
-  const dir = dataDir();
-  await main({ dataDir: dir, now, deps: deps({ unstop: [unstopItem(4, { organisation: { name: 'WeCodeCoders' } })] }) });
-  const r = read(dir, 'hackathons.json').find(x => x.id === 4);
+  const { dir, db } = setup();
+  await go(dir, db, { unstop: [unstopItem(4, { organisation: { name: 'WeCodeCoders' } })] });
+  const r = db.listings.find(x => x.id === 4);
   assert.equal(r.tier, 'other');
   assert.equal(r.main, false);
 });
@@ -152,85 +169,92 @@ for (const source of ['unstop', 'devfolio', 'mlh', 'devpost']) {
   test(`a failing ${source} is a warning: its previous records pass through, the run succeeds`, async () => {
     const prev = { id: `prev-${source}`, source, title: 'Yesterday', tier: 'global', hack_kind: 'build', main: true,
       verdict: { level: 'fits', reasons: [] }, regn_close: '2026-12-01', first_seen: '2026-09-01', closed_on: null };
-    const dir = dataDir({ 'hackathons.json': [prev] });
-    const code = await main({ dataDir: dir, now, deps: deps({ fail: [source] }) });
-    assert.equal(code, 0);
-    const kept = read(dir, 'hackathons.json').find(r => r.id === prev.id);
+    const { dir, db } = setup({}, { listings: [prev] });
+    assert.equal(await go(dir, db, { fail: [source] }), 0);
+    const kept = db.listings.find(r => r.id === prev.id);
     assert.equal(kept.closed_on, null);
     assert.equal(kept.tier, 'global');
-    const st = read(dir, 'hack-status.json');
+    const st = db.status;
     assert.equal(st.last_error, null);
     assert.ok(st.warnings.some(w => w.includes(`${source} down`)));
     assert.equal(st.sources[source].ok, false);
   });
 }
 
-test('every fetched source failing fails the run and leaves hackathons.json untouched', async () => {
-  const dir = dataDir({ 'hackathons.json': [{ id: 9, source: 'unstop', title: 'x' }] });
-  const before = fs.readFileSync(path.join(dir, 'hackathons.json'), 'utf8');
-  const code = await main({ dataDir: dir, now, deps: deps({ fail: ['unstop', 'devfolio', 'mlh', 'devpost'] }) });
-  assert.equal(code, 1);
-  assert.equal(fs.readFileSync(path.join(dir, 'hackathons.json'), 'utf8'), before);
-  const st = read(dir, 'hack-status.json');
+test('every fetched source failing fails the run: no sync, status carries last_ok and sources', async () => {
+  const prev = [{ id: 9, source: 'unstop', title: 'x' }];
+  const { dir, db } = setup({}, { listings: prev, status: { last_ok: '2026-09-28T00:30:00.000Z', sources: { unstop: { ok: true, count: 1 } } } });
+  assert.equal(await go(dir, db, { fail: ['unstop', 'devfolio', 'mlh', 'devpost'] }), 1);
+  assert.equal(db.syncs.length, 0);
+  assert.deepEqual(db.listings, prev);
+  assert.equal(db.statusWrites.length, 1);
+  const { section, status: st } = db.statusWrites[0];
+  assert.equal(section, 'hack');
   assert.equal(st.last_ok, '2026-09-28T00:30:00.000Z');
+  assert.deepEqual(st.sources, { unstop: { ok: true, count: 1 } });
   assert.match(st.last_error, /every hackathon source failed/);
 });
 
-test('a corrupt hackathons.json is never overwritten: the run fails', async () => {
-  const dir = dataDir({ 'hackathons.json': '{not json' });
-  const code = await main({ dataDir: dir, now, deps: deps() });
+test('unreadable live records: the run fails before fetching, no sync, error status', async () => {
+  const { dir, db } = setup({}, { fail: { listings: new Error('Supabase listings (hack): HTTP 503') } });
+  let fetched = false;
+  const d = deps(db);
+  const code = await main({ dataDir: dir, now, deps: { ...d, getJson: async u => { fetched = true; return d.getJson(u); } } });
   assert.equal(code, 1);
-  assert.equal(fs.readFileSync(path.join(dir, 'hackathons.json'), 'utf8'), '{not json');
-  assert.match(read(dir, 'hack-status.json').last_error, /hackathons\.json/);
+  assert.equal(fetched, false);
+  assert.equal(db.syncs.length, 0);
+  assert.match(db.statusWrites[0].status.last_error, /live records unreadable.*503/);
+  assert.deepEqual(db.statusWrites[0].status.sources, {});
 });
 
-test('a missing hackathons.json starts a new one', async () => {
-  const dir = dataDir({ 'hackathons.json': undefined });
-  assert.equal(await main({ dataDir: dir, now, deps: deps() }), 0);
-  assert.ok(read(dir, 'hackathons.json').length > 0);
+test('an empty section starts from nothing', async () => {
+  const { dir, db } = setup();
+  assert.equal(await go(dir, db), 0);
+  assert.ok(db.listings.length > 0);
 });
 
 const oldClosed = { id: 55, source: 'unstop', title: 'Old hack', tier: 'national', hack_kind: 'build', main: true,
   regn_close: '2026-06-01', comp_end: '2026-06-10', first_seen: '2026-05-01', closed_on: '2026-06-02', verdict: { level: 'fits', reasons: [] } };
 
-test('prune: a record closed over 60 days ago moves to hack-archive.json with hack_kind', async () => {
-  const dir = dataDir({ 'hackathons.json': [oldClosed] });
-  await main({ dataDir: dir, now, deps: deps() });
-  assert.equal(read(dir, 'hackathons.json').some(r => r.id === 55), false);
-  const arch = read(dir, 'hack-archive.json');
-  assert.equal(arch.length, 1);
-  assert.equal(arch[0].id, 55);
-  assert.equal(arch[0].hack_kind, 'build');
-  assert.equal('is_case' in arch[0], false);
-  assert.equal('verdict' in arch[0], false);
+test('prune: a record closed over 60 days ago leaves the rows and rides the same sync into the archive with hack_kind', async () => {
+  const { dir, db } = setup({}, { listings: [oldClosed] });
+  await go(dir, db);
+  const { rows, archive } = db.syncs[0];
+  assert.equal(rows.some(r => r.id === 55), false);
+  assert.equal(archive.length, 1);
+  assert.equal(archive[0].archive_key, '55');
+  assert.equal(archive[0].id, 55);
+  assert.equal(archive[0].hack_kind, 'build');
+  assert.equal('is_case' in archive[0], false);
+  assert.equal('verdict' in archive[0], false);
 });
 
 test('decisions from Supabase keep a committed hackathon past the prune', async () => {
-  const dir = dataDir({ 'hackathons.json': [{ ...oldClosed, comp_end: '2026-09-01' }] });
-  await main({ dataDir: dir, now, deps: deps({ supabase: sb({ decisions: [{ id: '55', status: 'entering', registered: false }] }) }) });
-  assert.ok(read(dir, 'hackathons.json').some(r => r.id === 55));
+  const { dir, db } = setup({}, { listings: [{ ...oldClosed, comp_end: '2026-09-01' }], tables: { decisions: [{ id: '55', status: 'entering', registered: false }] } });
+  await go(dir, db);
+  assert.ok(db.listings.some(r => r.id === 55));
 });
 
 test('Supabase decisions unreadable: nothing is pruned, with a warning', async () => {
-  const dir = dataDir({ 'hackathons.json': [oldClosed] });
-  const code = await main({ dataDir: dir, now, deps: deps({ supabase: sb({ decisions: new Error('HTTP 503') }) }) });
-  assert.equal(code, 0);
-  assert.ok(read(dir, 'hackathons.json').some(r => r.id === 55));
-  assert.ok(read(dir, 'hack-status.json').warnings.some(w => w.startsWith('decisions:')));
+  const { dir, db } = setup({}, { listings: [oldClosed], tables: { decisions: new Error('HTTP 503') } });
+  assert.equal(await go(dir, db), 0);
+  assert.ok(db.listings.some(r => r.id === 55));
+  assert.deepEqual(db.syncs[0].archive, []);
+  assert.ok(db.status.warnings.some(w => w.startsWith('decisions:')));
 });
 
 test('a broken hack-curated.json warns and keeps the previous hk- records', async () => {
   const prev = { id: 'hk-sih', source: 'curated', title: 'Smart India Hackathon', tier: 'national', hack_kind: 'build', main: true, regn_close: null, first_seen: '2026-09-01', closed_on: null };
-  const dir = dataDir({ 'hack-curated.json': '{bad', 'hackathons.json': [prev] });
-  assert.equal(await main({ dataDir: dir, now, deps: deps() }), 0);
-  assert.ok(read(dir, 'hackathons.json').some(r => r.id === 'hk-sih'));
-  assert.ok(read(dir, 'hack-status.json').warnings.some(w => w.includes('hack-curated.json')));
+  const { dir, db } = setup({ 'hack-curated.json': '{bad' }, { listings: [prev] });
+  assert.equal(await go(dir, db), 0);
+  assert.ok(db.listings.some(r => r.id === 'hk-sih'));
+  assert.ok(db.status.warnings.some(w => w.includes('hack-curated.json')));
 });
 
 test('unverified curated rows are left out', async () => {
-  const dir = dataDir({ 'hack-curated.json': [curatedRow({ id: 'hk-x', verified: false })] });
-  await main({ dataDir: dir, now, deps: deps() });
-  assert.equal(read(dir, 'hackathons.json').some(r => r.id === 'hk-x'), false);
+  const { dir, db } = setup({ 'hack-curated.json': [curatedRow({ id: 'hk-x', verified: false })] });
+  await go(dir, db);
+  assert.equal(db.listings.some(r => r.id === 'hk-x'), false);
 });
 
 test('data/hack-curated.json rows are well-formed (hk- ids, build/ideathon, corporate/national, https urls)', () => {

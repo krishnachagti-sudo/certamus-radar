@@ -1,40 +1,46 @@
-// Daily job: fetch → classify → merge → write. On any search failure the
-// competitions file is left alone, so a bad day never blanks the board.
-// Listing body text (details_text) and the raw eligibility blob are used only
-// for classification here and never written: the body text carries
-// organisers' personal phone numbers and emails, and the file is public.
+// Daily job for case comps: read the live records from Supabase → fetch →
+// classify → merge → one sync_section write. If the live records cannot be
+// read, or any search fails, nothing but the status is written, so a bad day
+// never blanks the board. Listing body text (details_text) and the raw
+// eligibility blob are used only for classification and never stored: the
+// body text carries organisers' personal phone numbers and emails.
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { fetchAll } from './unstop.js';
 import { tier, verdict } from './classify.js';
 import { oppdeskRecords } from './intl.js';
 import { fetchOppDesk } from './oppdesk.js';
 import { fetchInsideIim, parseInsideIim, insideiimRecords } from './insideiim.js';
-import { defaultConfig, readTables } from './supabase.js';
-import { dataStore, fromRemote, readDecisions, curatedFromLists, commit } from './pipeline.js';
+import { createDb, readTables } from './db.js';
+import { configStore, fromRemote, readDecisions, curatedFromLists, commit, recordFailure } from './pipeline.js';
 import { dayDiff, todayIST } from '../dates.js';
 import { unstopId } from '../urls.js';
 
 const DEFAULT_DIR = fileURLToPath(new URL('../data/', import.meta.url));
 
 export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} } = {}) {
-  const store = dataStore(dataDir);
-  const { read, write } = store;
-
-  const { supabase = defaultConfig(), ...fetchDeps } = deps;
+  const store = configStore(dataDir);
+  const { read } = store;
+  const { db = createDb(), ...fetchDeps } = deps;
   const team = read('team.json');
   const lists = { national: read('national.json', []), bschools: read('bschools.json', []), corporates: read('corporates.json', []) };
-  const existing = read('competitions.json', []);
-  const status = read('status.json', {});
   const stamp = now.toISOString();
+  const fail = async (message, warnings) => {
+    await recordFailure(db, 'case', { stamp, message, warnings });
+    console.error(`fetch failed: ${message}`);
+    return 1;
+  };
 
-  // Decisions, hand-added links and confirmed international dates live in
-  // Supabase. If it is not configured or a read fails, decisions and links
-  // fall back to the old data/ files when present (else empty) and the
-  // curated records keep yesterday's dates; each case is a warning.
-  const remote = await readTables(supabase);
+  // The live records. Unreadable is never "empty": abort, only the status is written.
+  let existing;
+  try { existing = await db.readListings('case'); } catch (e) { return fail(`live records unreadable (${e.message}); nothing written`, []); }
+
+  // Decisions, hand-added links and confirmed international dates (service
+  // key). A failed read is a warning: decisions are then empty and nothing
+  // is pruned, links are skipped, curated records keep yesterday's dates.
+  const remote = await readTables(db);
   const remoteWarnings = [];
-  const decisions = readDecisions(remote, store, remoteWarnings);
-  const manualRaw = fromRemote(remote, 'manual', store, 'manual.json', [], remoteWarnings);
+  const decisions = readDecisions(remote, remoteWarnings);
+  const manualRaw = fromRemote(remote, 'manual', [], remoteWarnings);
   const manualIds = (Array.isArray(manualRaw) ? manualRaw : []).map(m => unstopId(m?.url ?? '')).filter(Boolean);
 
   try {
@@ -80,18 +86,15 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
         warnings.push(`classify ${r.id}: ${e.message}`);
       }
     }
-    commit(store, {
-      existing, records, decisions, today, warnings,
+    await commit(db, 'case', {
+      existing, records, decisions, today,
       prune: remote.decisions.value !== undefined,
-      liveFile: 'competitions.json', archiveFile: 'archive.json',
+      status: { last_run: stamp, last_ok: stamp, last_error: null, warnings },
     });
-    write('status.json', { last_run: stamp, last_ok: stamp, last_error: null, warnings });
     console.log(`ok: ${records.length} fetched, ${warnings.length} warnings`);
     return 0;
   } catch (e) {
-    write('status.json', { last_run: stamp, last_ok: status.last_ok || null, last_error: e.message, warnings: remoteWarnings });
-    console.error(`fetch failed: ${e.message}`);
-    return 1;
+    return fail(e.message, remoteWarnings);
   }
 }
 
