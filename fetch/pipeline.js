@@ -74,12 +74,47 @@ export function curatedFromLists(lists, { store, remote, existing, today, warnin
   return out;
 }
 
+// The date fields sync_section copies into date columns. A real calendar
+// date (YYYY-MM-DD) or nothing: Postgres rejects an impossible date such as
+// 2026-02-30, and one bad row must not fail the whole section's write.
+export const DATE_FIELDS = ['regn_close', 'comp_end', 'closed_on'];
+
+export function validDate(v) {
+  if (typeof v !== 'string') return false;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+  if (!m) return false;
+  const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+  return d.getUTCFullYear() === +m[1] && d.getUTCMonth() === +m[2] - 1 && d.getUTCDate() === +m[3];
+}
+
+// Copies of `rows` with any invalid date field set to null, one warning each.
+export function cleanDates(rows, warnings) {
+  return rows.map(r => {
+    let out = r;
+    for (const k of DATE_FIELDS) {
+      const v = r?.[k];
+      if (v === null || v === undefined || validDate(v)) continue;
+      if (out === r) out = { ...r };
+      out[k] = null;
+      warnings.push(`${r.id ?? r.archive_key}: invalid ${k} ${JSON.stringify(v)} stored as empty`);
+    }
+    return out;
+  });
+}
+
 // Merge, then one sync_section call: the pruned records' archive entries,
 // the section's full next set of rows (anything not in it is deleted from
-// that section only) and the run status, in one transaction.
+// that section only) and the run status, in one transaction. Invalid dates
+// are nulled first; their warnings join the status's warnings.
 export async function commit(db, section, { existing, records, decisions, today, prune, archiveFields, status }) {
-  const { next, pruned } = merge(existing.map(publishable), records.map(publishable), decisions, today, { prune });
-  const archive = appendArchive([], pruned, archiveFields);
+  const merged = merge(existing.map(publishable), records.map(publishable), decisions, today, { prune });
+  const dateWarnings = [];
+  const next = cleanDates(merged.next, dateWarnings);
+  const archive = cleanDates(appendArchive([], merged.pruned, archiveFields), dateWarnings);
+  if (dateWarnings.length && status) {
+    if (Array.isArray(status.warnings)) status.warnings.push(...dateWarnings);
+    else status.warnings = dateWarnings;
+  }
   await db.syncSection(section, next, archive, status);
   return { next, archive };
 }
