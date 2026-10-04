@@ -85,3 +85,9 @@ test('nav on the competition page: the switch goes to the other Board', () => {
   assert.match(html, /<a href="index.html">Case comps<\/a>/);
   assert.match(html, /<a href="index.html\?s=hack" aria-current="true">Hackathons<\/a>/);
 });
+
+test('nav has Team in both sections, current on the team page', () => {
+  assert.match(navHtml('team', 'case'), /<a href="team.html" aria-current="page">Team<\/a>/);
+  assert.match(navHtml('team', 'hack'), /<a href="team.html\?s=hack" aria-current="page">Team<\/a>/);
+  assert.match(navHtml('board', 'hack'), /<a href="team.html\?s=hack">Team<\/a>/);
+});

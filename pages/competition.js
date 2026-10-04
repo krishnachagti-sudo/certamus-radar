@@ -10,6 +10,9 @@
 // Hackathons (?s=hack, or an id starting df-/mlh-/dp-/hk-): the hackathon
 // rule table, team size, online/place and source; curated hk- rows show the
 // curated facts and the watcher flag. Clashes count both sections.
+// Team section (lib/teamview.js): the team, its invite link and rounds, read
+// from Supabase (RLS shows a team only to the admin and its members) and
+// changed only through the team/round RPCs; errors go to the banner.
 import { dayDiff, todayIST } from '../dates.js';
 import {
   STATUSES, sameId, statusOf, isRegistered, committedAcross, clashLabels, expectedText, whoAppliesText, watchChanged,
@@ -17,8 +20,13 @@ import {
 } from '../lib/data.js';
 import {
   createDecisionSaver, editable, readIntlDates, setIntlDates, readListings, readArchive, readStatus, readWatch, readDecisions,
+  readTeams, readTeamMembers, readRounds, readMembers, createTeam, updateTeam, deleteTeam, markJoined,
+  upsertRound, deleteRound, setRoundDone,
 } from '../lib/store.js';
-import { requireMember } from '../lib/auth.js';
+import { requireMember, currentMember, roleCan } from '../lib/auth.js';
+import { membersOf, roundsOf, defaultTeamEmails, validInviteUrl } from '../lib/teams.js';
+import { teamSectionHtml } from '../lib/teamview.js';
+import { copyFromField } from '../lib/copy.js';
 import {
   esc, safeHref, teamText, linkLabel, tierChipHtml, verdictChipHtml, formatChipHtml, startupChipHtml,
   kindChipHtml, hackTeamText, placeText, KIND_LABEL,
@@ -35,6 +43,9 @@ const other = sectionOf(otherSection(sec.key));
 
 const state = {
   comps: [], otherItems: [], archive: [], intl: [], watch: {}, status: null, decisions: {}, intlDates: {}, error: null, datesMsg: '',
+  // Team section: rows from Supabase, and the open forms' drafts (kept here
+  // so a redraw mid-typing never loses them).
+  teams: [], teamMembers: [], rounds: [], members: [], teamForm: null, roundForm: null, busy: false, teamMsg: '',
 };
 
 const ENTRY = { open: 'Open entry', invite: 'By invitation', qualifier: 'Qualifier round', institute: 'Through your institute', unclear: 'Entry route unclear' };
@@ -52,12 +63,13 @@ async function load() {
   // intl_dates table); curated hackathons take dates from the next fetch.
   const withDatesStore = sec.key === 'case' && /^(intl|fest)-/.test(String(ID));
   await guardLoad(state, async () => {
-    const [comps, archive, curated, watch, status, otherItems, decisions, intlDates] = await Promise.all([
+    const [comps, archive, curated, watch, status, otherItems, decisions, intlDates, teams, teamMembers, rounds, members] = await Promise.all([
       readListings(sec.key), readArchive(sec.key), Promise.all(sec.files.curated.map(f => pagesJson(f, []))),
       readWatch(), readStatus(sec.key), readListings(other.key), readDecisions(),
       withDatesStore ? readIntlDates() : {},
+      readTeams(), readTeamMembers(), readRounds(), readMembers(),
     ]);
-    Object.assign(state, { comps, archive, watch, status, otherItems });
+    Object.assign(state, { comps, archive, watch, status, otherItems, teams, teamMembers, rounds, members });
     state.intl = curated.flatMap(list => (Array.isArray(list) ? list : []));
     state.decisions = saver.overlay(decisions);
     state.intlDates = { ...intlDates, ...localDates };
@@ -127,6 +139,24 @@ function noteHtml(c) {
     ? `<textarea data-note="${esc(c.id)}" aria-labelledby="h-note" placeholder="Who is on it, what to prepare">${esc(note)}</textarea>`
     : `<p class="note-text">${note ? esc(note) : '<span class="muted">No note yet.</span>'}</p>`;
   return `<section class="sec" aria-labelledby="h-note"><h2 id="h-note">Team note</h2>${body}</section>`;
+}
+
+// ---- team section -----------------------------------------------------------
+
+const isAdmin = () => roleCan(currentMember(), 'manage_teams');
+const teamOf = id => state.teams.find(t => sameId(t.listing_id, id)) || null;
+const shownComp = () => findComp() || findArchived();
+
+// An archived listing shows its team if it has one, but offers no "Create".
+function teamHtml(c, { archived = false } = {}) {
+  const id = String(c.id);
+  const team = teamOf(id);
+  if (!team && archived) return '';
+  return teamSectionHtml({
+    team, teamMembers: membersOf(id, state.teamMembers), rounds: team ? roundsOf(id, state.rounds) : [],
+    members: state.members, viewer: currentMember()?.email, isAdmin: isAdmin(), today: todayIST(), title: c.title,
+    teamForm: state.teamForm, roundForm: state.roundForm, busy: state.busy, msg: state.teamMsg,
+  });
 }
 
 // ---- right panel ----------------------------------------------------------
@@ -232,6 +262,7 @@ function liveHtml(c) {
       <p class="host">${esc(c.host)}</p>
       ${eligibilityHtml(c)}
       ${datesHtml(c, missing)}
+      ${teamHtml(c)}
       ${noteHtml(c)}
     </div>
     ${panelHtml(c, today)}
@@ -245,6 +276,7 @@ function archivedHtml(a) {
       <h1>${esc(a.title)}</h1>
       <p class="host">${esc(a.host)}</p>
       ${datesHtml(a, 'not listed')}
+      ${teamHtml(a, { archived: true })}
     </div>
     <aside class="panel" aria-label="Archived">
       <div class="countdown">Closed<small>${a.closed_on ? `closed on ${esc(fmtDate(a.closed_on))}` : 'no longer listed'}</small></div>
@@ -350,6 +382,151 @@ document.addEventListener('submit', async e => {
   } finally {
     const b = document.getElementById('dates-btn');
     if (b) b.disabled = false;
+  }
+});
+
+// ---- team and round actions ----------------------------------------------------
+
+async function reloadTeams({ decisions = false } = {}) {
+  const [teams, teamMembers, rounds, d] = await Promise.all([
+    readTeams(), readTeamMembers(), readRounds(), decisions ? readDecisions() : null]);
+  Object.assign(state, { teams, teamMembers, rounds });
+  if (d) state.decisions = saver.overlay(d);
+}
+
+// One RPC, then fresh rows; a refusal shows the Postgres message in the
+// banner and leaves the form open with its draft.
+async function teamAction(fn, done, opts = {}) {
+  if (state.busy) return false;
+  state.busy = true;
+  state.teamMsg = 'Saving…';
+  render();
+  let ok = false;
+  try {
+    await fn();
+    ok = true;
+    if (opts.close) opts.close();
+    state.teamMsg = done;
+    state.error = null;
+  } catch (err) {
+    state.teamMsg = '';
+    state.error = `Not saved: ${err.message}`;
+  }
+  try { await reloadTeams(opts); } catch (err) { state.error = `Could not reload the team: ${err.message}`; }
+  state.busy = false;
+  render();
+  if (opts.focus) document.querySelector(opts.focus)?.focus();
+  return ok;
+}
+
+const focusFirst = (...sels) => {
+  for (const sel of sels) {
+    const el = document.querySelector(sel);
+    if (el) { el.focus(); return; }
+  }
+};
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  const c = shownComp();
+  if (!c) return;
+  const id = String(c.id);
+  if (b.dataset.copy) { await copyFromField(b); return; }
+  if (b.dataset.join) {
+    const joined = b.dataset.joined === '1';
+    await teamAction(() => markJoined(b.dataset.join, joined), joined ? 'Marked as joined' : 'Marked as not joined yet');
+    return;
+  }
+  if (!isAdmin()) return;
+  if (b.id === 'team-create' || b.id === 'team-edit') {
+    const team = teamOf(id);
+    state.teamForm = team
+      ? { mode: 'edit', emails: new Set(membersOf(id, state.teamMembers).map(r => String(r.email).toLowerCase())), url: team.invite_url || '' }
+      : { mode: 'create', emails: new Set(defaultTeamEmails(recordSection(c), state.members)), url: '' };
+    state.teamMsg = '';
+    render();
+    focusFirst('#team-form input[name="email"]', '#team-url');
+  } else if (b.id === 'team-cancel') {
+    state.teamForm = null;
+    render();
+    focusFirst('#team-edit', '#team-create');
+  } else if (b.id === 'team-delete') {
+    // eslint-disable-next-line no-alert
+    if (!confirm(`Delete the team for "${c.title}"? Its members, join ticks and rounds are deleted too. Registered stays as it is.`)) return;
+    await teamAction(() => deleteTeam(id), 'Team deleted', { close: () => { state.roundForm = null; }, focus: '#team-create' });
+  } else if (b.id === 'round-add') {
+    state.roundForm = { id: null, name: '', due: '', owner: '', open: true };
+    render();
+    focusFirst('#round-name');
+  } else if (b.id === 'round-cancel') {
+    state.roundForm = null;
+    render();
+    focusFirst('#round-add');
+  } else if (b.dataset.roundEdit) {
+    const r = state.rounds.find(x => String(x.id) === b.dataset.roundEdit);
+    if (!r) return;
+    state.roundForm = { id: r.id, name: r.name || '', due: r.due || '', owner: r.owner_email || '' };
+    render();
+    focusFirst('#round-name');
+  } else if (b.dataset.roundDel) {
+    const r = state.rounds.find(x => String(x.id) === b.dataset.roundDel);
+    // eslint-disable-next-line no-alert
+    if (!r || !confirm(`Delete the round "${r.name}"?`)) return;
+    await teamAction(() => deleteRound(r.id), 'Round deleted', {
+      close: () => { if (state.roundForm?.id === r.id) state.roundForm = null; }, focus: '#round-add',
+    });
+  }
+});
+
+document.addEventListener('change', async e => {
+  const el = e.target;
+  if (el.dataset.roundDone !== undefined) {
+    const on = el.checked;
+    await teamAction(() => setRoundDone(el.dataset.roundDone, on), on ? 'Round done' : 'Round reopened');
+  } else if (el.name === 'email' && el.closest('#team-form') && state.teamForm) {
+    const v = String(el.value).toLowerCase();
+    if (el.checked) state.teamForm.emails.add(v); else state.teamForm.emails.delete(v);
+  } else if (el.id === 'round-due' && state.roundForm) state.roundForm.due = el.value;
+  else if (el.id === 'round-owner' && state.roundForm) state.roundForm.owner = el.value;
+});
+
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.id === 'team-url' && state.teamForm) state.teamForm.url = el.value;
+  else if (el.id === 'round-name' && state.roundForm) state.roundForm.name = el.value;
+  else if (el.id === 'round-due' && state.roundForm) state.roundForm.due = el.value;
+});
+
+document.addEventListener('submit', async e => {
+  if (e.target.id !== 'team-form' && e.target.id !== 'round-form') return;
+  e.preventDefault();
+  const c = shownComp();
+  if (!c || !isAdmin()) return;
+  const id = String(c.id);
+  const msg = text => { state.teamMsg = text; render(); };
+  if (e.target.id === 'team-form') {
+    const f = state.teamForm;
+    const url = validInviteUrl(f.url);
+    if (!f.emails.size) { msg('Pick at least one member'); focusFirst('#team-form input[name="email"]'); return; }
+    if (!url) { msg('The invite link must be an https:// link'); focusFirst('#team-url'); return; }
+    const emails = [...f.emails];
+    const creating = f.mode === 'create';
+    await teamAction(
+      () => (creating ? createTeam({ listingId: id, section: recordSection(c), inviteUrl: url, emails }) : updateTeam({ listingId: id, inviteUrl: url, emails })),
+      creating ? 'Team created and marked Registered' : 'Team saved',
+      { close: () => { state.teamForm = null; }, decisions: creating, focus: '#team-edit' },
+    );
+  } else {
+    const f = state.roundForm;
+    const name = String(f.name || '').trim();
+    if (!name) { msg('Give the round a name'); focusFirst('#round-name'); return; }
+    if (f.due && !ISO.test(f.due)) { msg('Use the date picker for the due date'); focusFirst('#round-due'); return; }
+    await teamAction(
+      () => upsertRound({ id: f.id, listingId: id, name, due: f.due || null, owner: f.owner || null }),
+      f.id ? 'Round saved' : 'Round added',
+      { close: () => { state.roundForm = null; }, focus: '#round-add' },
+    );
   }
 });
 

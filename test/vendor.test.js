@@ -18,7 +18,7 @@ test('vendor/supabase.js is the pinned 2.117.2 UMD build', () => {
 const pages = readdirSync(root).filter(f => f.endsWith('.html'));
 
 test('every page loads vendor/supabase.js as a classic script before its module', () => {
-  assert.deepEqual(pages.sort(), ['all.html', 'c.html', 'calendar.html', 'hosts.html', 'index.html']);
+  assert.deepEqual(pages.sort(), ['all.html', 'c.html', 'calendar.html', 'hosts.html', 'index.html', 'team.html']);
   for (const f of pages) {
     const html = read(f).toString();
     const scripts = [...html.matchAll(/<script\b[^>]*>/g)].map(m => m[0]);
