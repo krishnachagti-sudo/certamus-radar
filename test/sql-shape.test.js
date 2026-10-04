@@ -30,7 +30,19 @@ const SERVICE_RPCS = ['sync_section', 'set_status'];
 const HELPERS = ['is_member', 'is_admin', 'in_team'];
 
 test('starts by revoking default function execute from public, anon and authenticated', () => {
-  assert.equal(statements[0], 'alter default privileges in schema public revoke execute on functions from public, anon, authenticated');
+  assert.equal(statements[0], 'alter default privileges for role postgres in schema public revoke execute on functions from public, anon, authenticated');
+});
+
+test('default privileges: nothing created later is reachable by public, anon or authenticated', () => {
+  assert.ok(statements.includes('alter default privileges for role postgres revoke execute on functions from public'), 'global function default');
+  assert.ok(statements.includes('alter default privileges for role postgres in schema public revoke all on tables from anon, authenticated'));
+  assert.ok(statements.includes('alter default privileges for role postgres in schema public revoke all on sequences from anon, authenticated'));
+  assert.doesNotMatch(SQL, /alter default privileges [^;]*\bgrant\b/);
+});
+
+test('the project is documented as Radar-only and the old schema file is gone', () => {
+  assert.match(RAW, /must hold Radar only/);
+  assert.equal(fs.existsSync(fileURLToPath(new URL('../supabase/schema.sql', import.meta.url))), false);
 });
 
 test('creates every platform table, plus the three existing ones for a fresh project', () => {
@@ -84,18 +96,18 @@ test('policies: members read the shared tables, admin writes the editable ones, 
   const sel = t => policies.filter(p => p.table === t && p.cmd === 'select');
   for (const t of ['members', 'listings', 'archive', 'source_status', 'watch', 'decisions', 'intl_dates', 'manual']) {
     assert.equal(sel(t).length, 1, t);
-    assert.equal(sel(t)[0].expr, 'public.is_member()', t);
+    assert.equal(sel(t)[0].expr, '(select public.is_member())', t);
   }
   for (const t of ['teams', 'team_members', 'rounds']) {
     assert.equal(sel(t).length, 1, t);
-    assert.equal(sel(t)[0].expr, 'public.is_admin() or public.in_team(listing_id)', t);
+    assert.equal(sel(t)[0].expr, '(select public.is_admin()) or public.in_team(listing_id)', t);
     assert.equal(policies.filter(p => p.table === t && p.cmd !== 'select').length, 0, `${t}: writes only via RPC`);
   }
   for (const t of ['decisions', 'intl_dates', 'manual']) {
     for (const cmd of ['insert', 'update', 'delete']) {
       const ps = policies.filter(p => p.table === t && p.cmd === cmd);
       assert.equal(ps.length, 1, `${t} ${cmd}`);
-      assert.match(ps[0].expr, /^public\.is_admin\(\)/, `${t} ${cmd}`);
+      assert.match(ps[0].expr, /^\(select public\.is_admin\(\)\)/, `${t} ${cmd}`);
     }
   }
   for (const t of ['members', 'listings', 'archive', 'source_status', 'watch']) {
@@ -127,14 +139,23 @@ test('every security definer function pins search_path and the expected set is t
   }
 });
 
-test('helpers: security definer, stable, lowercased jwt email; granted to authenticated for RLS', () => {
+test('helpers: security definer, stable, bound to the Google identity; granted to authenticated for RLS', () => {
   for (const name of HELPERS) {
     const { body } = functions.get(name);
     assert.ok(body.includes('security definer'), name);
     assert.ok(body.includes('stable'), name);
-    assert.ok(body.includes("lower(auth.jwt() ->> 'email')") || body.includes('public.is_member()') , name);
+    assert.ok(body.includes('from auth.identities i join public.members m on m.email = lower(i.identity_data ->> \'email\')'), name);
+    assert.ok(body.includes("where i.user_id = auth.uid() and i.provider = 'google' and m.active"), name);
     assert.deepEqual(grantsOf(name).map(g => g.split(' to ')[1]), ['authenticated'], name);
   }
+  assert.ok(functions.get('is_admin').body.includes("m.role = 'admin'"));
+  const own = functions.get('google_emails').body;
+  assert.ok(own.includes("where i.user_id = auth.uid() and i.provider = 'google'"));
+  assert.equal(grantsOf('google_emails').length, 0, 'internal only');
+});
+
+test('the JWT email claim is never trusted', () => {
+  assert.doesNotMatch(SQL, /auth\.jwt\(\)/);
 });
 
 test('team and round RPCs: security definer, granted to authenticated only, check the caller', () => {
@@ -149,7 +170,7 @@ test('team and round RPCs: security definer, granted to authenticated only, chec
   }
   assert.match(functions.get('set_round_done').body, /public\.is_admin\(\) or public\.in_team\(/);
   assert.match(functions.get('mark_joined').body, /public\.in_team\(p_listing_id\)/);
-  assert.match(functions.get('mark_joined').body, /email = public\.my_email\(\)|email = v_email/);
+  assert.match(functions.get('mark_joined').body, /email in \(select public\.google_emails\(\)\)/);
 });
 
 test('create_team validates https, lowercases emails, requires active members, sets registered', () => {
@@ -157,6 +178,8 @@ test('create_team validates https, lowercases emails, requires active members, s
   assert.ok(body.includes("'^https://"), 'https check');
   assert.ok(body.includes("errcode = '22023'"), 'invalid input errcode');
   assert.match(body, /perform public\.replace_team_members\(p_listing_id, p_emails\)/);
+  assert.match(body, /if exists \(select 1 from public\.teams where listing_id = p_listing_id\) then raise exception 'team exists, use update_team' using errcode = '22023'/);
+  assert.doesNotMatch(body, /insert into public\.teams [^;]*on conflict/);
   assert.match(functions.get('update_team').body, /perform public\.replace_team_members\(p_listing_id, p_emails\)/);
   const members = functions.get('replace_team_members');
   assert.match(members.body, /lower\(btrim\(/);
@@ -189,7 +212,10 @@ test('sync_section steps run in order: archive, upsert, delete missing, status',
   assert.match(body, /return jsonb_build_object\(/);
 });
 
-test('seeds Krishna as admin', () => {
+test('seeds Krishna as admin; teammate placeholders use example.com', () => {
+  const placeholders = [...RAW.matchAll(/^-- insert into public\.members .*'([^']+@[^']+)'/gm)].map(m => m[1]);
+  assert.ok(placeholders.length >= 4);
+  for (const e of placeholders) assert.match(e, /@example\.com$/, e);
   assert.match(SQL, /insert into public\.members \(email, name, role, active\) values \('krishnachagti@gmail\.com', 'krishna', 'admin', true\) on conflict \(email\) do update/);
 });
 
@@ -209,7 +235,8 @@ test('check-access: refusals and empty reads pass, rows or a run are leaks, miss
   assert.equal(judgeTable({ status: 404, body: { code: '42P01' } }).ok, false);
   assert.equal(judgeRpc('create_team', { status: 403, body: { code: '42501' } }).ok, true);
   assert.equal(judgeRpc('create_team', { status: 400, body: { code: '42501' } }).ok, true);
-  assert.equal(judgeRpc('sync_section', { status: 404, body: { code: 'PGRST202' } }).ok, true);
+  assert.equal(judgeRpc('sync_section', { status: 404, body: { code: 'PGRST202' } }).ok, false, 'v3 not applied');
+  assert.equal(judgeRpc('sync_section', { status: 404, body: { code: '42501' } }).ok, true);
   assert.equal(judgeRpc('sync_section', { status: 200, body: { upserted: 0 } }).ok, false);
   assert.equal(judgeRpc('delete_team', { status: 204, body: '' }).ok, false);
   assert.equal(judgeRpc('create_team', { status: 400, body: { code: '22023' } }).ok, false);

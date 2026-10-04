@@ -10,9 +10,10 @@
 // authenticated non-member.
 //
 // Pass:  every table read is refused (401/403) or returns [] (RLS hides
-//        every row); every RPC is refused (401/403/404 or code 42501). The
+//        every row); every RPC is refused (HTTP 401/403 or code 42501). The
 //        RLS helpers may also answer `false` to a non-member.
-// Fail:  anything else, including a missing table (schema not applied).
+// Fail:  anything else. A missing table or function (404, PGRST202) is a
+//        failure: it means v3.sql is not applied, so nothing was proven.
 // Exits 1 on any failure.
 import { pathToFileURL } from 'node:url';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../config.js';
@@ -28,6 +29,7 @@ const ZERO_UUID = '00000000-0000-0000-0000-000000000000';
 export const RPCS = {
   is_member: {},
   is_admin: {},
+  google_emails: {},
   in_team: { p_listing_id: '1' },
   replace_team_members: { p_listing_id: '1', p_emails: [NOBODY] },
   create_team: { p_listing_id: '1', p_section: 'case', p_invite_url: 'https://example.com/x', p_emails: [NOBODY] },
@@ -71,8 +73,9 @@ export function judgeTable({ status, body }) {
 }
 
 export function judgeRpc(name, { status, body }) {
-  if (REFUSED.has(status) || status === 404) return { ok: true, why: `refused ${status}${body?.code ? ` ${body.code}` : ''}` };
   if (body && body.code === '42501') return { ok: true, why: `refused ${status} 42501` };
+  if (REFUSED.has(status)) return { ok: true, why: `refused ${status}${body?.code ? ` ${body.code}` : ''}` };
+  if (status === 404 || body?.code === 'PGRST202') return { ok: false, why: `missing (${status}${body?.code ? ` ${body.code}` : ''}): is v3.sql applied?` };
   if (HELPERS.has(name) && status === 200 && body === false) return { ok: true, why: 'false' };
   if (status >= 200 && status < 300) return { ok: false, why: `LEAK: ran (${status}) ${short(body)}` };
   return { ok: false, why: `unexpected ${status}: ${short(body)}` };

@@ -1,19 +1,30 @@
 -- Certamus Radar v3: the private team platform.
 -- Spec: linkedin repo docs/superpowers/specs/2026-10-04-certamus-radar-platform-design.md
 -- (Resolutions 1-20 are binding). Idempotent: safe to run twice in the
--- Supabase SQL Editor. Replaces supabase/schema.sql (the #key editor path).
+-- Supabase SQL Editor. Replaces the v2 schema (public reads plus a #key
+-- editor path through private.editor_key), which it dismantles below.
+-- This Supabase project must hold Radar only: the revokes and default
+-- privileges below apply to the whole public schema.
 --
 -- Access model:
 --   anon           nothing at all (no table grants, no function execute)
 --   authenticated  any Google account can get this role, so every policy
---                  checks public.is_member() (active row in public.members)
+--                  checks public.is_member(): the caller's linked Google
+--                  identity (auth.identities, provider 'google') carries the
+--                  email of an active row in public.members. The JWT's own
+--                  email claim is never trusted.
 --   service_role   the GitHub Actions jobs: sync_section / set_status and
 --                  direct reads/writes of listings, archive, watch etc.
 -- Errors: 42501 = forbidden, 22023 = invalid input.
 
-alter default privileges in schema public revoke execute on functions from public, anon, authenticated;
-alter default privileges in schema public revoke all on tables from anon;
-alter default privileges in schema public revoke all on sequences from anon;
+alter default privileges for role postgres in schema public revoke execute on functions from public, anon, authenticated;
+-- Functions are executable by PUBLIC by default in every schema; that
+-- built-in default can only be removed globally (no "in schema").
+alter default privileges for role postgres revoke execute on functions from public;
+-- Supabase grants anon and authenticated everything on new tables and
+-- sequences in public; nothing created later is reachable until granted.
+alter default privileges for role postgres in schema public revoke all on tables from anon, authenticated;
+alter default privileges for role postgres in schema public revoke all on sequences from anon, authenticated;
 
 -- 1. Retire the public-read policies and the editor-key path -----------------
 
@@ -71,7 +82,7 @@ create table if not exists public.watch (
   updated_at  timestamptz not null default now()
 );
 
--- Existing tables (created by schema.sql); repeated here so a fresh project
+-- Existing tables (created by the v2 schema); repeated here so a fresh project
 -- gets them too. Their constraints are adjusted below.
 create table if not exists public.decisions (
   id          text primary key check (length(id) between 1 and 64),
@@ -164,32 +175,50 @@ grant all on public.members, public.listings, public.archive, public.source_stat
   to service_role;
 
 -- 4. Helpers (used by the policies; security definer so they can read
--- members/team_members without tripping those tables' own policies) --------
+-- auth.identities, members and team_members without tripping those tables'
+-- own policies). Identity comes from the caller's linked Google identity,
+-- not from the JWT's email claim.
+
+-- Internal: the lowercased emails of the caller's Google identities.
+create or replace function public.google_emails() returns setof text
+language sql stable security definer set search_path = ''
+as $$
+  select lower(i.identity_data ->> 'email')
+  from auth.identities i
+  where i.user_id = auth.uid() and i.provider = 'google'
+    and nullif(i.identity_data ->> 'email', '') is not null;
+$$;
 
 create or replace function public.is_member() returns boolean
 language sql stable security definer set search_path = ''
 as $$
   select exists (
-    select 1 from public.members m
-    where m.email = lower(auth.jwt() ->> 'email') and m.active);
+    select 1 from auth.identities i
+    join public.members m on m.email = lower(i.identity_data ->> 'email')
+    where i.user_id = auth.uid() and i.provider = 'google' and m.active);
 $$;
 
 create or replace function public.is_admin() returns boolean
 language sql stable security definer set search_path = ''
 as $$
   select exists (
-    select 1 from public.members m
-    where m.email = lower(auth.jwt() ->> 'email') and m.active and m.role = 'admin');
+    select 1 from auth.identities i
+    join public.members m on m.email = lower(i.identity_data ->> 'email')
+    where i.user_id = auth.uid() and i.provider = 'google' and m.active and m.role = 'admin');
 $$;
 
 create or replace function public.in_team(p_listing_id text) returns boolean
 language sql stable security definer set search_path = ''
 as $$
-  select public.is_member() and exists (
-    select 1 from public.team_members t
-    where t.listing_id = p_listing_id and t.email = lower(auth.jwt() ->> 'email'));
+  select exists (
+    select 1 from auth.identities i
+    join public.members m on m.email = lower(i.identity_data ->> 'email')
+    join public.team_members t on t.email = m.email
+    where i.user_id = auth.uid() and i.provider = 'google' and m.active
+      and t.listing_id = p_listing_id);
 $$;
 
+revoke execute on function public.google_emails() from public, anon, authenticated;
 revoke execute on function public.is_member() from public, anon, authenticated;
 revoke execute on function public.is_admin() from public, anon, authenticated;
 revoke execute on function public.in_team(text) from public, anon, authenticated;
@@ -200,52 +229,52 @@ grant execute on function public.in_team(text) to authenticated;
 -- 5. Policies -------------------------------------------------------------------
 
 drop policy if exists "members read" on public.members;
-create policy "members read" on public.members for select to authenticated using (public.is_member());
+create policy "members read" on public.members for select to authenticated using ((select public.is_member()));
 
 drop policy if exists "members read" on public.listings;
-create policy "members read" on public.listings for select to authenticated using (public.is_member());
+create policy "members read" on public.listings for select to authenticated using ((select public.is_member()));
 drop policy if exists "members read" on public.archive;
-create policy "members read" on public.archive for select to authenticated using (public.is_member());
+create policy "members read" on public.archive for select to authenticated using ((select public.is_member()));
 drop policy if exists "members read" on public.source_status;
-create policy "members read" on public.source_status for select to authenticated using (public.is_member());
+create policy "members read" on public.source_status for select to authenticated using ((select public.is_member()));
 drop policy if exists "members read" on public.watch;
-create policy "members read" on public.watch for select to authenticated using (public.is_member());
+create policy "members read" on public.watch for select to authenticated using ((select public.is_member()));
 
 drop policy if exists "members read" on public.decisions;
-create policy "members read" on public.decisions for select to authenticated using (public.is_member());
+create policy "members read" on public.decisions for select to authenticated using ((select public.is_member()));
 drop policy if exists "admin insert" on public.decisions;
-create policy "admin insert" on public.decisions for insert to authenticated with check (public.is_admin());
+create policy "admin insert" on public.decisions for insert to authenticated with check ((select public.is_admin()));
 drop policy if exists "admin update" on public.decisions;
-create policy "admin update" on public.decisions for update to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy "admin update" on public.decisions for update to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
 drop policy if exists "admin delete" on public.decisions;
-create policy "admin delete" on public.decisions for delete to authenticated using (public.is_admin());
+create policy "admin delete" on public.decisions for delete to authenticated using ((select public.is_admin()));
 
 drop policy if exists "members read" on public.intl_dates;
-create policy "members read" on public.intl_dates for select to authenticated using (public.is_member());
+create policy "members read" on public.intl_dates for select to authenticated using ((select public.is_member()));
 drop policy if exists "admin insert" on public.intl_dates;
-create policy "admin insert" on public.intl_dates for insert to authenticated with check (public.is_admin());
+create policy "admin insert" on public.intl_dates for insert to authenticated with check ((select public.is_admin()));
 drop policy if exists "admin update" on public.intl_dates;
-create policy "admin update" on public.intl_dates for update to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy "admin update" on public.intl_dates for update to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
 drop policy if exists "admin delete" on public.intl_dates;
-create policy "admin delete" on public.intl_dates for delete to authenticated using (public.is_admin());
+create policy "admin delete" on public.intl_dates for delete to authenticated using ((select public.is_admin()));
 
 drop policy if exists "members read" on public.manual;
-create policy "members read" on public.manual for select to authenticated using (public.is_member());
+create policy "members read" on public.manual for select to authenticated using ((select public.is_member()));
 drop policy if exists "admin insert" on public.manual;
-create policy "admin insert" on public.manual for insert to authenticated with check (public.is_admin());
+create policy "admin insert" on public.manual for insert to authenticated with check ((select public.is_admin()));
 drop policy if exists "admin update" on public.manual;
-create policy "admin update" on public.manual for update to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy "admin update" on public.manual for update to authenticated using ((select public.is_admin())) with check ((select public.is_admin()));
 drop policy if exists "admin delete" on public.manual;
-create policy "admin delete" on public.manual for delete to authenticated using (public.is_admin());
+create policy "admin delete" on public.manual for delete to authenticated using ((select public.is_admin()));
 
 -- Invite links are effectively passwords: admin and that team only.
 -- No write policies: teams, team_members and rounds change only via RPCs.
 drop policy if exists "team read" on public.teams;
-create policy "team read" on public.teams for select to authenticated using (public.is_admin() or public.in_team(listing_id));
+create policy "team read" on public.teams for select to authenticated using ((select public.is_admin()) or public.in_team(listing_id));
 drop policy if exists "team read" on public.team_members;
-create policy "team read" on public.team_members for select to authenticated using (public.is_admin() or public.in_team(listing_id));
+create policy "team read" on public.team_members for select to authenticated using ((select public.is_admin()) or public.in_team(listing_id));
 drop policy if exists "team read" on public.rounds;
-create policy "team read" on public.rounds for select to authenticated using (public.is_admin() or public.in_team(listing_id));
+create policy "team read" on public.rounds for select to authenticated using ((select public.is_admin()) or public.in_team(listing_id));
 
 -- 6. Team and round RPCs (authenticated; each checks the caller) -------------
 
@@ -297,9 +326,11 @@ begin
   if p_invite_url !~ '^https://[^[:space:]]+$' or length(p_invite_url) > 1000 then
     raise exception 'invite link must be an https:// URL' using errcode = '22023';
   end if;
+  if exists (select 1 from public.teams where listing_id = p_listing_id) then
+    raise exception 'team exists, use update_team' using errcode = '22023';
+  end if;
   insert into public.teams (listing_id, section, invite_url)
-  values (p_listing_id, p_section, p_invite_url)
-  on conflict (listing_id) do update set section = excluded.section, invite_url = excluded.invite_url;
+  values (p_listing_id, p_section, p_invite_url);
   perform public.replace_team_members(p_listing_id, p_emails);
   -- Creating the team is registering: keep any existing status and note.
   insert into public.decisions (id, registered, updated_at) values (p_listing_id, true, now())
@@ -339,13 +370,11 @@ create or replace function public.mark_joined(p_listing_id text, p_joined boolea
 returns void
 language plpgsql security definer set search_path = ''
 as $$
-declare
-  v_email text := lower(auth.jwt() ->> 'email');
 begin
   if not public.in_team(p_listing_id) then raise exception 'forbidden' using errcode = '42501'; end if;
   update public.team_members
   set joined_at = case when coalesce(p_joined, false) then coalesce(joined_at, now()) end
-  where listing_id = p_listing_id and email = v_email;
+  where listing_id = p_listing_id and email in (select public.google_emails());
 end;
 $$;
 
@@ -533,10 +562,10 @@ grant execute on function public.set_status(text, jsonb) to service_role;
 
 -- 8. Members seed -------------------------------------------------------------------
 -- Teammates are added at cutover (lowercase emails), e.g.:
--- insert into public.members (email, name, role) values ('teammate1@gmail.com', 'Name', 'member') on conflict (email) do nothing;
--- insert into public.members (email, name, role) values ('teammate2@gmail.com', 'Name', 'member') on conflict (email) do nothing;
--- insert into public.members (email, name, role) values ('teammate3@gmail.com', 'Name', 'member') on conflict (email) do nothing;
--- insert into public.members (email, name, role) values ('akshit@gmail.com', 'Akshit', 'member') on conflict (email) do nothing;
+-- insert into public.members (email, name, role) values ('teammate1@example.com', 'Name', 'member') on conflict (email) do nothing;
+-- insert into public.members (email, name, role) values ('teammate2@example.com', 'Name', 'member') on conflict (email) do nothing;
+-- insert into public.members (email, name, role) values ('teammate3@example.com', 'Name', 'member') on conflict (email) do nothing;
+-- insert into public.members (email, name, role) values ('akshit@example.com', 'Akshit', 'member') on conflict (email) do nothing;
 
 insert into public.members (email, name, role, active) values ('krishnachagti@gmail.com', 'Krishna', 'admin', true)
 on conflict (email) do update set role = 'admin', active = true;
