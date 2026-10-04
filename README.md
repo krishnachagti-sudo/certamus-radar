@@ -4,14 +4,15 @@ Open case competitions and business events at IITs, IIMs, NITs / IIITs and
 other national institutes, top B-schools and colleges, flagship corporates and
 the international circuit, checked against the Certamus team (four IIM
 Sirmaur BMS students, graduating 2029).
-Board: https://krishnachagti-sudo.github.io/certamus-radar/
+Board: https://conyso.com/certamus/radar/ (team members only, Google sign-in).
 
 ## Pages
 
 - **Board** (`index.html`) — top hosts only (IIT / IIM / NIT, IIIT and
   national institutes / B-school and top college / Corporate /
   International), case competitions and business events only (see "What
-  gets fetched" below). Edit statuses here, add an Unstop link by hand.
+  gets fetched" below). The admin edits statuses here and adds Unstop links
+  by hand.
 - **All case comps** (`all.html`) — every host and tier, including Other and
   startup contests (labelled "Startup contest, not a case"), with a text
   search over title and host.
@@ -67,7 +68,7 @@ The Hackathons side has the same five pages over `hackathons.json`,
   record is one with a team decision, else curated, Unstop, Devfolio, MLH,
   Devpost in that order; it takes the most specific tier of the group.
 - **What needs attention** works per section with its own "seen" list
-  (`certamus-radar.seen.hack`), same rules; in-person-abroad items are left
+  (`certamus-radar.seen.hack.<email>`), same rules; in-person-abroad items are left
   out of both lists unless the abroad toggle is on.
 - **Clashes use one committed set across both sections**: anything
   Entering or Registered in either section clashes with the other, and the
@@ -222,7 +223,7 @@ eligibility blob are read in memory and dropped.
 ## Registered ✓
 
 Independent of Watching / Entering / Skipped: a competition can be marked
-**Registered** with any status, or none. Toggle it from a card (edit mode)
+**Registered** with any status, or none. Toggle it from a card (admin)
 or the Competition page panel. The "committed" set used for clash checking,
 and the calendar is *Entering OR Registered* — so a competition
 you've registered for still shows clashes even if its status is Watching.
@@ -255,7 +256,7 @@ the card — a
 prompt to go check the page by hand, not an automatic date update.
 
 To confirm real dates once you've checked a page: open the competition on
-`c.html`, use **Set dates** (edit mode) to enter the registration close and
+`c.html`, use **Set dates** (admin) to enter the registration close and
 competition end. That writes the `intl_dates` table in Supabase; the
 Competition page shows the dates at once, and the calendar, board and clash
 checks pick them up after the next fetch (the page says so when you save).
@@ -354,57 +355,70 @@ Listing body text is used to classify each competition but is never stored
 or published: it often carries organisers' personal phone numbers and
 emails.
 
-## Setup (once)
+## Sign-in and roles
 
-1. What needs attention: there is no Monday email any more (retired
-   2026-09-30). The top of the Board has a panel with two lists: **New since
-   your last visit** (top-tier case competitions, not Out, not Skipped, not
-   Registered, that this device has not seen; on a device's first visit,
-   anything first seen in the last 7 days) and **Closing within 10 days, not
-   registered yet**. "Mark all seen" is remembered in this browser's
-   localStorage (`certamus-radar.seen`; the Hackathons Board keeps its own in
-   `certamus-radar.seen.hack`), so each device keeps its own list.
-   With the edit link, each row has a Registered checkbox. Nothing to set up.
-2. Pages: Settings → Pages → Build and deployment → **Deploy from a branch**,
-   branch `main`, folder `/ (root)`.
-3. Editing: see below.
+The whole site is login-only. Every page loads the vendored supabase-js
+(`vendor/supabase.js`, pinned; see `vendor/README.md`) and then
+`lib/auth.js`, which runs before anything is read:
 
-## Editing (private edit link)
+- **Not signed in:** a "Sign in with Google" screen. Google returns to the
+  same page (Supabase Auth, PKCE flow); the page then removes only the
+  `code` and `state` parameters from the address, so a deep link such as
+  `c.html?id=…&s=hack` survives sign-in.
+- **Signed in, but the Google account is not an active row in `members`:**
+  "Not on the team list (<email>)" and a Sign out button. Nothing else
+  loads (RLS returns nothing to non-members anyway).
+- **A member:** the page loads; the nav shows their name and **Sign out**.
+  The session lives in this browser's localStorage and refreshes silently;
+  if it ends (signed out elsewhere, refresh failed) the page goes back to
+  the login screen.
+- **github.io:** `krishnachagti-sudo.github.io/certamus-radar/` only shows
+  "Radar now lives at https://conyso.com/certamus/radar/" with a link (the
+  Supabase redirect allow-list has only the conyso.com address).
 
-Only the owner edits, with no login. Everyone can read the team's
-decisions; a secret **editor key** unlocks editing on a device.
+Roles come from `members.role`:
 
-1. Create a Supabase project (free tier). In its SQL Editor, run
-   `supabase/schema.sql` once. It creates the three tables (public read, no
-   direct writes) and the write functions `set_decision`, `add_manual` and
-   `set_intl_dates`, which refuse any call without the right key.
-2. Put the project's URL and anon (public) key in `config.js` and commit.
-   Until both are filled in, the site is read-only with a quiet "Editing not
-   configured yet" banner.
-3. Keep the private link
-   `https://krishnachagti-sudo.github.io/certamus-radar/#key=<your 64-hex key>`
-   somewhere safe (a password manager). Open it once on each device you
-   edit from: the page moves the key into that browser's storage, removes it
-   from the address bar, and checks it with the server. A wrong key shows
-   "That edit link isn't valid". **Stop editing on this device** (footer)
-   forgets it.
+| Role | Can |
+|---|---|
+| `admin` (Krishna) | everything: statuses, Registered, notes, "Set dates", add an Unstop link (direct writes to `decisions`, `intl_dates`, `manual`, allowed by RLS for `is_admin()` only) |
+| `member` | read every page; no editing controls are shown |
 
-The key itself is never in the repo. Only its SHA-256 is, in
-`supabase/schema.sql` (the `private.editor_key` table); the server hashes
-whatever key a page sends and compares.
+A decision row is deleted when its status, Registered and note are all
+empty, and upserted otherwise. A refused or failed write (RLS, network)
+shows "Not saved: …" in the banner and the change stays on screen. The
+pages read `listings`, `archive` and `source_status` by section, plus
+`watch`, `decisions`, `intl_dates` and `manual`; the curated config files
+(`international.json`, `fests.json`, `hack-curated.json`) are still read
+from `./data/`.
 
-To rotate the key (lost device, link shared by mistake):
+Members are managed in the Supabase SQL Editor (no client writes):
 
-```bash
-KEY=$(openssl rand -hex 32); echo "$KEY"             # the new key: keep it
-printf %s "$KEY" | shasum -a 256 | cut -d' ' -f1   # its hash
+```sql
+insert into public.members (email, name, role) values ('name@gmail.com', 'Name', 'member');
+update public.members set active = false where email = 'name@gmail.com';  -- loses access on the next request
 ```
 
-then in the Supabase SQL Editor:
-`update private.editor_key set hash = '<new hash>';`
-(and update the hash in `supabase/schema.sql` so a rebuild matches). Every
-device holding the old key gets "edit link was rejected" on its next save
-and drops back to read-only; open the new link on the devices you keep.
+## Setup (once)
+
+1. What needs attention: the top of the Board has a panel with two lists:
+   **New since your last visit** (top-tier case competitions, not Out, not
+   Skipped, not Registered, that this person has not seen on this device;
+   on a first visit, anything first seen in the last 7 days) and **Closing
+   within 10 days, not registered yet**. "Mark all seen" is remembered in
+   this browser's localStorage per signed-in user
+   (`certamus-radar.seen.<email>`; the Hackathons Board keeps its own in
+   `certamus-radar.seen.hack.<email>`). For the admin each row has a
+   Registered checkbox. Nothing to set up.
+2. Pages: Settings → Pages → Build and deployment → **Deploy from a branch**,
+   branch `main`, folder `/ (root)`, proxied by nginx at
+   `https://conyso.com/certamus/radar/`.
+3. Supabase: run `supabase/v3.sql` in the SQL Editor; enable the Google
+   provider (Auth → Providers) with a Google OAuth client whose redirect is
+   `https://hjgfowgswqafrhlqbuse.supabase.co/auth/v1/callback`; Auth → URL
+   configuration: site URL `https://conyso.com/certamus/radar/`, redirect
+   allow-list `https://conyso.com/certamus/radar/**`. `config.js` holds the
+   project URL and the publishable key (public by design: it reads nothing
+   on its own).
 
 Free-tier note: Supabase pauses a free project after about a week without
 activity. The twice-daily fetch reads and writes the tables, which should

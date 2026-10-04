@@ -196,9 +196,10 @@ test('hackathon rows: fits passes everything; curated rows show facts instead', 
 
 // ---- inbox -------------------------------------------------------------------------
 
-test('inbox: per-section seen keys', () => {
-  assert.equal(seenKey('case'), 'certamus-radar.seen');
-  assert.equal(seenKey('hack'), 'certamus-radar.seen.hack');
+test('inbox: seen keys per section and per signed-in user', () => {
+  assert.equal(seenKey('case', 'krishna@example.com'), 'certamus-radar.seen.krishna@example.com');
+  assert.equal(seenKey('hack', 'Krishna@Example.com'), 'certamus-radar.seen.hack.krishna@example.com');
+  assert.notEqual(seenKey('case', 'a@x.com'), seenKey('case', 'b@x.com'));
 });
 
 test('inbox (hackathons): board tiers, no other formats, abroad only when included', () => {

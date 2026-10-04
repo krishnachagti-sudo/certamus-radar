@@ -1,0 +1,65 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { cleanUrl, isGithubIo, roleCan, radarUrl, RADAR_HOME, hasAuthParams } from '../lib/auth.js';
+
+test('cleanUrl strips only code and state, keeping id, s and the hash', () => {
+  assert.equal(
+    cleanUrl('https://conyso.com/certamus/radar/c.html?id=123&s=hack&code=abc&state=xyz#top'),
+    'https://conyso.com/certamus/radar/c.html?id=123&s=hack#top');
+  assert.equal(cleanUrl('https://conyso.com/certamus/radar/?code=abc'), 'https://conyso.com/certamus/radar/');
+  assert.equal(cleanUrl('https://conyso.com/certamus/radar/all.html?s=hack'), 'https://conyso.com/certamus/radar/all.html?s=hack');
+  assert.equal(cleanUrl('https://conyso.com/certamus/radar/c.html?state=1&id=intl-a'), 'https://conyso.com/certamus/radar/c.html?id=intl-a');
+});
+
+test('cleanUrl takes a Location-like object', () => {
+  assert.equal(cleanUrl({ href: 'https://conyso.com/certamus/radar/index.html?s=hack&code=q' }),
+    'https://conyso.com/certamus/radar/index.html?s=hack');
+});
+
+test('hasAuthParams sees code or state', () => {
+  assert.equal(hasAuthParams('https://x.com/?code=1'), true);
+  assert.equal(hasAuthParams('https://x.com/?id=1&state=2'), true);
+  assert.equal(hasAuthParams('https://x.com/?id=1&s=hack'), false);
+});
+
+test('isGithubIo: the github.io pages host only', () => {
+  assert.equal(isGithubIo('krishnachagti-sudo.github.io'), true);
+  assert.equal(isGithubIo('KRISHNACHAGTI-SUDO.GITHUB.IO'), true);
+  assert.equal(isGithubIo('github.io'), true);
+  assert.equal(isGithubIo('conyso.com'), false);
+  assert.equal(isGithubIo('localhost'), false);
+  assert.equal(isGithubIo('github.io.evil.com'), false);
+  assert.equal(isGithubIo(''), false);
+  assert.equal(isGithubIo(undefined), false);
+});
+
+test('radarUrl keeps the page, id and section on the conyso.com address', () => {
+  assert.equal(RADAR_HOME, 'https://conyso.com/certamus/radar/');
+  assert.equal(radarUrl('https://krishnachagti-sudo.github.io/certamus-radar/c.html?id=5&s=hack'),
+    'https://conyso.com/certamus/radar/c.html?id=5&s=hack');
+  assert.equal(radarUrl('https://krishnachagti-sudo.github.io/certamus-radar/'), 'https://conyso.com/certamus/radar/');
+  assert.equal(radarUrl('https://krishnachagti-sudo.github.io/certamus-radar/calendar.html'), 'https://conyso.com/certamus/radar/calendar.html');
+  // Only the radar's own pages are carried over.
+  assert.equal(radarUrl('https://krishnachagti-sudo.github.io/certamus-radar/evil.html?x=1'), 'https://conyso.com/certamus/radar/');
+  assert.equal(radarUrl('not a url'), 'https://conyso.com/certamus/radar/');
+});
+
+test('roleCan: admin edits; members read and mark their own progress', () => {
+  const admin = { email: 'a@x.com', name: 'A', role: 'admin' };
+  const member = { email: 'm@x.com', name: 'M', role: 'member' };
+  for (const action of ['read', 'edit', 'manage_teams', 'mark_joined', 'round_done']) assert.equal(roleCan(admin, action), true, action);
+  assert.equal(roleCan(member, 'read'), true);
+  assert.equal(roleCan(member, 'mark_joined'), true);
+  assert.equal(roleCan(member, 'round_done'), true);
+  assert.equal(roleCan(member, 'edit'), false);
+  assert.equal(roleCan(member, 'manage_teams'), false);
+});
+
+test('roleCan: nobody, inactive, unknown roles and unknown actions get nothing', () => {
+  assert.equal(roleCan(null, 'read'), false);
+  assert.equal(roleCan(undefined, 'edit'), false);
+  assert.equal(roleCan({ role: 'admin', active: false }, 'edit'), false);
+  assert.equal(roleCan({ role: 'owner' }, 'read'), false);
+  assert.equal(roleCan({ role: 'admin' }, 'drop_tables'), false);
+  assert.equal(roleCan({ role: 'admin' }, '__proto__'), false);
+});

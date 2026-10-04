@@ -2,18 +2,19 @@
 // (mock C). Read-only. Shows competitions that are Watching, Entering or
 // Registered: ⏰ registration closes, 🏁 competition ends, clash days tinted,
 // and dashed "expected" markers for curated international items (§9.10).
-// Decisions load like the Board: live from the store (public reads).
+// Listings, status and decisions load from Supabase after requireMember().
 // Section (?s=hack): this section's Watching items, plus the Entering and
 // Registered items of BOTH sections (one committed set, one clash rule);
 // the other section's items carry a small section marker.
 import { todayIST } from '../dates.js';
-import { committedSet, expectedText, monthsText, pagesJson, sameId, recordSection } from '../lib/data.js';
-import { initEditor } from '../lib/editor.js';
+import { committedSet, expectedText, monthsText, sameId, recordSection } from '../lib/data.js';
+import { requireMember } from '../lib/auth.js';
+import { readListings, readStatus, readDecisions } from '../lib/store.js';
 import { esc, recordHref } from '../lib/card.js';
 import { SECTIONS, currentSection, otherSection, pageHref, sectionOf } from '../lib/section.js';
 import { captureFocus } from '../lib/focus.js';
 import { mountNav } from '../lib/nav.js';
-import { loadDecisions, bannersHtml, istTime } from '../lib/session.js';
+import { guardLoad, bannersHtml, istTime } from '../lib/session.js';
 import {
   monthCells, addMonths, monthTitle, calendarEvents, eventsByDay, clashDays, agendaGroups,
   expectedItems, expectedMarkers, onCalendar, toneOf, statusLabel,
@@ -44,15 +45,13 @@ const startMonth = () => {
 const sec = sectionOf(currentSection());
 const other = sectionOf(otherSection(sec.key));
 
-const state = { comps: [], own: [], otherItems: [], status: {}, decisions: {}, error: null, notice: null, view: storedView(), ...startMonth() };
+const state = { comps: [], own: [], otherItems: [], status: null, decisions: {}, error: null, view: storedView(), ...startMonth() };
 
 async function load() {
-  state.error = null;
-  [state.own, state.status, state.otherItems] = await Promise.all([
-    pagesJson(sec.files.items, []), pagesJson(sec.files.status, {}), pagesJson(other.files.items, [])]);
-  if (!Array.isArray(state.own)) state.own = [];
-  if (!Array.isArray(state.otherItems)) state.otherItems = [];
-  await loadDecisions(state);
+  await guardLoad(state, async () => {
+    [state.own, state.status, state.otherItems, state.decisions] = await Promise.all([
+      readListings(sec.key), readStatus(sec.key), readListings(other.key), readDecisions()]);
+  });
   // The other section contributes only what the team is entering or registered for.
   state.comps = [...state.own, ...committedSet(state.otherItems, state.decisions)];
   render();
@@ -190,7 +189,7 @@ function render() {
         <button type="button" id="today">Today</button>
         <button type="button" id="next" aria-label="Next month">›</button>
       </div>` : '';
-  document.getElementById('app').innerHTML = `<div id="banners">${bannersHtml(state.status, state.error, state.notice)}</div>
+  document.getElementById('app').innerHTML = `<div id="banners">${bannersHtml(state.status, state.error)}</div>
     <div class="cal">
       <div class="cal-bar">
         <h1>${grid ? esc(monthTitle(state.year, state.month)) : 'Coming up'}</h1>
@@ -217,5 +216,8 @@ document.addEventListener('click', e => {
   render();
 });
 
-mountNav('calendar');
-initEditor().then(notice => { state.notice = notice; return load(); });
+requireMember().then(who => {
+  if (!who) return null;
+  mountNav('calendar', who.member);
+  return load();
+});

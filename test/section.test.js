@@ -27,13 +27,9 @@ test('otherSection flips', () => {
   assert.equal(otherSection('hack'), 'case');
 });
 
-test('data files per section', () => {
-  assert.deepEqual(SECTIONS.case.files, {
-    items: 'competitions.json', status: 'status.json', archive: 'archive.json', curated: ['international.json', 'fests.json'],
-  });
-  assert.deepEqual(SECTIONS.hack.files, {
-    items: 'hackathons.json', status: 'hack-status.json', archive: 'hack-archive.json', curated: ['hack-curated.json'],
-  });
+test('curated config files per section (listings, status and archive are Supabase rows)', () => {
+  assert.deepEqual(SECTIONS.case.files, { curated: ['international.json', 'fests.json'] });
+  assert.deepEqual(SECTIONS.hack.files, { curated: ['hack-curated.json'] });
 });
 
 test('hackathon tiers: board default and labels', () => {
@@ -76,6 +72,12 @@ test('nav: the section switch marks the current section and keeps the page', () 
   assert.match(caseHtml, /<a href="index.html" aria-current="true">Case comps<\/a>/);
   assert.match(caseHtml, /<a href="index.html\?s=hack">Hackathons<\/a>/);
   assert.match(caseHtml, /<a href="all.html">All case comps<\/a>/);
+});
+
+test('nav: the signed-in member and Sign out, escaped', () => {
+  const html = navHtml('board', 'case', { email: 'k@x.com', name: 'Krishna <K>', role: 'admin' });
+  assert.match(html, /<span class="who"><span class="who-name">Krishna &lt;K&gt;<\/span><button type="button" class="ghost" id="signout">Sign out<\/button><\/span>/);
+  assert.doesNotMatch(navHtml('board', 'case'), /signout/);
 });
 
 test('nav on the competition page: the switch goes to the other Board', () => {

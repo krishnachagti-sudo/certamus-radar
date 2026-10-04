@@ -2,7 +2,9 @@
 // Left: chips, title, eligibility rule by rule (or the curated facts), dates,
 // team note. Right, sticky: countdown, team/format/fee/prizes, status, the
 // Registered tick, clash warnings, the watcher flag and the outbound link;
-// in edit mode a curated record also gets "Set dates". Ids are strings.
+// for the admin a curated record also gets "Set dates". Ids are strings.
+// Listings, archive, watch flags, status and decisions come from Supabase
+// after requireMember(); the curated config still comes from ./data/*.json.
 // Dates confirmed with "Set dates" show here at once (an overlay from the
 // store); the calendar and board get them from the next fetch.
 // Hackathons (?s=hack, or an id starting df-/mlh-/dp-/hk-): the hackathon
@@ -14,9 +16,9 @@ import {
   needsFullRender, pagesJson, recordSection,
 } from '../lib/data.js';
 import {
-  KeyRejected, KEY_REJECTED, clearKey, createDecisionSaver, editable, readIntlDates, setIntlDates,
+  createDecisionSaver, editable, readIntlDates, setIntlDates, readListings, readArchive, readStatus, readWatch, readDecisions,
 } from '../lib/store.js';
-import { initEditor } from '../lib/editor.js';
+import { requireMember } from '../lib/auth.js';
 import {
   esc, safeHref, teamText, linkLabel, tierChipHtml, verdictChipHtml, formatChipHtml, startupChipHtml,
   kindChipHtml, hackTeamText, placeText, KIND_LABEL,
@@ -24,7 +26,7 @@ import {
 import { currentSection, otherSection, pageHref, sectionOf } from '../lib/section.js';
 import { captureFocus } from '../lib/focus.js';
 import { mountNav } from '../lib/nav.js';
-import { loadDecisions, bannersHtml, editFooterHtml } from '../lib/session.js';
+import { guardLoad, bannersHtml, footerHtml } from '../lib/session.js';
 
 const ID = new URLSearchParams(location.search).get('id') ?? '';
 const SITE = 'Certamus Radar';
@@ -32,7 +34,7 @@ const sec = sectionOf(currentSection());
 const other = sectionOf(otherSection(sec.key));
 
 const state = {
-  comps: [], otherItems: [], archive: [], intl: [], watch: {}, status: {}, decisions: {}, intlDates: {}, error: null, notice: null, datesMsg: '',
+  comps: [], otherItems: [], archive: [], intl: [], watch: {}, status: null, decisions: {}, intlDates: {}, error: null, datesMsg: '',
 };
 
 const ENTRY = { open: 'Open entry', invite: 'By invitation', qualifier: 'Qualifier round', institute: 'Through your institute', unclear: 'Entry route unclear' };
@@ -45,27 +47,20 @@ const fmtDate = d => (d
   : null);
 const dateOr = (d, missing) => esc(fmtDate(d) || missing);
 
-async function keyRejected() {
-  clearKey();
-  saver.drop();
-  await load();
-  state.error = KEY_REJECTED;
-}
-
 async function load() {
-  state.error = null;
-  let curated;
-  [state.comps, state.archive, curated, state.watch, state.status, state.otherItems] = await Promise.all([
-    pagesJson(sec.files.items, []), pagesJson(sec.files.archive, []), Promise.all(sec.files.curated.map(f => pagesJson(f, []))),
-    pagesJson('watch.json', {}), pagesJson(sec.files.status, {}), pagesJson(other.files.items, [])]);
-  state.intl = curated.flatMap(list => (Array.isArray(list) ? list : []));
-  if (!Array.isArray(state.otherItems)) state.otherItems = [];
   // Confirmed dates exist for the case-comp curated lists only (the store's
   // intl_dates table); curated hackathons take dates from the next fetch.
   const withDatesStore = sec.key === 'case' && /^(intl|fest)-/.test(String(ID));
-  await loadDecisions(state, {
-    overlay: d => saver.overlay(d),
-    readMore: async () => { if (withDatesStore) state.intlDates = { ...await readIntlDates(), ...localDates }; },
+  await guardLoad(state, async () => {
+    const [comps, archive, curated, watch, status, otherItems, decisions, intlDates] = await Promise.all([
+      readListings(sec.key), readArchive(sec.key), Promise.all(sec.files.curated.map(f => pagesJson(f, []))),
+      readWatch(), readStatus(sec.key), readListings(other.key), readDecisions(),
+      withDatesStore ? readIntlDates() : {},
+    ]);
+    Object.assign(state, { comps, archive, watch, status, otherItems });
+    state.intl = curated.flatMap(list => (Array.isArray(list) ? list : []));
+    state.decisions = saver.overlay(decisions);
+    state.intlDates = { ...intlDates, ...localDates };
   });
   render();
 }
@@ -274,7 +269,7 @@ function render() {
   else { body = notFoundHtml(); document.title = `Not found · ${SITE}`; }
   document.getElementById('app').innerHTML = `<div id="banners">${banners()}</div>
     <div class="comp">${body}</div>
-    ${c ? editFooterHtml(editable(), state.status.last_ok) : ''}`;
+    ${c ? footerHtml(state.status?.last_ok) : ''}`;
   focus.restore();
   if (typing) {
     const t = document.querySelector('textarea[data-note]');
@@ -282,7 +277,7 @@ function render() {
   }
 }
 
-const banners = () => bannersHtml(state.status, state.error, state.notice);
+const banners = () => bannersHtml(state.status, state.error);
 function renderBanners() {
   const el = document.getElementById('banners');
   if (el) el.innerHTML = banners();
@@ -302,7 +297,6 @@ const saver = createDecisionSaver(state, {
       if (t && document.activeElement !== t) t.value = now.note;
     }
   },
-  async keyRejected() { await keyRejected(); render(); },
   failed(err) {
     state.error = `Not saved: ${err.message}`; // the change stays on screen
     renderBanners();
@@ -312,9 +306,7 @@ const saver = createDecisionSaver(state, {
 document.addEventListener('click', async e => {
   const b = e.target.closest('button');
   if (!b) return;
-  if (b.id === 'lock') {
-    clearKey(); saver.drop(); state.notice = null; await load();
-  } else if ('set' in b.dataset && editable()) {
+  if ('set' in b.dataset && editable()) {
     await saver.save(b.dataset.id, d => ({ ...d, status: b.dataset.set || undefined }));
   }
 });
@@ -354,13 +346,15 @@ document.addEventListener('submit', async e => {
     state.datesMsg = !regn && !end ? 'Cleared; the calendar updates after the next fetch' : 'Saved; the calendar updates after the next fetch';
     render();
   } catch (err) {
-    if (err instanceof KeyRejected) { await keyRejected(); render(); return; }
-    msg.textContent = err.message;
+    msg.textContent = `Not saved: ${err.message}`;
   } finally {
     const b = document.getElementById('dates-btn');
     if (b) b.disabled = false;
   }
 });
 
-mountNav(null);
-initEditor().then(notice => { state.notice = notice; return load(); });
+requireMember().then(who => {
+  if (!who) return null;
+  mountNav(null, who.member);
+  return load();
+});

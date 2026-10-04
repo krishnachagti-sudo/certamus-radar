@@ -8,8 +8,9 @@ import { esc, compHref } from '../lib/card.js';
 import { hostRows, archiveList } from '../lib/hosts.js';
 import { captureFocus } from '../lib/focus.js';
 import { mountNav } from '../lib/nav.js';
-import { bannersHtml, istTime } from '../lib/session.js';
-import { initEditor } from '../lib/editor.js';
+import { guardLoad, bannersHtml, istTime } from '../lib/session.js';
+import { requireMember } from '../lib/auth.js';
+import { readListings, readArchive, readStatus } from '../lib/store.js';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const sec = sectionOf(currentSection());
@@ -20,22 +21,20 @@ const ARCHIVE_STARTED_TEXT = sec.key === 'hack' ? '30 Sep 2026' : '29 Sep 2026';
 const ARCHIVE_HISTORY_DAYS = 30;
 
 const state = {
-  comps: [], archive: [], curated: [], status: {}, error: null, notice: null,
+  comps: [], archive: [], curated: [], status: null, error: null,
   hostTiers: new Set(Object.keys(TIERS)), hostQuery: '', archiveQuery: '',
 };
 
 async function load() {
-  state.error = null;
-  let curated;
-  [state.comps, state.archive, curated, state.status] = await Promise.all([
-    pagesJson(sec.files.items, []),
-    pagesJson(sec.files.archive, []),
-    Promise.all(sec.files.curated.map(f => pagesJson(f, []))),
-    pagesJson(sec.files.status, {}),
-  ]);
-  if (!Array.isArray(state.comps)) state.comps = [];
-  if (!Array.isArray(state.archive)) state.archive = [];
-  state.curated = curated.flatMap(list => (Array.isArray(list) ? list : []));
+  await guardLoad(state, async () => {
+    // Listings, archive and status from Supabase; the curated lists are
+    // public config in ./data/.
+    const [comps, archive, curated, status] = await Promise.all([
+      readListings(sec.key), readArchive(sec.key), Promise.all(sec.files.curated.map(f => pagesJson(f, []))), readStatus(sec.key),
+    ]);
+    Object.assign(state, { comps, archive, status });
+    state.curated = curated.flatMap(list => (Array.isArray(list) ? list : []));
+  });
   render();
 }
 
@@ -104,7 +103,7 @@ function archiveSectionHtml(today) {
 
 function render() {
   const focus = captureFocus();
-  document.getElementById('app').innerHTML = `<div id="banners">${bannersHtml(state.status, state.error, state.notice)}</div>
+  document.getElementById('app').innerHTML = `<div id="banners">${bannersHtml(state.status, state.error)}</div>
     ${hostsSectionHtml()}
     ${archiveSectionHtml(todayIST())}
     <footer><span>Read-only.</span><span>Updated ${esc(istTime(state.status?.last_ok))}</span></footer>`;
@@ -124,5 +123,8 @@ document.addEventListener('input', e => {
   else if (e.target.id === 'archive-q') { state.archiveQuery = e.target.value; render(); }
 });
 
-mountNav('hosts');
-initEditor().then(notice => { state.notice = notice; return load(); });
+requireMember().then(who => {
+  if (!who) return null;
+  mountNav('hosts', who.member);
+  return load();
+});
