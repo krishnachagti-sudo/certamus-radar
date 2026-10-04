@@ -2,7 +2,7 @@ name: fetch
 on:
   schedule: [{ cron: '30 0 * * *' }, { cron: '30 12 * * *' }]   # 06:00 and 18:00 IST
   workflow_dispatch:
-permissions: { contents: write }
+permissions: { contents: read }
 concurrency: { group: data-writes, cancel-in-progress: false }
 jobs:
   fetch:
@@ -11,31 +11,21 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      # Two sections, one job, one commit. Each run records its own result in
-      # its own status file (status.json / hack-status.json), which the board
-      # shows, so one section failing never blocks the other's data.
+      # Two sections, one job. Each run writes its own section to Supabase
+      # (listings, archive and source_status, through sync_section) with the
+      # service key, or on failure only its status (set_status), which the
+      # board shows, so one section failing never blocks the other's data.
       - id: run
+        env: { SUPABASE_SERVICE_KEY: '${{ secrets.SUPABASE_SERVICE_KEY }}' }
         run: |
           if node fetch/run.js; then echo "ok=1" >> "$GITHUB_OUTPUT"; else echo "ok=0" >> "$GITHUB_OUTPUT"; fi
       - id: hack
+        env: { SUPABASE_SERVICE_KEY: '${{ secrets.SUPABASE_SERVICE_KEY }}' }
         run: |
           if node fetch/hack-run.js; then echo "ok=1" >> "$GITHUB_OUTPUT"; else echo "ok=0" >> "$GITHUB_OUTPUT"; fi
-      - name: Commit data (also on failure, so the error reaches the board)
-        if: ${{ !cancelled() }}
-        run: |
-          git config user.name "certamus-radar-bot"
-          git config user.email "certamus-radar-bot@users.noreply.github.com"
-          git add data/competitions.json data/status.json data/archive.json
-          for f in data/hackathons.json data/hack-status.json data/hack-archive.json; do
-            if [ -f "$f" ]; then git add "$f"; fi
-          done
-          git diff --cached --quiet && exit 0
-          git commit -m "data: fetch $(date -u +%F)"
-          for i in 1 2 3; do git pull --rebase -q || { git rebase --abort; false; } && git push -q && exit 0; sleep 5; done
-          exit 1
       # Green while at least one section succeeded: a single section's failure
-      # is already on the board through its status file. Red only when both
-      # failed, which points at the runner or the network, not a source.
+      # is already on the board through its status. Red only when both
+      # failed, which points at the runner, the network or Supabase, not a source.
       - name: Fail the job if both sections failed
         if: steps.run.outputs.ok != '1' && steps.hack.outputs.ok != '1'
         run: exit 1

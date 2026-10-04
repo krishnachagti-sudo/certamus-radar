@@ -90,7 +90,7 @@ The Hackathons side has the same five pages over `hackathons.json`,
 Unstop covers about 75–80% of what the team would enter; the other four
 sources fill the gaps it can't see. Every non-Unstop record carries a
 `source` and its own tier and verdict (classify is not run on it), and a
-failure in any of them is a warning in `status.json`, never a failed run:
+failure in any of them is a warning in the run status, never a failed run:
 that source's previous records pass through unchanged.
 
 | Source | Where | Tier | What it adds |
@@ -167,21 +167,21 @@ The Board's "Quizzes and other formats" toggle shows the rest.
 | `corporate` | Corporate | `data/corporates.json` |
 | `other` | Other | everything else |
 
-The Board, the "What needs attention" panel and the digest cover every
+The Board and the "What needs attention" panel cover every
 tier except Other.
 
 ## Hackathons data
 
-The Hackathons section (see "Sections" above) reads `data/hackathons.json`,
-`data/hack-status.json` and `data/hack-archive.json`, written only by
-`fetch/hack-run.js` in the same `fetch.yml` job as the case comps, with the
-same merge, 60-day archive, Supabase-decision and privacy rules (shared
-code in `fetch/pipeline.js`). Each run records its own result in its own
-status file; the job goes red only when both sections fail. Every source is
-optional: a failing one is a warning in `hack-status.json` (which also
+The Hackathons section (see "Sections" above) is the `hack` section of the
+Supabase `listings`, `archive` and `source_status` tables (see "Data"
+below), written only by `fetch/hack-run.js` in the same `fetch.yml` job as
+the case comps, with the same merge, 60-day archive, decision and privacy
+rules (shared code in `fetch/pipeline.js`). Each section records its own
+status; the job goes red only when both sections fail. Every source is
+optional: a failing one is a warning in the hack status (which also
 carries a per-source `sources` count) and its previous records pass
-through. The run fails, leaving the files alone, only when all four fetched
-sources fail or `hackathons.json` is unreadable.
+through. The run fails, writing only its status, when all four fetched
+sources fail or the live hackathon rows cannot be read.
 
 | Source | id | Tier | Notes |
 |---|---|---|---|
@@ -224,7 +224,7 @@ eligibility blob are read in memory and dropped.
 Independent of Watching / Entering / Skipped: a competition can be marked
 **Registered** with any status, or none. Toggle it from a card (edit mode)
 or the Competition page panel. The "committed" set used for clash checking,
-the digest and the calendar is *Entering OR Registered* — so a competition
+and the calendar is *Entering OR Registered* — so a competition
 you've registered for still shows clashes even if its status is Watching.
 The Board's status filter has a separate "Registered only" toggle.
 
@@ -251,7 +251,7 @@ two sources:
 A weekly Action (`fetch/watch.js`, Mondays 05:00 IST) fetches each curated
 competition's official watch page (international and fest watchlist alike), strips it down to text and hashes it. A
 changed hash shows **"Official page changed on \<date>, new edition?"** on
-the card (and in the digest, when it is built by hand) — a
+the card — a
 prompt to go check the page by hand, not an automatic date update.
 
 To confirm real dates once you've checked a page: open the competition on
@@ -262,47 +262,88 @@ checks pick them up after the next fetch (the page says so when you save).
 
 ## Archive
 
-Closed competitions are appended to `data/archive.json` when `fetch/run.js`
-prunes them out of the live file (60 days after they close, or 60 days
-after a committed team ends up entering/registering). Curated international
-entries never get pruned as *hosts* — only a specific edition's confirmed
-dates close, so it archives by `id@regn_close`, one entry per edition. The
-Hosts & archive page lists it, newest first, searchable; while it holds
-under 30 days of history it says so plainly rather than looking empty by
-mistake.
+Closed competitions are archived (the Supabase `archive` table, per
+section) when a fetch prunes them out of the live rows (60 days after they
+close, or 60 days after a committed team ends up entering/registering).
+Curated international entries never get pruned as *hosts*: only a specific
+edition's confirmed dates close, so it archives by `id@regn_close`, one
+entry per edition. The Hosts & archive page lists it, newest first,
+searchable; while it holds under 30 days of history it says so plainly
+rather than looking empty by mistake.
 
-- **Daily 06:00 IST** `fetch` workflow → `data/competitions.json`,
-  `data/status.json`, `data/archive.json`.
-- **Monday 05:00 IST** `watch` workflow → `data/watch.json`.
-- **Manual only** `digest` workflow → `data/digest-latest.json`,
-  `data/digest-state.json` (the Monday schedule was retired on 2026-09-30).
-- **Board / Competition** edits (Watching / Entering / Skipped, Registered,
-  notes, add an Unstop link, Set dates) write the Supabase tables
-  `decisions`, `manual` and `intl_dates` (see "Editing" below).
-  The board has a "Quizzes and other formats" toggle: records carry
-  `format_kind` and `is_case`, and `other` formats (quizzes, article calls,
-  coding challenges, robotics...) are hidden by
-  default and never appear in the digest.
+The board has a "Quizzes and other formats" toggle: records carry
+`format_kind` and `is_case`, and `other` formats (quizzes, article calls,
+coding challenges, robotics...) are hidden by default.
 
-Each piece of data has exactly one writer, so the jobs and the board never
-conflict:
+## Data (Supabase)
 
-| Data | Written by |
+All generated data lives in Supabase (`supabase/v3.sql`); the repo holds
+only code and the hand-edited config files in `data/` (`team.json`,
+`hack-team.json`, `national.json`, `bschools.json`, `corporates.json`,
+`hack-corporates.json`, `international.json`, `fests.json`,
+`hack-curated.json`). Nothing commits data to the repo any more, and the
+email digest is gone (retired 2026-09-30; the Board's "What needs
+attention" panel replaced it).
+
+- **Daily 06:00 and 18:00 IST** `fetch` workflow: `fetch/run.js` (section
+  `case`) and `fetch/hack-run.js` (section `hack`).
+- **Monday 05:00 IST** `watch` workflow: `fetch/watch.js`.
+
+| Table | Written by |
 |---|---|
-| `data/competitions.json`, `data/status.json` | `fetch/run.js` |
-| `data/archive.json` | `fetch/run.js` |
-| `data/watch.json` | `fetch/watch.js` |
-| Supabase `decisions` (status, Registered, note) | the board, All case comps and Competition pages (edit link) |
-| Supabase `manual` (hand-added Unstop links) | the board's Add form (edit link) |
-| Supabase `intl_dates` (confirmed international dates) | the Competition page's "Set dates" (edit link) |
-| `data/international.json`, `data/fests.json` | hand-edited only; nothing writes them |
-| `data/digest-state.json` | the digest job |
+| `listings` (one row per competition, keyed `(section, id)`; the record is in `data`) | the fetch jobs, through `sync_section` |
+| `archive` (keyed `(section, archive_key)`) | the fetch jobs, through `sync_section` |
+| `source_status` (one row per section: last run, last ok, error, warnings, sources) | the fetch jobs (`sync_section` on success, `set_status` on failure) |
+| `watch` (official-page hashes) | `fetch/watch.js` (upsert) |
+| `decisions`, `manual`, `intl_dates` | the board (admin) |
 
-The fetch and digest jobs only read the Supabase tables. If Supabase is
-not configured or a read fails, they carry on with a warning: decisions and
-links fall back to the old `data/decisions.json` / `data/manual.json` if
-present (they are retired, so normally none), curated international records
-keep yesterday's dates, and the digest puts a warning line at the top.
+How a fetch run writes (`fetch/db.js`, `fetch/pipeline.js`):
+
+1. Read the section's live rows (`listings`). If that read fails the run
+   stops: it is never treated as empty, and only the error status is
+   written.
+2. Read `decisions`, `manual` and `intl_dates`. A failed read is a warning:
+   decisions are then empty **and nothing is pruned** (an entered record
+   would otherwise look expired), hand-added links are skipped, curated
+   records keep yesterday's dates.
+3. Fetch every source. A failing source passes its previous records
+   through unchanged (case: Opportunity Desk, InsideIIM, the curated lists;
+   hackathons: every source, and the run fails only if all four fetched
+   sources fail).
+4. Merge, then **one** `sync_section(section, rows, archive, status)` call,
+   one transaction: insert the pruned records' archive entries, upsert the
+   rows, delete that section's rows not in `rows`, record the status. It
+   refuses an empty `rows` while the section has listings.
+5. On any failure: read the previous status and call `set_status` with the
+   error, carrying the previous `last_ok` and `sources` (or `last_ok: null`
+   if the previous status is unreadable), so the banner says how old the
+   data is.
+
+The watcher reads the previous hashes from `watch` (a failed read writes
+nothing) and upserts the new ones.
+
+**Service key.** The jobs use the repository secret
+`SUPABASE_SERVICE_KEY` (Settings → Secrets and variables → Actions), the
+project's secret key (`sb_secret_...`, from Project Settings → API Keys).
+It is sent in the `apikey` header only; a legacy JWT `service_role` key is
+also sent as `Authorization: Bearer`. The project URL comes from
+`SUPABASE_URL` if set, else `config.js`. Without the secret every job fails
+without writing.
+
+**Seeding (once, at cutover).** `supabase/seed/` holds the last committed
+data files (`competitions.json`, `hackathons.json`, the two status files,
+the two archives and `watch.json`, exported from `main` on 2026-10-05).
+After `supabase/v3.sql` is applied and before the first fetch runs against
+it:
+
+```bash
+SUPABASE_SERVICE_KEY=sb_secret_... node supabase/seed-from-json.mjs --dry-run
+SUPABASE_SERVICE_KEY=sb_secret_... node supabase/seed-from-json.mjs
+```
+
+It pushes each section through `sync_section` (so `first_seen`,
+`closed_on` and the archive carry over) and upserts the watch rows. It
+refuses a section that already has listings unless given `--force`.
 
 Listing body text is used to classify each competition but is never stored
 or published: it often carries organisers' personal phone numbers and
@@ -319,8 +360,6 @@ emails.
    localStorage (`certamus-radar.seen`; the Hackathons Board keeps its own in
    `certamus-radar.seen.hack`), so each device keeps its own list.
    With the edit link, each row has a Registered checkbox. Nothing to set up.
-   The digest can still be built by hand: `node digest/email.js` prints it,
-   and the `digest` workflow can be run manually from the Actions tab.
 2. Pages: Settings → Pages → Build and deployment → **Deploy from a branch**,
    branch `main`, folder `/ (root)`.
 3. Editing: see below.
@@ -336,7 +375,7 @@ decisions; a secret **editor key** unlocks editing on a device.
    `set_intl_dates`, which refuse any call without the right key.
 2. Put the project's URL and anon (public) key in `config.js` and commit.
    Until both are filled in, the site is read-only with a quiet "Editing not
-   configured yet" banner, and the jobs fall back as described above.
+   configured yet" banner.
 3. Keep the private link
    `https://krishnachagti-sudo.github.io/certamus-radar/#key=<your 64-hex key>`
    somewhere safe (a password manager). Open it once on each device you
@@ -363,11 +402,11 @@ device holding the old key gets "edit link was rejected" on its next save
 and drops back to read-only; open the new link on the devices you keep.
 
 Free-tier note: Supabase pauses a free project after about a week without
-activity. The daily fetch reads the tables, which should keep it awake, but
-if the board shows "Could not load team data" or the fetch status warns
-about Supabase, open the Supabase dashboard and restore the project. While
-it is paused the site still works read-only and the jobs carry on with
-their fallbacks.
+activity. The twice-daily fetch reads and writes the tables, which should
+keep it awake, but if the `fetch` workflow goes red or the board cannot
+load, open the Supabase dashboard and restore the project. While it is
+paused the jobs fail without writing anything; the next run after the
+restore catches up.
 
 ## Tuning
 
@@ -382,13 +421,13 @@ hand-edited. Edit, commit, and the next fetch applies them. `fetch/unstop.js`'s
 
 ```bash
 npm test            # unit tests
-npm run fetch       # live fetch into data/
-npm run digest      # print the digest without sending
-node fetch/watch.js # live watcher run (checks every curated official page)
+SUPABASE_SERVICE_KEY=... npm run fetch       # live case-comp fetch, writes Supabase
+SUPABASE_SERVICE_KEY=... node fetch/hack-run.js
+SUPABASE_SERVICE_KEY=... node fetch/watch.js # checks every curated official page
 ```
 
-If the digest's final push fails, `data/digest-state.json` isn't updated and
-next week's digest may repeat items.
+Tests never touch the network: `fetch/db.js` takes an injected `fetch`, and
+the job tests use an in-memory stand-in for it.
 
 Unstop's API is undocumented. If the board shows "Data stale", open the
 failed `fetch` run: a shape change means `fetch/unstop.js` needs updating.
