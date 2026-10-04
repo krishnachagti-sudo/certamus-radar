@@ -5,8 +5,6 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "test": "node --test",
-    "fetch": "node fetch/run.js",
-    "digest": "node digest/email.js"
-  },
-  "dependencies": { "nodemailer": "^6.9.14" }
+    "fetch": "node fetch/run.js"
+  }
 }
