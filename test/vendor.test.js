@@ -31,5 +31,11 @@ test('every page loads vendor/supabase.js as a classic script before its module'
 test('the CSP is identical on every page and keeps script-src self', () => {
   const csps = pages.map(f => /http-equiv="Content-Security-Policy" content="([^"]+)"/.exec(read(f).toString())?.[1]);
   assert.equal(new Set(csps).size, 1);
-  assert.equal(csps[0], "default-src 'self'; script-src 'self'; connect-src 'self' https://*.supabase.co; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:");
+  assert.equal(csps[0], "default-src 'self'; script-src 'self'; connect-src 'self' https://hjgfowgswqafrhlqbuse.supabase.co; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'");
+});
+
+test('the CSP connect-src names exactly the project in config.js', async () => {
+  const { SUPABASE_URL } = await import('../config.js');
+  const csp = /http-equiv="Content-Security-Policy" content="([^"]+)"/.exec(read('index.html').toString())[1];
+  assert.equal(/connect-src ([^;]+)/.exec(csp)[1], `'self' ${new URL(SUPABASE_URL).origin}`);
 });

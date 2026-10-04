@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanUrl, isGithubIo, roleCan, radarUrl, RADAR_HOME, hasAuthParams } from '../lib/auth.js';
+import { cleanUrl, isGithubIo, roleCan, radarUrl, RADAR_HOME, hasAuthParams, authError } from '../lib/auth.js';
 
 test('cleanUrl strips only code and state, keeping id, s and the hash', () => {
   assert.equal(
@@ -62,4 +62,24 @@ test('roleCan: nobody, inactive, unknown roles and unknown actions get nothing',
   assert.equal(roleCan({ role: 'owner' }, 'read'), false);
   assert.equal(roleCan({ role: 'admin' }, 'drop_tables'), false);
   assert.equal(roleCan({ role: 'admin' }, '__proto__'), false);
+});
+
+test('cleanUrl also strips a failed sign-in\'s error, error_code and error_description', () => {
+  assert.equal(
+    cleanUrl('https://conyso.com/certamus/radar/c.html?id=7&error=access_denied&error_code=403&error_description=Nope#top'),
+    'https://conyso.com/certamus/radar/c.html?id=7#top');
+  assert.equal(
+    cleanUrl('https://conyso.com/certamus/radar/?s=hack#error=server_error&error_code=500&error_description=Bad'),
+    'https://conyso.com/certamus/radar/?s=hack');
+  assert.equal(hasAuthParams('https://x.com/?error=access_denied'), true);
+  assert.equal(hasAuthParams('https://x.com/#error_description=x'), true);
+  assert.equal(hasAuthParams('https://x.com/#top'), false);
+});
+
+test('authError reads the error description from the query or the hash', () => {
+  assert.equal(authError('https://x.com/?error=access_denied&error_description=Access+denied+by+user'), 'Access denied by user');
+  assert.equal(authError('https://x.com/#error=server_error&error_code=500&error_description=Database%20error'), 'Database error');
+  assert.equal(authError('https://x.com/?error=access_denied'), 'access_denied');
+  assert.equal(authError('https://x.com/?id=1#top'), null);
+  assert.equal(authError('not a url'), null);
 });
