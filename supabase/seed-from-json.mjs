@@ -1,5 +1,6 @@
 // One-off cutover seeding (Phase 5): pushes the last committed data files,
-// exported to supabase/seed/ from origin/main, into Supabase through the same
+// exported locally to supabase/seed/ (git-ignored: never commit it) from
+// origin/main, into Supabase through the same
 // sync_section path the fetchers use, so first_seen, closed_on and the
 // archive history carry over. Run ONCE, after supabase/v3.sql is applied and
 // BEFORE the first live fetch:

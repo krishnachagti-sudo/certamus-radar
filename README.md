@@ -333,15 +333,18 @@ also sent as `Authorization: Bearer`. The project URL comes from
 `SUPABASE_URL` if set, else `config.js`. Without the secret every job fails
 without writing.
 
-**Seeding (once, at cutover).** `supabase/seed/` holds the last committed
-data files (`competitions.json`, `hackathons.json`, the two status files,
-the two archives and `watch.json`, exported from `main` on 2026-10-05).
-`main` keeps fetching until cutover, so refresh the export right before
-seeding, then (after `supabase/v3.sql` is applied and before the first
-fetch runs against it) seed:
+**Seeding (once, at cutover).** `supabase/seed-from-json.mjs` reads the
+last committed data files (`competitions.json`, `hackathons.json`, the two
+status files, the two archives and `watch.json`) from a local
+`supabase/seed/` folder. That folder is git-ignored and must never be
+committed: listing data is login-only now. `main` keeps fetching until
+cutover, so export the files from `main` right before seeding, then (after
+`supabase/v3.sql` is applied and `check-access.mjs` passes, before the
+first fetch runs against it) seed:
 
 ```bash
 git fetch origin main
+mkdir -p supabase/seed
 for f in competitions hackathons status hack-status archive hack-archive watch; do
   git show origin/main:data/$f.json > supabase/seed/$f.json
 done
@@ -367,6 +370,10 @@ The whole site is login-only. Every page loads the vendored supabase-js
   same page (Supabase Auth, PKCE flow); the page then removes only the
   `code` and `state` parameters from the address, so a deep link such as
   `c.html?id=…&s=hack` survives sign-in.
+- **Sign-in failed** (Google or Supabase returned `error`,
+  `error_code`, `error_description`): those parameters are removed from
+  the address and the description shows as a red banner on the login
+  screen.
 - **Signed in, but the Google account is not an active row in `members`:**
   "Not on the team list (<email>)" and a Sign out button. Nothing else
   loads (RLS returns nothing to non-members anyway).
@@ -392,6 +399,12 @@ pages read `listings`, `archive` and `source_status` by section, plus
 `watch`, `decisions`, `intl_dates` and `manual`; the curated config files
 (`international.json`, `fests.json`, `hack-curated.json`) are still read
 from `./data/`.
+
+Membership is bound to the Google identity, not to the token's email
+claim: `is_member()`, `is_admin()` and `in_team()` join the caller's
+`auth.identities` row (provider `google`, matched by `auth.uid()`) to
+`members` on its lowercased email. So the `members.email` must be the
+Google account's address, lowercased.
 
 Members are managed in the Supabase SQL Editor (no client writes):
 
@@ -464,13 +477,34 @@ page and again in the database) and are only ever rendered through
 2. Pages: Settings → Pages → Build and deployment → **Deploy from a branch**,
    branch `main`, folder `/ (root)`, proxied by nginx at
    `https://conyso.com/certamus/radar/`.
-3. Supabase: run `supabase/v3.sql` in the SQL Editor; enable the Google
-   provider (Auth → Providers) with a Google OAuth client whose redirect is
-   `https://hjgfowgswqafrhlqbuse.supabase.co/auth/v1/callback`; Auth → URL
-   configuration: site URL `https://conyso.com/certamus/radar/`, redirect
-   allow-list `https://conyso.com/certamus/radar/**`. `config.js` holds the
+3. Supabase. This project (`hjgfowgswqafrhlqbuse`) must hold **Radar
+   only**: `v3.sql` revokes anon and authenticated access across the whole
+   `public` schema and changes the `postgres` role's default privileges,
+   which would break any other app sharing it. `config.js` holds the
    project URL and the publishable key (public by design: it reads nothing
    on its own).
+
+   **Auth settings to confirm** (Authentication → Sign In / Providers and
+   URL Configuration):
+   - **Email** provider **disabled** (no password or magic-link sign-ups).
+   - **Secure email change** on.
+   - **Anonymous sign-ins** off.
+   - **Google** enabled, with a Google OAuth client whose redirect is
+     `https://hjgfowgswqafrhlqbuse.supabase.co/auth/v1/callback`.
+   - Site URL `https://conyso.com/certamus/radar/`; redirect allow-list
+     `https://conyso.com/certamus/radar/**` only.
+
+   **Cutover order** (no gap between the last two steps: from the moment
+   v3 is applied, `main`'s pages and Actions can no longer read or write):
+   1. Apply `supabase/v3.sql` in the SQL Editor (safe to re-run).
+   2. `node supabase/check-access.mjs`: every table and RPC must be
+      refused to the anonymous caller (a 404 / PGRST202 means v3 is not
+      applied and fails the check). Optionally repeat with
+      `SUPABASE_USER_JWT=<a non-member's access token>`.
+   3. Add the teammates to `members`, then seed (see "Seeding" above:
+      export locally, `--dry-run`, then the real run).
+   4. Merge `platform` into `main` immediately and push, then run the
+      `fetch` and `watch` workflows once by hand.
 
 Free-tier note: Supabase pauses a free project after about a week without
 activity. The twice-daily fetch reads and writes the tables, which should
