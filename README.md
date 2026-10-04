@@ -24,12 +24,14 @@ Board: https://conyso.com/certamus/radar/ (team members only, Google sign-in).
   (Agenda is the default under 760px). Shows anything Watching, Entering or
   Registered, plus dashed "expected" markers for curated international
   competitions with no confirmed dates yet.
+- **Team** (`team.html`) — invite links to act on and rounds due, across
+  both sections (see "Teams, invite links and rounds" below).
 - **Hosts & archive** (`hosts.html`) — every host seen (live, archived,
   curated international and fest watchlist), searchable and tier-filterable, with a Jan–Dec
   month strip and the latest title; and a searchable list of closed
   competitions, newest first.
 
-A shared nav appears on all five pages.
+A shared nav appears on all six pages.
 
 ### Sections: Case comps | Hackathons
 
@@ -44,7 +46,7 @@ as a hackathon when its id starts `df-`, `mlh-`, `dp-` or `hk-`
 (`lib/section.js` holds the data files, wording, tiers, rule table and link
 builder for each section).
 
-The Hackathons side has the same five pages over `hackathons.json`,
+The Hackathons side has the same pages over `hackathons.json`,
 `hack-status.json`, `hack-archive.json` and `hack-curated.json`:
 
 - **Cards** show a kind chip (**Build** or **Ideathon**), where it happens
@@ -381,7 +383,7 @@ Roles come from `members.role`:
 | Role | Can |
 |---|---|
 | `admin` (Krishna) | everything: statuses, Registered, notes, "Set dates", add an Unstop link (direct writes to `decisions`, `intl_dates`, `manual`, allowed by RLS for `is_admin()` only) |
-| `member` | read every page; no editing controls are shown |
+| `member` | read every page; mark their own team join; tick their team's rounds done. No other editing controls are shown |
 
 A decision row is deleted when its status, Registered and note are all
 empty, and upserted otherwise. A refused or failed write (RLS, network)
@@ -397,6 +399,56 @@ Members are managed in the Supabase SQL Editor (no client writes):
 insert into public.members (email, name, role) values ('name@gmail.com', 'Name', 'member');
 update public.members set active = false where email = 'name@gmail.com';  -- loses access on the next request
 ```
+
+## Teams, invite links and rounds
+
+The workflow: Krishna finds a competition, registers on Unstop (or
+Devfolio...) and copies its "invite teammates" link; on the competition
+page he records the team; each teammate opens the link, joins, and ticks
+"I've joined"; Krishna sees who he is still waiting on. Rounds track the
+team's own deadlines (prelims deck, video, finals) after registration.
+
+- **Competition page, Team section** (between Dates and Team note).
+  - No team yet: the admin sees **Create team**: a checkbox per active
+    member (ticked by default: for a case comp the case roster, i.e. every
+    active member except Akshit; for a hackathon Krishna and Akshit, each
+    if they are active members), an https invite-link field and Save.
+    Creating the team also ticks **Registered** (the `create_team` RPC
+    does both in one transaction). Members see nothing.
+  - Team exists: each member with **✓ joined (date)** or **pending**; the
+    invite link (read-only field, **Copy**, Open ↗); the viewer's own row
+    has **I've joined** / **Undo**. Admin: **Edit team** (members and
+    link) and **Delete team** (asks first; deletes members, joins and
+    rounds; Registered stays).
+  - **Rounds:** name, due date, owner (a team member or "Team") and a
+    done box that the admin and team members can tick. Undone rounds past
+    their due date are red. The admin adds, edits and deletes rounds.
+- **Team page** (`team.html`, "Team" in the nav of both sections). A
+  member sees **My joins** (each team they have not joined: title, link,
+  Copy, I've joined) and **My rounds** (undone rounds they own, or owned
+  by nobody in a team they are in, by due date). The admin sees **Waiting
+  on teammates** (everyone else's pending joins, grouped by person) and
+  **All teams** (section, "2/3 joined", the next round due from today and
+  an overdue count), plus their own joins and rounds when there are any.
+  A team whose listing was pruned shows under its archived title.
+- **Board:** above "New since your last visit", a member with pending
+  joins sees **Join these teams (N)** with an inline I've joined; the
+  admin sees **Waiting on teammates (N)** by person. Nothing shows when
+  neither applies.
+- **Calendar:** each dated round of a visible team is a 📝 event (both
+  sections; the other section's carry the Case/Hack marker). Undone
+  rounds count as committed dates in the clash days, but never against
+  their own competition or sibling rounds.
+
+Who sees what is decided by RLS, not the page: `teams`, `team_members`
+and `rounds` are readable by the admin and by that team's members only,
+so an invite link never reaches anyone outside the team. Every change goes
+through an RPC that re-checks the caller (`create_team`, `update_team`,
+`delete_team`, `mark_joined`, `upsert_round`, `delete_round`,
+`set_round_done`; see `supabase/v3.sql`); a refusal shows the Postgres
+message in the banner. Invite links must be `https://` (checked in the
+page and again in the database) and are only ever rendered through
+`safeHref`. Pure rules live in `lib/teams.js`, HTML in `lib/teamview.js`.
 
 ## Setup (once)
 
