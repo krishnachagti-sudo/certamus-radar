@@ -4,6 +4,7 @@ import {
   createDecisionSaver, editable, selectAll, recordsFromRows, decisionWrite,
   readListings, readArchive, readStatus, readWatch, readDecisions, readIntlDates, readManual,
   readMembers, readTeams, readTeamMembers, readRounds, saveDecision, setIntlDates, addManual,
+  createTeam, updateTeam, deleteTeam, markJoined, upsertRound, deleteRound, setRoundDone,
 } from '../lib/store.js';
 
 // A stand-in for the supabase-js query builder: records every call, answers
@@ -245,4 +246,47 @@ test('a cleared decision is sent as an empty row (the store deletes it)', async 
   const { saver } = harness(async (id, d) => { sent.push([id, d]); });
   await saver.save(7, () => ({}));
   assert.deepEqual(sent, [['7', undefined]]);
+});
+
+// ---- team and round RPCs ------------------------------------------------------
+
+const rpcClient = (result = { data: null, error: null }) => {
+  const calls = [];
+  return { calls, rpc: async (name, args) => { calls.push([name, args]); return typeof result === 'function' ? result(name, args) : result; } };
+};
+
+test('team RPCs send the v3.sql parameter names', async () => {
+  const c = rpcClient();
+  await createTeam({ listingId: 101, section: 'case', inviteUrl: 'https://unstop.com/i', emails: ['A@x.com', 'b@x.com'] }, c);
+  await updateTeam({ listingId: 'df-x', inviteUrl: 'https://d.co/i', emails: ['a@x.com'] }, c);
+  await deleteTeam(7, c);
+  await markJoined('7', true, c);
+  await markJoined('7', false, c);
+  assert.deepEqual(c.calls, [
+    ['create_team', { p_listing_id: '101', p_section: 'case', p_invite_url: 'https://unstop.com/i', p_emails: ['a@x.com', 'b@x.com'] }],
+    ['update_team', { p_listing_id: 'df-x', p_invite_url: 'https://d.co/i', p_emails: ['a@x.com'] }],
+    ['delete_team', { p_listing_id: '7' }],
+    ['mark_joined', { p_listing_id: '7', p_joined: true }],
+    ['mark_joined', { p_listing_id: '7', p_joined: false }],
+  ]);
+});
+
+test('round RPCs: new round sends p_id null, empty owner and due go as null', async () => {
+  const c = rpcClient(name => (name === 'upsert_round' ? { data: 'uuid-1', error: null } : { data: null, error: null }));
+  assert.equal(await upsertRound({ listingId: 101, name: ' Prelims ', due: '', owner: '' }, c), 'uuid-1');
+  await upsertRound({ id: 'uuid-1', listingId: '101', name: 'Prelims', due: '2026-10-10', owner: 'r@x.com' }, c);
+  await deleteRound('uuid-1', c);
+  await setRoundDone('uuid-1', true, c);
+  assert.deepEqual(c.calls, [
+    ['upsert_round', { p_id: null, p_listing_id: '101', p_name: 'Prelims', p_due: null, p_owner_email: null }],
+    ['upsert_round', { p_id: 'uuid-1', p_listing_id: '101', p_name: 'Prelims', p_due: '2026-10-10', p_owner_email: 'r@x.com' }],
+    ['delete_round', { p_id: 'uuid-1' }],
+    ['set_round_done', { p_id: 'uuid-1', p_done: true }],
+  ]);
+});
+
+test('an RPC error throws the Postgres message', async () => {
+  const c = rpcClient({ data: null, error: { message: 'invite link must be an https:// URL', code: '22023' } });
+  await assert.rejects(createTeam({ listingId: 1, section: 'case', inviteUrl: 'x', emails: [] }, c), /^Error: invite link must be an https:\/\/ URL$/);
+  await assert.rejects(markJoined('1', true, rpcClient({ data: null, error: { code: '42501' } })), /42501/);
 });
