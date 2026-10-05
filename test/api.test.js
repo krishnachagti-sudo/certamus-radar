@@ -4,7 +4,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
 import { freshDb, apiDb } from './helpers/pg.js';
-import { createApp, safeReturn, sha256 } from '../api/app.js';
+import { createApp, safeReturn, sha256, newToken } from '../api/app.js';
 
 const SITE = 'https://conyso.com';
 const PAGE = `${SITE}/certamus/radar/c.html?id=555&s=hack`;
@@ -53,9 +53,13 @@ async function call(path, { method = 'GET', token, body, origin, headers = {}, r
   return { status: res.status, body: json, headers: res.headers };
 }
 
+// What the page does: a random value kept in sessionStorage, its hash sent along.
+const newBinding = () => { const value = newToken(); return { value, hash: sha256(value) }; };
+const startUrl = (page, bind = newBinding().hash) => `/auth/google?return=${encodeURIComponent(page)}&bind=${bind}`;
+
 // The whole browser sign-in for `email`: -> { location, token }.
-async function signIn(email, page = PAGE) {
-  const start = await call(`/auth/google?return=${encodeURIComponent(page)}`);
+async function signIn(email, page = PAGE, binding = newBinding()) {
+  const start = await call(startUrl(page, binding.hash));
   assert.equal(start.status, 302);
   const g = new URL(start.headers.get('location'));
   const cookie = start.headers.get('set-cookie').split(';')[0];
@@ -64,9 +68,9 @@ async function signIn(email, page = PAGE) {
   const location = new URL(cb.headers.get('location'));
   const code = location.searchParams.get('radar_code');
   if (!code) return { location };
-  const ex = await call('/auth/exchange', { method: 'POST', body: { code }, origin: SITE });
+  const ex = await call('/auth/exchange', { method: 'POST', body: { code, binding: binding.value }, origin: SITE });
   assert.equal(ex.status, 200, JSON.stringify(ex.body));
-  return { location, code, token: ex.body.token, expires: ex.body.expires_at };
+  return { location, code, binding, token: ex.body.token, expires: ex.body.expires_at };
 }
 
 let admin, mate;
@@ -79,14 +83,14 @@ test('healthz', async () => {
 
 test('/auth/google refuses a return URL off the allow-list', async () => {
   for (const r of ['https://evil.com/certamus/radar/', 'https://conyso.com.evil.com/', 'javascript:alert(1)', '', 'https://user:pw@conyso.com/']) {
-    const res = await call(`/auth/google?return=${encodeURIComponent(r)}`);
+    const res = await call(startUrl(r));
     assert.equal(res.status, 400, r);
     assert.equal(res.headers.get('location'), null);
   }
 });
 
 test('/auth/google: PKCE S256, state, nonce, and a sealed HttpOnly state cookie for the callback only', async () => {
-  const res = await call(`/auth/google?return=${encodeURIComponent(PAGE)}`);
+  const res = await call(startUrl(PAGE));
   const g = new URL(res.headers.get('location'));
   assert.equal(g.origin, 'https://accounts.google.test');
   assert.equal(g.searchParams.get('redirectUri'), `${API}/auth/callback`);
@@ -118,11 +122,49 @@ test('sign-in: the admin gets a one-time code on the same page (id and s kept), 
 });
 
 test('the login code works once', async () => {
-  const again = await call('/auth/exchange', { method: 'POST', body: { code: admin.code }, origin: SITE });
+  const again = await call('/auth/exchange', { method: 'POST', body: { code: admin.code, binding: admin.binding.value }, origin: SITE });
   assert.equal(again.status, 401);
   assert.equal(again.body.code, 'expired');
   assert.equal((await call('/auth/exchange', { method: 'POST', body: { code: 'x' } })).status, 400);
   assert.equal((await call('/auth/exchange', { method: 'POST', body: {} })).status, 400);
+  assert.equal((await call('/auth/exchange', { method: 'POST', body: { code: admin.code } })).status, 400, 'binding required');
+});
+
+test('login CSRF: a code only works with the binding of the browser that started the sign-in', async () => {
+  const victim = newBinding();
+  const start = await call(startUrl(PAGE, newBinding().hash)); // the attacker's own sign-in
+  const g = new URL(start.headers.get('location'));
+  const cb = await call(`/auth/callback?state=${g.searchParams.get('state')}&code=${encodeURIComponent(K)}`,
+    { headers: { Cookie: start.headers.get('set-cookie').split(';')[0] } });
+  const code = new URL(cb.headers.get('location')).searchParams.get('radar_code');
+  assert.ok(code);
+  // Planted in the victim's browser, which presents its own binding: refused, and the code is spent.
+  const ex = await call('/auth/exchange', { method: 'POST', body: { code, binding: victim.value }, origin: SITE });
+  assert.equal(ex.status, 401);
+});
+
+test('/auth/google needs a well-formed bind hash', async () => {
+  for (const bind of ['', 'abc', 'Z'.repeat(64)]) {
+    assert.equal((await call(`/auth/google?return=${encodeURIComponent(PAGE)}&bind=${bind}`)).status, 400, bind);
+  }
+  assert.equal((await call(`/auth/google?return=${encodeURIComponent(PAGE)}`)).status, 400);
+});
+
+test('return URLs must be under the radar\'s path, at sign-in start and at the callback', async () => {
+  for (const r of [`${SITE}/`, `${SITE}/other/page.html`, `${SITE}/certamus/radarx/`, `${SITE}/certamus/radar/../admin/`, `${SITE}/certamus/radar/%2e%2e/admin/`]) {
+    assert.equal((await call(startUrl(r))).status, 400, r);
+  }
+  assert.equal(safeReturn(`${SITE}/certamus/radar/../x`, [SITE]), null);
+  assert.equal(safeReturn(`${SITE}/certamus/radar/team.html`, [SITE]), `${SITE}/certamus/radar/team.html`);
+  assert.equal(safeReturn(`${SITE}/x/`, [SITE], ['/x/']), `${SITE}/x/`);
+});
+
+test('the 400 page links back to the radar home and is plain, escaped HTML', async () => {
+  const res = await call('/auth/callback?state=x&code=y');
+  assert.equal(res.status, 400);
+  assert.match(res.headers.get('content-type'), /text\/html/);
+  assert.match(res.headers.get('content-security-policy'), /default-src 'none'/);
+  assert.match(res.body, /<a href="https:\/\/conyso\.com\/certamus\/radar\/">Back to Certamus Radar<\/a>/);
 });
 
 test('only hashes are stored', async () => {
@@ -139,7 +181,7 @@ test('a stranger is sent back with radar_error=not_member and no code', async ()
 });
 
 test('callback: a Google failure, a cancel, or a wrong state comes back as radar_error', async () => {
-  const start = await call(`/auth/google?return=${encodeURIComponent(PAGE)}`);
+  const start = await call(startUrl(PAGE));
   const state = new URL(start.headers.get('location')).searchParams.get('state');
   const Cookie = start.headers.get('set-cookie').split(';')[0];
   const err = async q => new URL((await call(`/auth/callback?${q}`, { headers: { Cookie } })).headers.get('location')).searchParams.get('radar_error');
@@ -153,7 +195,7 @@ test('callback: a Google failure, a cancel, or a wrong state comes back as radar
 });
 
 test('callback: no cookie, a tampered cookie or an expired one is a plain 400, never a redirect', async () => {
-  const start = await call(`/auth/google?return=${encodeURIComponent(PAGE)}`);
+  const start = await call(startUrl(PAGE));
   const state = new URL(start.headers.get('location')).searchParams.get('state');
   const cookie = start.headers.get('set-cookie').split(';')[0];
   const [iv, body, tag] = cookie.slice('radar_oauth='.length).split('.');
@@ -175,7 +217,7 @@ test('callback: no cookie, a tampered cookie or an expired one is a plain 400, n
 test('safeReturn: allow-listed origins only; old sign-in results dropped', () => {
   const ok = [SITE];
   assert.equal(safeReturn(`${SITE}/certamus/radar/?radar_code=abc&s=hack&radar_error=x#top`, ok), `${SITE}/certamus/radar/?s=hack#top`);
-  assert.equal(safeReturn('http://conyso.com/', ok), null);
+  assert.equal(safeReturn('http://conyso.com/certamus/radar/', ok), null);
   assert.equal(safeReturn('not a url', ok), null);
 });
 

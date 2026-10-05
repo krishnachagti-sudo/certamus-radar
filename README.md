@@ -379,7 +379,9 @@ The whole site is login-only. Every page loads its module and then
   the API (`API_URL/auth/google?return=<this page>`), which runs Google's
   sign-in (authorization code + PKCE), checks the Google-verified email is
   an active row in `members`, and comes back to the same page with a
-  one-time `?radar_code=` (valid 60 seconds). The page swaps it for a
+  one-time `?radar_code=` (valid 60 seconds, and only together with a
+  random value this tab put in its sessionStorage before leaving, whose
+  hash went to the API: a code planted from another browser is useless). The page swaps it for a
   30-day session token (kept in this browser's localStorage) and removes
   only `radar_code` from the address, so a deep link such as
   `c.html?id=…&s=hack` survives sign-in.
@@ -531,7 +533,8 @@ anywhere.
 | `GOOGLE_CLIENT_ID` | the Google OAuth web client's ID |
 | `GOOGLE_CLIENT_SECRET` | its secret (also keys the sealed sign-in cookie) |
 | `RADAR_SERVICE_TOKEN` | at least 32 random characters; the same value is the GitHub secret of that name |
-| `ALLOWED_ORIGINS` | comma-separated site origins, e.g. `https://conyso.com` (CORS and sign-in return addresses) |
+| `ALLOWED_ORIGINS` | comma-separated site origins, e.g. `https://conyso.com` (CORS and sign-in return addresses); `http:` ones are refused next to an https API unless `RADAR_DEV_ALLOW_HTTP=1` (local testing only) |
+| `RETURN_PATH_PREFIXES` | optional, default `/certamus/radar/`: the paths sign-in may return to (comma-separated, each starting and ending with `/`) |
 | `API_ORIGIN` | the API's own public origin, e.g. `https://certamus-radar-api.up.railway.app` (Google redirects to `API_ORIGIN/auth/callback`) |
 | `PORT` | set by Railway |
 

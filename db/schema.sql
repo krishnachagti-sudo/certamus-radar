@@ -651,9 +651,12 @@ create schema if not exists private;
 revoke all on schema private from public;
 grant usage on schema private to radar_api;
 
+-- bind_hash: sha256 of a random value the signing-in browser keeps in its
+-- sessionStorage; only that browser can spend the code (login CSRF).
 create table if not exists private.login_codes (
   code_hash   text primary key check (code_hash ~ '^[0-9a-f]{64}$'),
   email       text not null references public.members (email) on update cascade on delete cascade,
+  bind_hash   text not null check (bind_hash ~ '^[0-9a-f]{64}$'),
   expires_at  timestamptz not null
 );
 
@@ -669,10 +672,16 @@ revoke all on all tables in schema private from public, radar_member, radar_serv
 alter table private.login_codes enable row level security;
 alter table private.sessions enable row level security;
 
+-- An earlier draft of these two functions took no binding; drop it if a
+-- database ever got it, so only the bound versions exist.
+drop function if exists private.issue_login_code(text, text);
+drop function if exists private.exchange_login_code(text, text);
+
 -- After Google verified p_email: a 60-second one-time code for an active
--- member, or false (not on the team list; nothing stored). Also sweeps
--- expired codes and sessions.
-create or replace function private.issue_login_code(p_email text, p_code_hash text)
+-- member, bound to the browser that started the sign-in (p_bind_hash), or
+-- false (not on the team list; nothing stored). Also sweeps expired codes
+-- and sessions.
+create or replace function private.issue_login_code(p_email text, p_code_hash text, p_bind_hash text)
 returns boolean
 language plpgsql security definer set search_path = ''
 as $$
@@ -682,16 +691,17 @@ begin
   if not exists (select 1 from public.members m where m.email = lower(btrim(p_email)) and m.active) then
     return false;
   end if;
-  insert into private.login_codes (code_hash, email, expires_at)
-  values (p_code_hash, lower(btrim(p_email)), now() + interval '60 seconds');
+  insert into private.login_codes (code_hash, email, bind_hash, expires_at)
+  values (p_code_hash, lower(btrim(p_email)), p_bind_hash, now() + interval '60 seconds');
   return true;
 end;
 $$;
 
 -- Spends a login code (whatever the outcome, it is gone) and, if it was
--- live and its member still active, opens a 30-day session for
--- p_token_hash. Returns the session's email and expiry, or no row.
-create or replace function private.exchange_login_code(p_code_hash text, p_token_hash text)
+-- live, presented with the binding of the browser it was issued to, and its
+-- member still active, opens a 30-day session for p_token_hash. Returns the
+-- session's email and expiry, or no row.
+create or replace function private.exchange_login_code(p_code_hash text, p_token_hash text, p_bind_hash text)
 returns table (email text, expires_at timestamptz)
 language plpgsql security definer set search_path = ''
 as $$
@@ -699,10 +709,12 @@ as $$
 declare
   v_email text;
   v_expires timestamptz;
+  v_bind text;
 begin
   delete from private.login_codes c where c.code_hash = p_code_hash
-  returning c.email, c.expires_at into v_email, v_expires;
+  returning c.email, c.expires_at, c.bind_hash into v_email, v_expires, v_bind;
   if v_email is null or v_expires <= now() then return; end if;
+  if p_bind_hash is null or v_bind is distinct from p_bind_hash then return; end if;
   if not exists (select 1 from public.members m where m.email = v_email and m.active) then return; end if;
   insert into private.sessions (token_hash, email, expires_at)
   values (p_token_hash, v_email, now() + interval '30 days');
@@ -728,12 +740,12 @@ as $$
   delete from private.sessions where token_hash = p_token_hash;
 $$;
 
-revoke execute on function private.issue_login_code(text, text) from public;
-revoke execute on function private.exchange_login_code(text, text) from public;
+revoke execute on function private.issue_login_code(text, text, text) from public;
+revoke execute on function private.exchange_login_code(text, text, text) from public;
 revoke execute on function private.session_email(text) from public;
 revoke execute on function private.end_session(text) from public;
-grant execute on function private.issue_login_code(text, text) to radar_api;
-grant execute on function private.exchange_login_code(text, text) to radar_api;
+grant execute on function private.issue_login_code(text, text, text) to radar_api;
+grant execute on function private.exchange_login_code(text, text, text) to radar_api;
 grant execute on function private.session_email(text) to radar_api;
 grant execute on function private.end_session(text) to radar_api;
 

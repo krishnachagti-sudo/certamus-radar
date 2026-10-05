@@ -262,39 +262,47 @@ test('an inactive mate reads and calls nothing', async () => {
 // ---- sign-in: login codes and sessions (radar_api only) --------------------------
 
 const h = c => c.repeat(64).slice(0, 64); // a 64-hex "hash" made of one digit
+const B = h('0'); // the browser binding's hash (login CSRF)
 test('issue_login_code: a stranger gets false and nothing is stored', async () => {
-  assert.deepEqual(await run('api', 'select private.issue_login_code($1, $2) as ok', [X, h('1')]), [{ ok: false }]);
+  assert.deepEqual(await run('api', 'select private.issue_login_code($1, $2, $3) as ok', [X, h('1'), B]), [{ ok: false }]);
   assert.deepEqual(await run('owner', 'select count(*)::int n from private.login_codes'), [{ n: 0 }]);
 });
 test('issue_login_code: an active member gets a 60-second code', async () => {
-  assert.deepEqual(await run('api', 'select private.issue_login_code($1, $2) as ok', [` ${M.toUpperCase()} `, h('2')]), [{ ok: true }]);
+  assert.deepEqual(await run('api', 'select private.issue_login_code($1, $2, $3) as ok', [` ${M.toUpperCase()} `, h('2'), B]), [{ ok: true }]);
   const [c] = await run('owner', `select email, extract(epoch from expires_at - now())::int s from private.login_codes`);
   assert.equal(c.email, M);
   assert.ok(c.s > 50 && c.s <= 60, String(c.s));
 });
-test('exchange_login_code: a wrong code opens nothing', () => count(0, 'api', 'select * from private.exchange_login_code($1, $2)', [h('3'), h('a')]));
+test('exchange_login_code: a wrong code opens nothing', () => count(0, 'api', 'select * from private.exchange_login_code($1, $2, $3)', [h('3'), h('a'), B]));
 test('exchange_login_code: the right code opens a 30-day session, once', async () => {
-  const [s] = await run('api', 'select * from private.exchange_login_code($1, $2)', [h('2'), h('b')]);
+  const [s] = await run('api', 'select * from private.exchange_login_code($1, $2, $3)', [h('2'), h('b'), B]);
   assert.equal(s.email, M);
   const days = (new Date(s.expires_at) - Date.now()) / 864e5;
   assert.ok(days > 29.9 && days <= 30, String(days));
-  await count(0, 'api', 'select * from private.exchange_login_code($1, $2)', [h('2'), h('c')]);
+  await count(0, 'api', 'select * from private.exchange_login_code($1, $2, $3)', [h('2'), h('c'), B]);
 });
+test('exchange_login_code: a code presented by another browser (wrong binding) opens nothing, and is spent', async () => {
+  await run('api', 'select private.issue_login_code($1, $2, $3)', [K, h('9'), B]);
+  await count(0, 'api', 'select * from private.exchange_login_code($1, $2, $3)', [h('9'), h('8'), h('1')]);
+  await count(0, 'api', 'select * from private.exchange_login_code($1, $2, $3)', [h('9'), h('8'), B]);
+  await count(0, 'owner', 'select * from private.sessions where token_hash = $1', [h('8')]);
+});
+test('issue_login_code refuses a malformed binding hash', () => code('23514', 'api', 'select private.issue_login_code($1, $2, $3)', [M, h('a'), 'nope']));
 test('session_email: the session\'s email; unknown token null', async () => {
   assert.deepEqual(await run('api', 'select private.session_email($1) e', [h('b')]), [{ e: M }]);
   assert.deepEqual(await run('api', 'select private.session_email($1) e', [h('c')]), [{ e: null }]);
 });
 test('an expired code opens nothing and is spent', async () => {
-  await run('api', 'select private.issue_login_code($1, $2)', [A, h('4')]);
+  await run('api', 'select private.issue_login_code($1, $2, $3)', [A, h('4'), B]);
   await run('owner', `update private.login_codes set expires_at = now() - interval '1 second' where code_hash = $1`, [h('4')]);
-  await count(0, 'api', 'select * from private.exchange_login_code($1, $2)', [h('4'), h('d')]);
+  await count(0, 'api', 'select * from private.exchange_login_code($1, $2, $3)', [h('4'), h('d'), B]);
   await count(0, 'owner', 'select * from private.login_codes where code_hash = $1', [h('4')]);
 });
 test('a code whose member went inactive opens nothing', async () => {
-  await run('api', 'select private.issue_login_code($1, $2)', [A, h('5')]);
+  await run('api', 'select private.issue_login_code($1, $2, $3)', [A, h('5'), B]);
   await run('owner', `update public.members set active = false where email = '${A}'`);
-  await count(0, 'api', 'select * from private.exchange_login_code($1, $2)', [h('5'), h('e')]);
-  assert.deepEqual(await run('api', 'select private.issue_login_code($1, $2) as ok', [A, h('6')]), [{ ok: false }], 'inactive: no code');
+  await count(0, 'api', 'select * from private.exchange_login_code($1, $2, $3)', [h('5'), h('e'), B]);
+  assert.deepEqual(await run('api', 'select private.issue_login_code($1, $2, $3) as ok', [A, h('6'), B]), [{ ok: false }], 'inactive: no code');
   await run('owner', `update public.members set active = true where email = '${A}'`);
 });
 test('session_email: null once the member is inactive, back when active', async () => {
@@ -306,14 +314,14 @@ test('session_email: null once the member is inactive, back when active', async 
 test('session_email: null once expired; issue_login_code sweeps expired sessions', async () => {
   await run('owner', `insert into private.sessions (token_hash, email, expires_at) values ($1, $2, now() - interval '1 second')`, [h('f'), K]);
   assert.deepEqual(await run('api', 'select private.session_email($1) e', [h('f')]), [{ e: null }]);
-  await run('api', 'select private.issue_login_code($1, $2)', [X, h('7')]);
+  await run('api', 'select private.issue_login_code($1, $2, $3)', [X, h('7'), B]);
   await count(0, 'owner', 'select * from private.sessions where token_hash = $1', [h('f')]);
 });
 test('end_session deletes the session', async () => {
   await run('api', 'select private.end_session($1)', [h('b')]);
   assert.deepEqual(await run('api', 'select private.session_email($1) e', [h('b')]), [{ e: null }]);
 });
-test('a hash that is not 64 hex characters is refused', () => code('23514', 'api', 'select private.issue_login_code($1, $2)', [M, 'abc']));
+test('a hash that is not 64 hex characters is refused', () => code('23514', 'api', 'select private.issue_login_code($1, $2, $3)', [M, 'abc', B]));
 for (const who of ['api', 'service', K, 'nobody']) {
   test(`${who} cannot read private.sessions or private.login_codes`, async () => {
     await code('42501', who, 'select * from private.sessions');
@@ -323,8 +331,8 @@ for (const who of ['api', 'service', K, 'nobody']) {
 for (const who of ['service', K, 'nobody']) {
   test(`${who} cannot call the session functions`, async () => {
     await code('42501', who, `select private.session_email('${h('b')}')`);
-    await code('42501', who, `select private.issue_login_code('${M}', '${h('8')}')`);
-    await code('42501', who, `select * from private.exchange_login_code('${h('8')}', '${h('9')}')`);
+    await code('42501', who, `select private.issue_login_code('${M}', '${h('8')}', '${B}')`);
+    await code('42501', who, `select * from private.exchange_login_code('${h('8')}', '${h('9')}', '${B}')`);
     await code('42501', who, `select private.end_session('${h('b')}')`);
   });
 }

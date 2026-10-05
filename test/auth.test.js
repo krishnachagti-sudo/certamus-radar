@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanUrl, isGithubIo, roleCan, radarUrl, RADAR_HOME, hasAuthParams, authError, authCode, signInUrl, readSession, SESSION_KEY, memberHome, MEMBER_PAGE } from '../lib/auth.js';
+import { cleanUrl, isGithubIo, roleCan, radarUrl, RADAR_HOME, hasAuthParams, authError, authCode, signInUrl, newBinding, readSession, SESSION_KEY, memberHome, MEMBER_PAGE } from '../lib/auth.js';
 
 test('cleanUrl strips only radar_code and radar_error, keeping id, s and the hash', () => {
   assert.equal(
@@ -28,11 +28,21 @@ test('hasAuthParams sees radar_code or radar_error; authCode reads the code', ()
   assert.equal(authCode('https://x.com/'), null);
 });
 
-test('signInUrl: the API\'s /auth/google with this page, cleaned, as the way back', () => {
-  const u = new URL(signInUrl('https://conyso.com/certamus/radar/c.html?id=5&s=hack&radar_error=failed#x', 'https://api.test/'));
+test('signInUrl: the API\'s /auth/google with this page, cleaned, as the way back, and the binding hash', () => {
+  const u = new URL(signInUrl('https://conyso.com/certamus/radar/c.html?id=5&s=hack&radar_error=failed#x', 'ab'.repeat(32), 'https://api.test/'));
   assert.equal(u.origin + u.pathname, 'https://api.test/auth/google');
   assert.equal(u.searchParams.get('return'), 'https://conyso.com/certamus/radar/c.html?id=5&s=hack#x');
-  assert.match(signInUrl('https://conyso.com/certamus/radar/'), /^https:\/\/[^/]+\/auth\/google\?return=https%3A%2F%2Fconyso\.com/);
+  assert.equal(u.searchParams.get('bind'), 'ab'.repeat(32));
+  assert.match(signInUrl('https://conyso.com/certamus/radar/', 'x'), /^https:\/\/[^/]+\/auth\/google\?return=https%3A%2F%2Fconyso\.com.*&bind=x$/);
+});
+
+test('newBinding: a 43-character random value and the sha256 hex the API checks it against', async () => {
+  const { createHash } = await import('node:crypto');
+  const a = await newBinding();
+  const b = await newBinding();
+  assert.match(a.value, /^[A-Za-z0-9_-]{43}$/);
+  assert.notEqual(a.value, b.value);
+  assert.equal(a.hash, createHash('sha256').update(a.value).digest('hex'));
 });
 
 test('readSession: a stored, unexpired token or null', () => {

@@ -32,11 +32,14 @@ test('selectSql refuses anything off the whitelist', () => {
   bad('listings', 'offset=-1');
 });
 
-test('upsertSql: union of columns, defaults for gaps, json cast, update or nothing on the key', () => {
-  const { sql, values } = upsertSql('watch', P(''), [{ id: 'a', data: { h: 1 } }, { id: 'b', data: [1], updated_at: 'T' }]);
-  assert.equal(sql, 'insert into public."watch" ("id", "data", "updated_at") values ($1, $2::jsonb, default), ($3, $4::jsonb, $5)'
+test('upsertSql: the rows\' columns, json cast, update or nothing on the key', () => {
+  const { sql, values } = upsertSql('watch', P(''), [{ id: 'a', data: { h: 1 }, updated_at: 'S' }, { updated_at: 'T', id: 'b', data: [1] }]);
+  assert.equal(sql, 'insert into public."watch" ("id", "data", "updated_at") values ($1, $2::jsonb, $3), ($4, $5::jsonb, $6)'
     + ' on conflict ("id") do update set "data" = excluded."data", "updated_at" = excluded."updated_at"');
-  assert.deepEqual(values, ['a', '{"h":1}', 'b', '[1]', 'T']);
+  assert.deepEqual(values, ['a', '{"h":1}', 'S', 'b', '[1]', 'T']);
+  for (const rows of [[{ id: 'a', data: {} }, { id: 'b', data: [], updated_at: 'T' }], [{ id: 'a', data: {}, updated_at: 'T' }, { id: 'b', data: [] }], [{ id: 'a', data: {} }, { id: 'b', updated_at: 'T' }]]) {
+    assert.throws(() => upsertSql('watch', P(''), rows), e => e.status === 400 && /same columns/.test(e.message), JSON.stringify(rows));
+  }
   assert.match(upsertSql('manual', P('ignore_duplicates=true'), { id: '1', url: 'u' }).sql, /on conflict \("id"\) do nothing$/);
   assert.match(upsertSql('decisions', P(''), { id: '1' }).sql, /do nothing$/, 'nothing to update');
   assert.throws(() => upsertSql('decisions', P(''), { id: '1', note: { x: 1 } }), /plain value/);
@@ -134,12 +137,14 @@ test('emailFor posts the code, verifier and secret to the token endpoint and che
 
 const ENV = {
   DATABASE_URL: 'postgresql://radar_api:pw@postgres.railway.internal:5432/railway', GOOGLE_CLIENT_ID: 'cid', GOOGLE_CLIENT_SECRET: 'sec',
-  RADAR_SERVICE_TOKEN: 'x'.repeat(40), ALLOWED_ORIGINS: 'https://conyso.com, http://localhost:8080', API_ORIGIN: 'https://certamus-radar-api.up.railway.app',
+  RADAR_SERVICE_TOKEN: 'x'.repeat(40), ALLOWED_ORIGINS: 'https://conyso.com', API_ORIGIN: 'https://certamus-radar-api.up.railway.app',
 };
 
 test('loadConfig: everything present and well-formed', () => {
   const c = loadConfig(ENV);
-  assert.deepEqual(c.allowedOrigins, ['https://conyso.com', 'http://localhost:8080']);
+  assert.deepEqual(c.allowedOrigins, ['https://conyso.com']);
+  assert.deepEqual(c.returnPathPrefixes, ['/certamus/radar/']);
+  assert.deepEqual(loadConfig({ ...ENV, RETURN_PATH_PREFIXES: '/certamus/radar/, /' }).returnPathPrefixes, ['/certamus/radar/', '/']);
   assert.equal(c.apiOrigin, 'https://certamus-radar-api.up.railway.app');
   assert.equal(c.port, 8080);
   assert.equal(loadConfig({ ...ENV, PORT: '3000' }).port, 3000);
@@ -150,6 +155,21 @@ test('loadConfig names every problem and never prints a value', () => {
   assert.throws(() => loadConfig({ ...ENV, RADAR_SERVICE_TOKEN: 'short-secret-value' }), e => /32 characters/.test(e.message) && !e.message.includes('short-secret-value'));
   assert.throws(() => loadConfig({ ...ENV, ALLOWED_ORIGINS: 'https://conyso.com/certamus/' }), /ALLOWED_ORIGINS/);
   assert.throws(() => loadConfig({ ...ENV, API_ORIGIN: 'http://api.example.com' }), /API_ORIGIN/);
+});
+
+test('http origins next to an https API need the explicit dev flag', () => {
+  const env = { ...ENV, ALLOWED_ORIGINS: 'https://conyso.com, http://localhost:8080' };
+  assert.throws(() => loadConfig(env), /RADAR_DEV_ALLOW_HTTP/);
+  assert.deepEqual(loadConfig({ ...env, RADAR_DEV_ALLOW_HTTP: '1' }).allowedOrigins, ['https://conyso.com', 'http://localhost:8080']);
+  assert.throws(() => loadConfig({ ...env, RADAR_DEV_ALLOW_HTTP: 'true' }), /RADAR_DEV_ALLOW_HTTP/, 'only 1 counts');
+  // A wholly local setup (http API) is development by definition.
+  assert.equal(loadConfig({ ...env, API_ORIGIN: 'http://localhost:8099' }).apiOrigin, 'http://localhost:8099');
+});
+
+test('RETURN_PATH_PREFIXES: paths that start and end with /, no dot segments', () => {
+  for (const bad of ['certamus/', '/certamus', '/a/../b/', '/./', 'https://x/', '/a b/']) {
+    assert.throws(() => loadConfig({ ...ENV, RETURN_PATH_PREFIXES: bad }), /RETURN_PATH_PREFIXES/, bad);
+  }
 });
 
 test('parseOrigin: https, or http on localhost; no paths', () => {

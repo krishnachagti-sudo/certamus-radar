@@ -31,11 +31,23 @@ export function loadConfig(env = process.env) {
   const rawOrigins = need('ALLOWED_ORIGINS').split(',').map(s => s.trim()).filter(Boolean);
   const allowedOrigins = rawOrigins.map(parseOrigin);
   if (allowedOrigins.some(o => !o)) problems.push('ALLOWED_ORIGINS must be comma-separated origins like https://conyso.com');
+  // http://localhost origins are for local development only: with an https
+  // API they are refused unless RADAR_DEV_ALLOW_HTTP=1 says so on purpose.
+  const devHttp = String(env.RADAR_DEV_ALLOW_HTTP || '') === '1';
+  if (apiOrigin?.startsWith('https:') && !devHttp && allowedOrigins.some(o => o?.startsWith('http:'))) {
+    problems.push('ALLOWED_ORIGINS has an http: origin while API_ORIGIN is https (set RADAR_DEV_ALLOW_HTTP=1 only for local testing)');
+  }
+  // Sign-in return addresses must be under one of these paths (default: the
+  // radar's own folder), so a sign-in code never reaches another page.
+  const returnPathPrefixes = String(env.RETURN_PATH_PREFIXES || '/certamus/radar/').split(',').map(s => s.trim()).filter(Boolean);
+  if (!returnPathPrefixes.length || returnPathPrefixes.some(p => !/^\/([A-Za-z0-9._~-]+\/)*$/.test(p) || /(^|\/)\.\.?\//.test(p))) {
+    problems.push('RETURN_PATH_PREFIXES must be comma-separated paths that start and end with /, like /certamus/radar/');
+  }
   const port = Number(env.PORT || 8080);
   if (!Number.isInteger(port) || port <= 0 || port > 65535) problems.push('PORT must be a port number');
   if (problems.length) throw new Error(`API configuration: ${problems.join('; ')}`);
   return {
     databaseUrl, googleClientId, googleClientSecret, serviceToken,
-    apiOrigin, allowedOrigins: [...new Set(allowedOrigins)], port,
+    apiOrigin, allowedOrigins: [...new Set(allowedOrigins)], returnPathPrefixes, port,
   };
 }

@@ -111,8 +111,9 @@ export function selectSql(table, params) {
 }
 
 // POST /db/<table>[?ignore_duplicates=true], body: a row or an array of rows.
-// An upsert on the table's primary key: the columns sent are inserted, and on
-// a conflict the non-key columns sent are updated (or nothing is done).
+// An upsert on the table's primary key: the columns sent (the same in every
+// row) are inserted, and on a conflict the non-key columns sent are updated
+// (or nothing is done).
 export function upsertSql(table, params, body) {
   const t = tableFor(table, 'POST');
   for (const k of params.keys()) if (k !== 'ignore_duplicates') throw new BadRequest(`unknown parameter ${k}`);
@@ -121,18 +122,20 @@ export function upsertSql(table, params, body) {
   const rows = Array.isArray(body) ? body : [body];
   if (!rows.length) throw new BadRequest('no rows');
   if (rows.length > MAX_ROWS_PER_WRITE) throw new BadRequest(`at most ${MAX_ROWS_PER_WRITE} rows per request`);
-  const cols = [];
   for (const r of rows) {
     if (!r || typeof r !== 'object' || Array.isArray(r)) throw new BadRequest('each row must be an object');
-    for (const k of Object.keys(r)) if (!cols.includes(k)) cols.push(column(t, k, table));
   }
+  // Every row must carry the same columns: a column one row leaves out would
+  // otherwise be written as its default (or null) over what is stored.
+  const cols = Object.keys(rows[0]).map(k => column(t, k, table));
+  const same = r => { const k = Object.keys(r); return k.length === cols.length && k.every(c => cols.includes(c)); };
+  if (!rows.every(same)) throw new BadRequest('every row must have the same columns');
   for (const k of t.key) {
     if (rows.some(r => r[k] == null)) throw new BadRequest(`every row needs ${k}`);
   }
   const json = new Set(t.json || []);
   const values = [];
   const tuples = rows.map(r => `(${cols.map(c => {
-    if (!has(r, c)) return 'default';
     const v = r[c];
     if (json.has(c)) { values.push(v == null ? null : JSON.stringify(v)); return `$${values.length}::jsonb`; }
     if (v != null && typeof v === 'object') throw new BadRequest(`${table}.${c} must be a plain value`);

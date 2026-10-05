@@ -9,9 +9,10 @@
 //
 // Routes:
 //   GET  /healthz
-//   GET  /auth/google?return=<page url>   -> Google (PKCE + state + nonce)
+//   GET  /auth/google?return=<page url>&bind=<sha256 hex of the page's sessionStorage value>
+//                                         -> Google (PKCE + state + nonce)
 //   GET  /auth/callback                   -> <page url>?radar_code=... (or ?radar_error=...)
-//   POST /auth/exchange {code}            -> { token, expires_at }
+//   POST /auth/exchange {code, binding}   -> { token, expires_at }
 //   GET  /auth/me                         -> the caller's members row
 //   POST /auth/signout                    -> 204, session deleted
 //   GET|POST|DELETE /db/<table>           -> api/rest.js
@@ -31,6 +32,7 @@ const STATE_TTL_S = 600;
 const MEMBER_BODY_LIMIT = 1024 * 1024;
 const SERVICE_BODY_LIMIT = 16 * 1024 * 1024;
 const TOKEN_RE = /^[A-Za-z0-9_-]{32,128}$/;
+const HEX64 = /^[0-9a-f]{64}$/;
 // The page reads these back (lib/auth.js); no free text goes in a URL.
 export const SIGN_IN_ERRORS = ['not_member', 'cancelled', 'expired', 'failed'];
 
@@ -62,15 +64,21 @@ export function fromPg(e) {
   return new HttpError(500, 'Database error', code || 'internal');
 }
 
-// A return URL on one of the site's origins, minus any old sign-in result.
-export function safeReturn(value, allowedOrigins) {
+// A return URL on one of the site's origins and under one of the radar's
+// path prefixes (so a sign-in code is never handed to another page on the
+// same origin), minus any old sign-in result. The URL parser has already
+// resolved `..` and %2e segments by the time the path is compared.
+export function safeReturn(value, allowedOrigins, pathPrefixes = ['/certamus/radar/']) {
   let u;
   try { u = new URL(String(value)); } catch { return null; }
   if (!allowedOrigins.includes(u.origin) || u.username || u.password) return null;
+  if (!pathPrefixes.some(p => u.pathname.startsWith(p))) return null;
   u.searchParams.delete('radar_code');
   u.searchParams.delete('radar_error');
   return u.toString();
 }
+
+const escHtml = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 export function withParam(url, name, value) {
   const u = new URL(url);
@@ -89,6 +97,8 @@ function parseCookies(header) {
 
 export function createApp({ db, google, config, now = () => Date.now(), log = console }) {
   const allowed = config.allowedOrigins;
+  const prefixes = config.returnPathPrefixes || ['/certamus/radar/'];
+  const home = `${allowed[0]}${prefixes[0]}`;
   const redirectUri = `${config.apiOrigin}/auth/callback`;
   const secureCookie = config.apiOrigin.startsWith('https:');
   // The state cookie (state, nonce, PKCE verifier, return URL, expiry) is
@@ -143,13 +153,19 @@ export function createApp({ db, google, config, now = () => Date.now(), log = co
     if (cookie) res.setHeader('Set-Cookie', cookie);
     res.end();
   }
+  // A small HTML page for a sign-in that cannot go back to the site, with a
+  // link to the radar's home (the first allowed origin + path prefix).
   function page(res, status, text, cookie) {
     res.statusCode = status;
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Security-Policy', "default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'no-referrer');
     if (cookie) res.setHeader('Set-Cookie', cookie);
-    res.end(text);
+    res.end(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">`
+      + `<title>Sign in · Certamus Radar</title></head><body><h1>Certamus Radar</h1><p>${escHtml(text)}</p>`
+      + `<p><a href="${escHtml(home)}">Back to Certamus Radar</a></p></body></html>`);
   }
 
   async function readJson(req, limit) {
@@ -202,13 +218,16 @@ export function createApp({ db, google, config, now = () => Date.now(), log = co
   // ---- sign-in ---------------------------------------------------------------
 
   function startSignIn(req, res, url) {
-    const ret = safeReturn(url.searchParams.get('return'), allowed);
-    if (!ret) return page(res, 400, 'This sign-in link is not valid. Go back to Certamus Radar and press "Sign in with Google" again.');
+    const ret = safeReturn(url.searchParams.get('return'), allowed, prefixes);
+    // bind: sha256 (hex) of a random value the page keeps in sessionStorage;
+    // the login code is only good together with that value (login CSRF).
+    const bind = url.searchParams.get('bind');
+    if (!ret || !bind || !HEX64.test(bind)) return page(res, 400, 'This sign-in link is not valid. Go back to Certamus Radar and press "Sign in with Google" again.');
     const state = b64url(randomBytes(16));
     const nonce = b64url(randomBytes(16));
     const verifier = b64url(randomBytes(32));
     const challenge = b64url(createHash('sha256').update(verifier).digest());
-    const cookie = seal({ s: state, n: nonce, v: verifier, r: ret, e: Math.floor(now() / 1000) + STATE_TTL_S });
+    const cookie = seal({ s: state, n: nonce, v: verifier, r: ret, b: bind, e: Math.floor(now() / 1000) + STATE_TTL_S });
     return redirect(res, google.authUrl({ redirectUri, state, nonce, challenge }), stateCookie(cookie, STATE_TTL_S));
   }
 
@@ -216,7 +235,7 @@ export function createApp({ db, google, config, now = () => Date.now(), log = co
     const clear = stateCookie('', 0);
     const st = unseal(parseCookies(req.headers.cookie)[STATE_COOKIE]);
     // No valid cookie: we do not know where to send them back, and must not guess.
-    if (!st || !safeReturn(st.r, allowed)) {
+    if (!st || !safeReturn(st.r, allowed, prefixes) || !HEX64.test(String(st.b))) {
       return page(res, 400, 'This sign-in took too long or was started elsewhere. Go back to Certamus Radar and sign in again.', clear);
     }
     const back = reason => redirect(res, withParam(st.r, 'radar_error', reason), clear);
@@ -237,7 +256,7 @@ export function createApp({ db, google, config, now = () => Date.now(), log = co
     const loginCode = newToken();
     let issued;
     try {
-      const { rows } = await db.tx(tx => tx.query('select private.issue_login_code($1, $2) as ok', [email, sha256(loginCode)]));
+      const { rows } = await db.tx(tx => tx.query('select private.issue_login_code($1, $2, $3) as ok', [email, sha256(loginCode), st.b]));
       issued = rows[0]?.ok === true;
     } catch (e) {
       log.error(`sign-in: could not issue a login code: ${e.code || ''} ${e.message}`);
@@ -250,9 +269,11 @@ export function createApp({ db, google, config, now = () => Date.now(), log = co
   async function exchange(req, res) {
     const body = await readJson(req, 4096);
     const code = body?.code;
+    const binding = body?.binding;
     if (typeof code !== 'string' || !TOKEN_RE.test(code)) throw new HttpError(400, 'Missing or malformed sign-in code', 'bad_request');
+    if (typeof binding !== 'string' || !TOKEN_RE.test(binding)) throw new HttpError(400, 'Missing or malformed sign-in binding', 'bad_request');
     const token = newToken();
-    const { rows } = await db.tx(tx => tx.query('select email, expires_at from private.exchange_login_code($1, $2)', [sha256(code), sha256(token)]));
+    const { rows } = await db.tx(tx => tx.query('select email, expires_at from private.exchange_login_code($1, $2, $3)', [sha256(code), sha256(token), sha256(binding)]));
     if (!rows.length) throw new HttpError(401, 'This sign-in code has expired or was already used. Sign in again.', 'expired');
     const exp = rows[0].expires_at;
     return send(res, 200, { token, expires_at: exp instanceof Date ? exp.toISOString() : String(exp) });

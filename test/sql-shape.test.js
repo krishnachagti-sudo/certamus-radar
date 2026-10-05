@@ -165,6 +165,9 @@ test('sessions: hashes only, private schema, radar_api only', () => {
   }
   assert.match(functions.get('private.issue_login_code').body, /interval '60 seconds'/);
   assert.match(functions.get('private.exchange_login_code').body, /interval '30 days'/);
+  // Login CSRF: the code is bound to the browser that started the sign-in.
+  assert.match(SQL, /bind_hash text not null check \(bind_hash ~ '\^\[0-9a-f\]\{64\}\$'\)/);
+  assert.match(functions.get('private.exchange_login_code').body, /if p_bind_hash is null or v_bind is distinct from p_bind_hash then return; end if;/);
 });
 
 test('seeds Krishna as admin; teammate placeholders use example.com', () => {
