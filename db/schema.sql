@@ -29,7 +29,7 @@
 --                  listings. Writes only mark_joined (their own row). No
 --                  listings, archive, source_status, watch, decisions,
 --                  intl_dates, manual, rounds or other people's rows.
---   radar_service  the GitHub Actions jobs (bearer RADAR_SERVICE_TOKEN):
+--   radar_service  the Railway cron jobs (bearer RADAR_SERVICE_TOKEN):
 --                  sync_section / set_status, reads of listings,
 --                  source_status, watch, decisions, intl_dates and manual,
 --                  and watch upserts. Nothing about members, teams or rounds.

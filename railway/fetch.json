@@ -1,0 +1,8 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "deploy": {
+    "startCommand": "npm run job:fetch",
+    "cronSchedule": "30 0,12 * * *",
+    "restartPolicyType": "NEVER"
+  }
+}

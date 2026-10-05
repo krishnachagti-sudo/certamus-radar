@@ -11,7 +11,9 @@
     "fetch": "node fetch/run.js",
     "db:apply": "node db/apply.mjs",
     "db:check": "node db/check-access.mjs",
-    "db:seed": "node db/seed.mjs"
+    "db:seed": "node db/seed.mjs",
+    "job:fetch": "node fetch/job.js fetch",
+    "job:watch": "node fetch/job.js watch"
   },
   "dependencies": {
     "pg": "^8.23.1"

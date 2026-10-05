@@ -1,7 +1,8 @@
-// The Actions jobs' client for the Radar API (fetch/run.js, fetch/hack-run.js,
-// fetch/watch.js, db/seed.mjs). Every read and write carries the service
-// token (RADAR_SERVICE_TOKEN, a GitHub secret with the same value as the
-// API's Railway variable) as a Bearer token, and the API runs it as the
+// The scheduled jobs' client for the Radar API (fetch/run.js, fetch/hack-run.js,
+// fetch/watch.js via fetch/job.js on the Railway cron services, and
+// db/seed.mjs). Every read and write carries the service token
+// (RADAR_SERVICE_TOKEN, a variable on each cron service with the same value
+// as the API service's) as a Bearer token, and the API runs it as the
 // radar_service database role. The API's address comes from RADAR_API_URL.
 // `fetch` is injectable for tests; nothing here touches the network on import.
 import { decisionsFromRows, intlDatesFromRows, manualFromRows } from '../lib/rows.js';

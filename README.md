@@ -181,7 +181,7 @@ tier except Other.
 
 The Hackathons section (see "Sections" above) is the `hack` section of the
 database's `listings`, `archive` and `source_status` tables (see "Data"
-below), written only by `fetch/hack-run.js` in the same `fetch.yml` job as
+below), written only by `fetch/hack-run.js` in the same `fetch` cron job as
 the case comps, with the same merge, 60-day archive, decision and privacy
 rules (shared code in `fetch/pipeline.js`). Each section records its own
 status; the job goes red only when both sections fail. Every source is
@@ -255,7 +255,7 @@ two sources:
 
 ### Weekly official-page watcher
 
-A weekly Action (`fetch/watch.js`, Mondays 05:00 IST) fetches each curated
+A weekly Railway cron job (`fetch/watch.js`, Mondays 05:00 IST) fetches each curated
 competition's official watch page (international and fest watchlist alike), strips it down to text and hashes it. A
 changed hash shows **"Official page changed on \<date>, new edition?"** on
 the card — a
@@ -293,9 +293,16 @@ only code and the hand-edited config files in `data/` (`team.json`,
 email digest is gone (retired 2026-09-30; the Board's "What needs
 attention" panel replaced it).
 
-- **Daily 06:00 and 18:00 IST** `fetch` workflow: `fetch/run.js` (section
-  `case`) and `fetch/hack-run.js` (section `hack`).
-- **Monday 05:00 IST** `watch` workflow: `fetch/watch.js`.
+- **Daily 06:00 and 18:00 IST** the `fetch` cron service
+  (`npm run job:fetch`): `fetch/run.js` (section `case`), then
+  `fetch/hack-run.js` (section `hack`). It exits 1 (a failed run on
+  Railway) only when both sections failed; one section's failure is already
+  on the board through its status.
+- **Monday 05:00 IST** the `watch` cron service (`npm run job:watch`):
+  `fetch/watch.js`.
+
+Both are Railway cron services (see "Railway" below); nothing runs on
+GitHub Actions any more.
 
 | Table | Written by |
 |---|---|
@@ -330,13 +337,13 @@ How a fetch run writes (`fetch/db.js`, `fetch/pipeline.js`):
 The watcher reads the previous hashes from `watch` (a failed read writes
 nothing) and upserts the new ones.
 
-**Service token.** The jobs call the API with two repository secrets
-(Settings → Secrets and variables → Actions): `RADAR_API_URL` (the API
-origin) and `RADAR_SERVICE_TOKEN` (the same value as the API's Railway
-variable), sent as `Authorization: Bearer`. The API runs those calls as the
+**Service token.** The jobs call the API with two variables on each cron
+service: `RADAR_API_URL` (the API's address) and `RADAR_SERVICE_TOKEN` (the
+same value as the API service's, best as a reference
+`${{<api service>.RADAR_SERVICE_TOKEN}}`), sent as `Authorization: Bearer`. The API runs those calls as the
 `radar_service` database role, which can read and write the listings,
 archive, status and watch tables and read decisions / intl_dates / manual,
-and nothing about members, teams or rounds. Without the secrets every job
+and nothing about members, teams or rounds. Without the variables every job
 fails without writing.
 
 **Seeding (once, at cutover).** `db/seed.mjs` reads the last committed
@@ -532,7 +539,7 @@ anywhere.
 | `DATABASE_URL` | Postgres URL logged in as **`radar_api`** (not the owner), e.g. `postgresql://radar_api:<password>@${{Postgres.RAILWAY_PRIVATE_DOMAIN}}:5432/${{Postgres.PGDATABASE}}` |
 | `GOOGLE_CLIENT_ID` | the Google OAuth web client's ID |
 | `GOOGLE_CLIENT_SECRET` | its secret (also keys the sealed sign-in cookie) |
-| `RADAR_SERVICE_TOKEN` | at least 32 random characters; the same value is the GitHub secret of that name |
+| `RADAR_SERVICE_TOKEN` | at least 32 random characters; the cron services reference it |
 | `ALLOWED_ORIGINS` | comma-separated site origins, e.g. `https://conyso.com` (CORS and sign-in return addresses); `http:` ones are refused next to an https API unless `RADAR_DEV_ALLOW_HTTP=1` (local testing only) |
 | `RETURN_PATH_PREFIXES` | optional, default `/certamus/radar/`: the paths sign-in may return to (comma-separated, each starting and ending with `/`) |
 | `API_ORIGIN` | the API's own public origin, e.g. `https://certamus-radar-api.up.railway.app` (Google redirects to `API_ORIGIN/auth/callback`) |
@@ -554,6 +561,34 @@ can call the four session functions and switch to the next two),
 `radar_member` (a signed-in person; RLS decides every row) and
 `radar_service` (the jobs). The database must hold Radar only.
 
+### Cron services (the scheduled jobs)
+
+Two more services in the same Railway project, built from the same repo
+and branch as the API. Each has its own config file, which replaces
+`railway.json` for that service (Settings → Config-as-code → Railway Config
+File):
+
+| Service | Config file | Start command | Cron (UTC) | IST |
+|---|---|---|---|---|
+| `fetch` | `/railway/fetch.json` | `npm run job:fetch` | `30 0,12 * * *` | 06:00 and 18:00 daily |
+| `watch` | `/railway/watch.json` | `npm run job:watch` | `30 23 * * 0` | Monday 05:00 |
+
+Both use `restartPolicyType: NEVER` (a failed run waits for the next
+schedule rather than retrying in a loop) and no health check (they serve
+nothing). Each run starts, does its work and exits; Railway shows the exit
+code. Railway skips a scheduled run while the previous one is still
+running.
+
+| Variable (each cron service) | What |
+|---|---|
+| `RADAR_SERVICE_TOKEN` | `${{<api service>.RADAR_SERVICE_TOKEN}}` (a reference, so it follows the API's) |
+| `RADAR_API_URL` | either the public origin, `https://${{<api service>.RAILWAY_PUBLIC_DOMAIN}}`, or the private network, `http://${{<api service>.RAILWAY_PRIVATE_DOMAIN}}:${{<api service>.PORT}}` (the private form needs `PORT` set explicitly on the API service, e.g. `8080`, so it can be referenced) |
+
+Run one by hand: Railway's "Run now" on the cron service's latest
+deployment if your dashboard shows it; otherwise locally with the same two
+variables, `RADAR_API_URL=… RADAR_SERVICE_TOKEN=… npm run job:fetch` (or
+`job:watch`), which writes through the API exactly as the cron does.
+
 ## Tuning
 
 `data/team.json` (size, graduating years), `data/national.json`,
@@ -571,6 +606,7 @@ npm test            # unit tests, SQL tests (PGlite) and API tests; no network
 RADAR_API_URL=... RADAR_SERVICE_TOKEN=... npm run fetch       # live case-comp fetch through the API
 RADAR_API_URL=... RADAR_SERVICE_TOKEN=... node fetch/hack-run.js
 RADAR_API_URL=... RADAR_SERVICE_TOKEN=... node fetch/watch.js # checks every curated official page
+RADAR_API_URL=... RADAR_SERVICE_TOKEN=... npm run job:fetch   # what the fetch cron runs (both sections)
 ```
 
 Tests never touch the network: `fetch/db.js` and `lib/api.js` take an
@@ -581,4 +617,4 @@ against the session user, a superuser there, so role membership is checked
 with `pg_has_role()` instead).
 
 Unstop's API is undocumented. If the board shows "Data stale", open the
-failed `fetch` run: a shape change means `fetch/unstop.js` needs updating.
+`fetch` cron service's latest run log on Railway: a shape change means `fetch/unstop.js` needs updating.
