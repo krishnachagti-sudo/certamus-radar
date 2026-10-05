@@ -1,6 +1,6 @@
 // Daily job for the Hackathons section: Unstop (hackathons) + Devfolio + MLH
 // + Devpost + the curated list → kind, tier, verdict → merge → one
-// sync_section write of the 'hack' section in Supabase. Same merge, archive,
+// sync_section write of the 'hack' section through the API. Same merge, archive,
 // decision and privacy rules as run.js (fetch/pipeline.js).
 //
 // Every source is optional: a failing one is a warning and its previous

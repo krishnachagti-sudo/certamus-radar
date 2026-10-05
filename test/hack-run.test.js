@@ -196,7 +196,7 @@ test('every fetched source failing fails the run: no sync, status carries last_o
 });
 
 test('unreadable live records: the run fails before fetching, no sync, error status', async () => {
-  const { dir, db } = setup({}, { fail: { listings: new Error('Supabase listings (hack): HTTP 503') } });
+  const { dir, db } = setup({}, { fail: { listings: new Error('API listings (hack): HTTP 503') } });
   let fetched = false;
   const d = deps(db);
   const code = await main({ dataDir: dir, now, deps: { ...d, getJson: async u => { fetched = true; return d.getJson(u); } } });
@@ -229,13 +229,13 @@ test('prune: a record closed over 60 days ago leaves the rows and rides the same
   assert.equal('verdict' in archive[0], false);
 });
 
-test('decisions from Supabase keep a committed hackathon past the prune', async () => {
+test('decisions from the database keep a committed hackathon past the prune', async () => {
   const { dir, db } = setup({}, { listings: [{ ...oldClosed, comp_end: '2026-09-01' }], tables: { decisions: [{ id: '55', status: 'entering', registered: false }] } });
   await go(dir, db);
   assert.ok(db.listings.some(r => r.id === 55));
 });
 
-test('Supabase decisions unreadable: nothing is pruned, with a warning', async () => {
+test('database decisions unreadable: nothing is pruned, with a warning', async () => {
   const { dir, db } = setup({}, { listings: [oldClosed], tables: { decisions: new Error('HTTP 503') } });
   assert.equal(await go(dir, db), 0);
   assert.ok(db.listings.some(r => r.id === 55));

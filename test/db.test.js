@@ -1,9 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createDb, authHeaders, isJwt, readTables } from '../fetch/db.js';
+import { createDb, readTables } from '../fetch/db.js';
 
-const JWT = 'eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.c2ln';
-const SECRET = 'sb_secret_abcDEF123';
+const SECRET = 'service-token-0123456789abcdef0123456789';
 
 // Fake fetch: `answer(url, init)` returns { status, body } (body is JSON-encoded
 // unless it is a string). Every call is recorded.
@@ -24,47 +23,30 @@ const page = (url, rows) => {
   const off = Number(u.searchParams.get('offset') || 0);
   return rows.slice(off, off + Number(u.searchParams.get('limit') || rows.length));
 };
-const db = (fetch, over = {}) => createDb({ url: 'https://abc.supabase.co/', key: SECRET, fetch, ...over });
+const db = (fetch, over = {}) => createDb({ url: 'https://api.radar.test/', key: SECRET, fetch, ...over });
 
-test('isJwt: three dot-separated segments', () => {
-  assert.equal(isJwt(JWT), true);
-  assert.equal(isJwt(SECRET), false);
-  assert.equal(isJwt('a.b'), false);
-  assert.equal(isJwt(''), false);
-});
-
-test('an sb_secret_ key goes in apikey only; a JWT also goes in Authorization', () => {
-  assert.deepEqual(authHeaders(SECRET), { apikey: SECRET });
-  assert.deepEqual(authHeaders(JWT), { apikey: JWT, Authorization: `Bearer ${JWT}` });
-});
-
-test('requests carry the key headers', async () => {
-  for (const key of [SECRET, JWT]) {
-    const f = fakeFetch(() => ({ body: [] }));
-    await db(f, { key }).readTable('decisions');
-    const h = f.calls[0].init.headers;
-    assert.equal(h.apikey, key);
-    assert.equal(h.Authorization, isJwt(key) ? `Bearer ${key}` : undefined);
-  }
-});
-
-test('config comes from the environment, URL falling back to config.js', async () => {
+test('requests carry the service token as a Bearer token', async () => {
   const f = fakeFetch(() => ({ body: [] }));
-  const d = createDb({ env: { SUPABASE_SERVICE_KEY: SECRET }, fetch: f });
+  await db(f).readTable('decisions');
+  assert.equal(f.calls[0].init.headers.Authorization, `Bearer ${SECRET}`);
+  assert.equal(f.calls[0].init.headers.apikey, undefined);
+});
+
+test('config comes from RADAR_API_URL and RADAR_SERVICE_TOKEN', async () => {
+  const f = fakeFetch(() => ({ body: [] }));
+  const d = createDb({ env: { RADAR_API_URL: 'https://api.radar.test', RADAR_SERVICE_TOKEN: SECRET }, fetch: f });
   assert.equal(d.configured, true);
   await d.readTable('manual');
-  assert.match(f.calls[0].url, /^https:\/\/hjgfowgswqafrhlqbuse\.supabase\.co\/rest\/v1\/manual\?/);
-  const d2 = createDb({ env: { SUPABASE_URL: 'https://other.supabase.co', SUPABASE_SERVICE_KEY: SECRET }, fetch: f });
-  await d2.readTable('manual');
-  assert.match(f.calls[1].url, /^https:\/\/other\.supabase\.co\/rest\/v1\/manual\?/);
+  assert.match(f.calls[0].url, /^https:\/\/api\.radar\.test\/db\/manual\?/);
+  assert.equal(createDb({ env: { RADAR_SERVICE_TOKEN: SECRET }, fetch: f }).configured, false, 'no URL fallback');
 });
 
 test('no service key: not configured, every call throws without fetching', async () => {
   const f = fakeFetch(() => ({ body: [] }));
   const d = createDb({ env: {}, fetch: f });
   assert.equal(d.configured, false);
-  await assert.rejects(d.readListings('case'), /Supabase not configured/);
-  await assert.rejects(d.syncSection('case', [{ id: 1 }], [], {}), /Supabase not configured/);
+  await assert.rejects(d.readListings('case'), /API not configured/);
+  await assert.rejects(d.syncSection('case', [{ id: 1 }], [], {}), /API not configured/);
   assert.equal(f.calls.length, 0);
 });
 
@@ -81,7 +63,7 @@ test('readListings pages with limit/offset until an empty page, filtered by sect
   assert.equal(f.calls.length, 4);
   for (const c of f.calls) {
     const u = new URL(c.url);
-    assert.equal(u.pathname, '/rest/v1/listings');
+    assert.equal(u.pathname, '/db/listings');
     assert.equal(u.searchParams.get('section'), 'eq.hack');
     assert.equal(u.searchParams.get('select'), 'data');
     assert.equal(u.searchParams.get('order'), 'id.asc');
@@ -113,9 +95,9 @@ test('errors throw with the HTTP status and the Postgres message', async () => {
   await assert.rejects(db(h).readTable('decisions'), /decisions.*unexpected/);
 });
 
-test('a network error is rethrown as a Supabase error', async () => {
+test('a network error is rethrown as an API error', async () => {
   const d = db(async () => { throw new Error('ECONNRESET'); });
-  await assert.rejects(d.readTable('decisions'), /Supabase.*ECONNRESET/);
+  await assert.rejects(d.readTable('decisions'), /API.*ECONNRESET/);
 });
 
 test('syncSection posts one RPC call with section, rows, archive and status', async () => {
@@ -124,7 +106,7 @@ test('syncSection posts one RPC call with section, rows, archive and status', as
   assert.deepEqual(out, { archived: 1, upserted: 2, deleted: 1 });
   assert.equal(f.calls.length, 1);
   const c = f.calls[0];
-  assert.equal(c.url, 'https://abc.supabase.co/rest/v1/rpc/sync_section');
+  assert.equal(c.url, 'https://api.radar.test/rpc/sync_section');
   assert.equal(c.init.method, 'POST');
   assert.equal(c.init.headers['Content-Type'], 'application/json');
   assert.deepEqual(c.body, { p_section: 'case', p_rows: [{ id: 1 }, { id: 2 }], p_archive: [{ archive_key: '9', id: 9 }], p_status: { last_ok: 'x' } });
@@ -133,7 +115,7 @@ test('syncSection posts one RPC call with section, rows, archive and status', as
 test('setStatus posts the set_status RPC and tolerates an empty answer', async () => {
   const f = fakeFetch(() => ({ status: 204, body: '' }));
   await db(f).setStatus('hack', { last_error: 'boom' });
-  assert.equal(f.calls[0].url, 'https://abc.supabase.co/rest/v1/rpc/set_status');
+  assert.equal(f.calls[0].url, 'https://api.radar.test/rpc/set_status');
   assert.deepEqual(f.calls[0].body, { p_section: 'hack', p_status: { last_error: 'boom' } });
 });
 
@@ -141,17 +123,17 @@ test('readStatus returns the section row data, or null when there is none', asyn
   const f = fakeFetch(url => ({ body: url.includes('eq.case') ? [{ data: { last_ok: 'T' } }] : [] }));
   assert.deepEqual(await db(f).readStatus('case'), { last_ok: 'T' });
   assert.equal(await db(f).readStatus('hack'), null);
-  assert.equal(new URL(f.calls[0].url).pathname, '/rest/v1/source_status');
+  assert.equal(new URL(f.calls[0].url).pathname, '/db/source_status');
 });
 
-test('readWatch returns the { id: data } map; upsertWatch merges duplicates', async () => {
+test('readWatch returns the { id: data } map; upsertWatch posts the rows (an upsert on id)', async () => {
   const f = fakeFetch((url, init) => (init.method === 'POST' ? { status: 201, body: '' } : { body: page(url, [{ id: 'intl-a', data: { hash: 'h' } }]) }));
   const d = db(f);
   assert.deepEqual(await d.readWatch(), { 'intl-a': { hash: 'h' } });
   await d.upsertWatch([{ id: 'intl-a', data: { hash: 'h2' } }]);
   const post = f.calls.at(-1);
-  assert.equal(new URL(post.url).pathname, '/rest/v1/watch');
-  assert.match(post.init.headers.Prefer, /resolution=merge-duplicates/);
+  assert.equal(new URL(post.url).pathname, '/db/watch');
+  assert.equal(post.init.method, 'POST');
   assert.equal(post.body[0].id, 'intl-a');
   assert.deepEqual(post.body[0].data, { hash: 'h2' });
   assert.ok(post.body[0].updated_at);
@@ -172,7 +154,7 @@ test('readTables converts each table to the in-memory shapes and reports failure
   const r = await readTables(db(f));
   assert.deepEqual(r.decisions, { value: { 7: { status: 'entering', registered: true, updated: '2026-09-29' } } });
   assert.deepEqual(r.manual, { value: [{ url: 'https://unstop.com/c/kept-55', added: '2026-09-20' }] });
-  assert.match(r.intlDates.error, /^Supabase .*503/);
+  assert.match(r.intlDates.error, /^API .*503/);
 });
 
 test('readTables without a key never fetches', async () => {

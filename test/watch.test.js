@@ -153,7 +153,7 @@ test('main carries the previous hash from the watch table, so a change is dated'
 
 test('main: an unreadable watch table means nothing is fetched or written', async () => {
   const dir = tmpDataDir({ 'international.json': [row('intl-a')] });
-  const db = fakeDb({}, { readFails: new Error('Supabase watch: HTTP 503') });
+  const db = fakeDb({}, { readFails: new Error('API watch: HTTP 503') });
   let fetched = false;
   assert.equal(await run(dir, db, async () => { fetched = true; return 'text'; }), 1);
   assert.equal(fetched, false);

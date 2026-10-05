@@ -1,4 +1,4 @@
-// Daily job for case comps: read the live records from Supabase → fetch →
+// Daily job for case comps: read the live records from the API → fetch →
 // classify → merge → one sync_section write. If the live records cannot be
 // read, or any search fails, nothing but the status is written, so a bad day
 // never blanks the board. Listing body text (details_text) and the raw

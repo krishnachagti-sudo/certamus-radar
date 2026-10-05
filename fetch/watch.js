@@ -1,7 +1,7 @@
 // Weekly watcher: hashes each curated competition's official page so a
 // changed page surfaces on the card, without storing the page content
 // itself. Runs in its own Action; the previous hashes are read from and the
-// new ones upserted into the Supabase `watch` table (service key).
+// new ones upserted into the `watch` table through the API (service token).
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';

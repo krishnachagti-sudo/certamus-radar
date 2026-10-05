@@ -9,7 +9,9 @@
     "test": "node --test",
     "start": "node api/server.js",
     "fetch": "node fetch/run.js",
-    "db:apply": "node db/apply.mjs"
+    "db:apply": "node db/apply.mjs",
+    "db:check": "node db/check-access.mjs",
+    "db:seed": "node db/seed.mjs"
   },
   "dependencies": {
     "pg": "^8.23.1"

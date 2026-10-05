@@ -32,7 +32,7 @@ function curatedVerdict(row) {
 const CURATED_ID = /^(intl|fest|hk)-/;
 const ROW_TIERS = new Set(['iit', 'iim', 'national', 'bschool', 'corporate', 'international']);
 
-// `confirmedDates` comes from the Supabase intl_dates table: { [id]: { regn_close, comp_end, confirmed_on } }.
+// `confirmedDates` comes from the intl_dates table (through the API): { [id]: { regn_close, comp_end, confirmed_on } }.
 // `today` is accepted for symmetry with oppdeskRecords; curated rows do not age out.
 export function curatedRecords(list, confirmedDates, today) { // eslint-disable-line no-unused-vars
   const dates = confirmedDates && typeof confirmedDates === 'object' ? confirmedDates : {};

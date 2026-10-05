@@ -1,10 +1,10 @@
 // Shared plumbing for the daily jobs (run.js for case comps, hack-run.js for
-// hackathons): config files in data/, the Supabase reads, curated lists, and
+// hackathons): config files in data/, the database reads (API), curated lists, and
 // the merge + archive + sync step. Nothing here knows which section it serves.
 //
-// The live records, the archive and the run status live in Supabase
-// (listings / archive / source_status, written only through sync_section and
-// set_status). data/ holds only hand-edited config (team, tiers, curated
+// The live records, the archive and the run status live in Postgres behind
+// the API (listings / archive / source_status, written only through
+// sync_section and set_status). data/ holds only hand-edited config (team, tiers, curated
 // lists), read here and never written.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -38,7 +38,7 @@ export function configStore(dataDir) {
   return { file, read, readStrict };
 }
 
-// A Supabase table's value, or `fallback` with a warning when the read failed.
+// A database table's value, or `fallback` with a warning when the read failed.
 export function fromRemote(remote, name, fallback, warnings) {
   if (remote[name].value !== undefined) return remote[name].value;
   warnings.push(`${name}: ${remote[name].error}; none`);

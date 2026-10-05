@@ -28,7 +28,7 @@ function fakeDb({ listings = [], status = null, tables = {}, fail = {} } = {}) {
     },
     async syncSection(section, rows, archive, st) {
       if (fail.sync) throw fail.sync;
-      if (!rows.length && db.listings.length) throw new Error('Supabase sync_section (case): HTTP 400 refusing to empty section case');
+      if (!rows.length && db.listings.length) throw new Error('API sync_section (case): HTTP 400 refusing to empty section case');
       db.syncs.push(structuredClone({ section, rows, archive, status: st }));
       for (const a of archive) if (!db.archive.has(a.archive_key)) db.archive.set(a.archive_key, a);
       db.listings = structuredClone(rows);
@@ -43,7 +43,7 @@ function fakeDb({ listings = [], status = null, tables = {}, fail = {} } = {}) {
   return db;
 }
 
-// Config files in a temp data/ dir; live records, status and Supabase tables
+// Config files in a temp data/ dir; live records, status and database tables
 // in the fake db.
 function setup(over = {}, { listings, status = { last_ok: '2026-09-28T00:30:00.000Z' }, tables = {}, fail = {} } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'radar-'));
@@ -148,7 +148,7 @@ test('a search failure syncs nothing and records the error with the previous las
 });
 
 test('unreadable live records: no sync at all, only a status with the error', async () => {
-  const { dir, db } = setup({}, { fail: { listings: new Error('Supabase listings (case): HTTP 503 down') } });
+  const { dir, db } = setup({}, { fail: { listings: new Error('API listings (case): HTTP 503 down') } });
   let searched = false;
   const code = await go(dir, db, unstopOnly(async () => { searched = true; return oneItem(); }));
   assert.equal(code, 1);
@@ -169,7 +169,7 @@ test('no service key: the real client refuses, the run fails without fetching an
 });
 
 test('a failed sync records the error, carrying last_ok and sources from the previous status', async () => {
-  const { dir, db } = setup({}, { status: { last_ok: 'PREV', sources: { x: 1 } }, fail: { sync: new Error('Supabase sync_section (case): HTTP 500 boom') } });
+  const { dir, db } = setup({}, { status: { last_ok: 'PREV', sources: { x: 1 } }, fail: { sync: new Error('API sync_section (case): HTTP 500 boom') } });
   assert.equal(await go(dir, db), 1);
   const st = db.statusWrites[0].status;
   assert.equal(st.last_ok, 'PREV');
@@ -348,7 +348,7 @@ test('decisions keep a committed record past the 60-day prune', async () => {
   assert.deepEqual(db.status.warnings, []);
 });
 
-test('every Supabase table down: empty decisions and links, warnings, run still succeeds', async () => {
+test('every database table down: empty decisions and links, warnings, run still succeeds', async () => {
   const err = new Error('HTTP 503');
   const { dir, db } = setup({}, { tables: { decisions: err, manual: err, intl_dates: err } });
   assert.equal(await go(dir, db), 0);

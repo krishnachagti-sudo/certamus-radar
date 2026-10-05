@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { seed } from '../supabase/seed-from-json.mjs';
+import { seed, ownerImporter } from '../db/seed.mjs';
+import { freshDb } from './helpers/pg.js';
 
 function seedDir(over = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'radar-seed-'));
@@ -59,4 +60,29 @@ test('dry run reads and checks everything but writes nothing', async () => {
   await seed({ db, dir: seedDir(), dryRun: true, log: () => {} });
   assert.equal(db.syncs.length, 0);
   assert.equal(db.watch.length, 0);
+});
+
+test('the admin\'s rows: imported over the owner connection when their files are there', async () => {
+  const dir = seedDir({ 'decisions.json': [{ id: '7', status: 'entering', registered: true, note: 'n', updated_at: '2026-09-29T00:00:00+00:00' }], 'manual.json': [{ id: '55', url: 'https://unstop.com/c/x-55', added: '2026-09-20' }] });
+  const imported = [];
+  const owner = { async importRows(t, rows) { imported.push([t, rows.length]); return rows.length; } };
+  await seed({ db: fakeDb(), owner, dir, log: () => {} });
+  assert.deepEqual(imported, [['decisions', 1], ['manual', 1]]);
+  await assert.rejects(seed({ db: fakeDb(), dir, log: () => {} }), /DATABASE_URL/, 'no owner connection, no silent skip');
+  const db = fakeDb();
+  await seed({ db, dir: seedDir(), log: () => {} });
+  assert.equal(db.syncs.length, 2, 'no export files: the rest still seeds');
+});
+
+test('ownerImporter against the real schema: typed rows in, existing ids kept, unknown columns dropped', async () => {
+  const pg = await freshDb();
+  const imp = ownerImporter((sql, params) => pg.query(sql, params));
+  assert.equal(await imp.importRows('decisions', [{ id: '7', status: 'entering', registered: true, note: 'n', updated_at: '2026-09-29T00:00:00+00:00', extra: 1 }, { id: '8', status: null, registered: false, note: 'x' }]), 2);
+  assert.equal(await imp.importRows('decisions', [{ id: '7', status: 'skipped' }]), 0);
+  assert.deepEqual((await pg.query(`select id, status, registered from public.decisions order by id`)).rows,
+    [{ id: '7', status: 'entering', registered: true }, { id: '8', status: null, registered: false }]);
+  assert.equal(await imp.importRows('intl_dates', [{ id: 'intl-a', regn_close: '2026-11-01', comp_end: null, confirmed_on: '2026-09-30' }]), 1);
+  assert.equal(await imp.importRows('manual', [{ id: '55', url: 'https://unstop.com/c/x-55', added: '2026-09-20' }]), 1);
+  await assert.rejects(imp.importRows('manual', [{ id: '56', url: 'https://evil.com/56' }]), /manual_url_unstop/);
+  await assert.rejects(imp.importRows('members', []), /not an admin table/);
 });
