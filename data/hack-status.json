@@ -1,24 +1,24 @@
 {
-  "last_run": "2026-10-04T16:56:29.785Z",
-  "last_ok": "2026-10-04T16:56:29.785Z",
+  "last_run": "2026-10-05T06:08:03.975Z",
+  "last_ok": "2026-10-05T06:08:03.975Z",
   "last_error": null,
   "warnings": [],
   "sources": {
     "unstop": {
       "ok": true,
-      "count": 254
+      "count": 249
     },
     "devfolio": {
       "ok": true,
-      "count": 20
+      "count": 18
     },
     "mlh": {
       "ok": true,
-      "count": 74
+      "count": 66
     },
     "devpost": {
       "ok": true,
-      "count": 53
+      "count": 48
     },
     "curated": {
       "ok": true,
