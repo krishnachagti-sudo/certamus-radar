@@ -3,7 +3,7 @@
 // team note. Right, sticky: countdown, team/format/fee/prizes, status, the
 // Registered tick, clash warnings, the watcher flag and the outbound link;
 // for the admin a curated record also gets "Set dates". Ids are strings.
-// Listings, archive, watch flags, status and decisions come from Supabase
+// Listings, archive, watch flags, status and decisions come from the API
 // after requireMember(); the curated config still comes from ./data/*.json.
 // Dates confirmed with "Set dates" show here at once (an overlay from the
 // store); the calendar and board get them from the next fetch.
@@ -12,7 +12,7 @@
 // curated facts and the watcher flag. Clashes count both sections.
 // Admin only: requireMember() sends teammates to team.html.
 // Team section (lib/teamview.js): the team, its invite link and rounds, read
-// from Supabase and changed only through the team/round RPCs; errors go to
+// from the API and changed only through the team/round RPCs; errors go to
 // the banner.
 import { dayDiff, todayIST } from '../dates.js';
 import {
@@ -44,7 +44,7 @@ const other = sectionOf(otherSection(sec.key));
 
 const state = {
   comps: [], otherItems: [], archive: [], intl: [], watch: {}, status: null, decisions: {}, intlDates: {}, error: null, datesMsg: '',
-  // Team section: rows from Supabase, and the open forms' drafts (kept here
+  // Team section: rows from the API, and the open forms' drafts (kept here
   // so a redraw mid-typing never loses them).
   teams: [], teamMembers: [], rounds: [], members: [], teamForm: null, roundForm: null, busy: false, teamMsg: '',
 };

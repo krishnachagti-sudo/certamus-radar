@@ -27,7 +27,7 @@ const state = {
 
 async function load() {
   await guardLoad(state, async () => {
-    // Listings, archive and status from Supabase; the curated lists are
+    // Listings, archive and status from the API; the curated lists are
     // public config in ./data/.
     const [comps, archive, curated, status] = await Promise.all([
       readListings(sec.key), readArchive(sec.key), Promise.all(sec.files.curated.map(f => pagesJson(f, []))), readStatus(sec.key),

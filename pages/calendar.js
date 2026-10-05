@@ -2,7 +2,7 @@
 // (mock C). Read-only. Shows competitions that are Watching, Entering or
 // Registered: ⏰ registration closes, 🏁 competition ends, clash days tinted,
 // and dashed "expected" markers for curated international items (§9.10).
-// Listings, status and decisions load from Supabase after requireMember().
+// Listings, status and decisions load from the API after requireMember().
 // Section (?s=hack): this section's Watching items, plus the Entering and
 // Registered items of BOTH sections (one committed set, one clash rule);
 // the other section's items carry a small section marker.

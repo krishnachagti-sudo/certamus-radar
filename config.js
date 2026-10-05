@@ -1,9 +1,11 @@
-// The Supabase project behind every page and job. Both values are public by
-// design: the publishable key alone reads nothing (no anon access to any
-// table or function, supabase/v3.sql). Pages sign in with Google
-// (lib/auth.js) and every request carries that member's session, so RLS
-// decides what they see and write. The Actions jobs use the secret key from
-// the SUPABASE_SERVICE_KEY repository secret, never this one.
-export const SUPABASE_URL = 'https://hjgfowgswqafrhlqbuse.supabase.co';
-// The publishable key (kept under its old name; supabase/check-access.mjs imports it).
-export const SUPABASE_ANON_KEY = 'sb_publishable_p7F8PrYs50b95BeKlR3mfw_wYXprsg5';
+// The Radar API every page talks to (api/, deployed on Railway). Public by
+// design: it holds no secret, and the API answers nothing without a
+// signed-in member's session token (or the jobs' service token, which lives
+// only in GitHub and Railway secrets). Pages sign in with Google through it
+// (lib/auth.js); the database decides what each person sees and writes.
+//
+// CHANGE THIS at cutover to the API service's real public URL (Railway →
+// the api service → Settings → Networking), with no trailing slash. Every
+// page's Content-Security-Policy connect-src must name the same origin
+// (test/pages.test.js checks that they match).
+export const API_URL = 'https://certamus-radar-api.up.railway.app';

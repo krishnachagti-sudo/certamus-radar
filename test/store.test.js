@@ -7,7 +7,7 @@ import {
   createTeam, updateTeam, deleteTeam, markJoined, upsertRound, deleteRound, setRoundDone, readMyJoins,
 } from '../lib/store.js';
 
-// A stand-in for the supabase-js query builder: records every call, answers
+// A stand-in for the lib/api.js query builder: records every call, answers
 // from `respond(call)` where call = { table, ops: [[name, ...args]] }.
 function fakeClient(respond) {
   const calls = [];

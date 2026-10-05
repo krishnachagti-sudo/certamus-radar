@@ -27,7 +27,7 @@ test('otherSection flips', () => {
   assert.equal(otherSection('hack'), 'case');
 });
 
-test('curated config files per section (listings, status and archive are Supabase rows)', () => {
+test('curated config files per section (listings, status and archive are database rows)', () => {
   assert.deepEqual(SECTIONS.case.files, { curated: ['international.json', 'fests.json'] });
   assert.deepEqual(SECTIONS.hack.files, { curated: ['hack-curated.json'] });
 });
