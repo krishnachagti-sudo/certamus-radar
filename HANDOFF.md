@@ -9,12 +9,16 @@ The README is the full reference (see "Data (Supabase)", "Sign-in and roles", "T
 | Piece | Where | State |
 |---|---|---|
 | Live site (old, public) | `main` → GitHub Pages `krishnachagti-sudo.github.io/certamus-radar/` | running; Actions commit `data/*.json` twice daily |
-| New platform | branch `platform` | built; 504 tests pass (`npm test`) |
-| Migration | `supabase/v3.sql` | written, idempotent, tested in PGlite (106 checks); **not applied** |
+| New platform | branch `platform` | built; 515 tests pass (`npm test`) |
+| Migration | `supabase/v3.sql` | written, idempotent, tested in PGlite (167 checks); **not applied** |
 | Access check | `supabase/check-access.mjs` | run after applying v3 |
 | One-off history seed | `supabase/seed-from-json.mjs` + `supabase/seed/` (gitignored, local only) | run once, right after v3 |
 | Supabase project | `hjgfowgswqafrhlqbuse` (Mumbai, owner's GitHub-login Supabase account) | auth URL config done (see below) |
 | Google Cloud project | "Certamus Radar" (`lofty-shine-510620-k1`, owner's Google account) | consent screen half done (see below) |
+
+## Roles (Resolution 21, 2026-10-05)
+
+Only the owner (role `admin`) uses the radar: every page, statuses, teams and rounds. Teammates (role `member`) get one screen, `team.html`: the competitions they are in, split into **To join** (invite link, Copy, Open, a big I've joined) and **Joined** (date, Undo). Any other page sends them there. The database enforces it: a teammate can read only their own `members` row, their own teams, their own `team_members` rows, and `my_joins()`; every other table is admin-only, and `set_round_done` is admin-only like the other round RPCs.
 
 ## Already done in dashboards
 
@@ -53,6 +57,7 @@ Do steps 1–4 before step 5. They break nothing.
    4. Run the seed: `SUPABASE_SERVICE_KEY=… node supabase/seed-from-json.mjs` (add `--dry-run` first). This is also the first live check that an `sb_secret_` key in `apikey` is accepted and that `auth.role()` returns `service_role` inside `sync_section`. Both fail safely (401/42501) if wrong.
    5. Merge `platform` → `main` and push. Run the `fetch` and `watch` workflows by hand and confirm green, with listings populated.
    6. Check `https://conyso.com/certamus/radar/`: login screen when signed out; owner signs in; every page loads; create and delete a test team. The github.io URL should show the "moved" notice.
+   7. With a teammate's account (or ask one): opening any page lands on "Your teams" with only To join / Joined and no nav; I've joined and Undo work.
 
 ## Things to know
 

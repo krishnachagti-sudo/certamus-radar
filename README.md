@@ -5,6 +5,8 @@ other national institutes, top B-schools and colleges, flagship corporates and
 the international circuit, checked against the Certamus team (four IIM
 Sirmaur BMS students, graduating 2029).
 Board: https://conyso.com/certamus/radar/ (team members only, Google sign-in).
+The radar itself is Krishna's (the admin); teammates get one screen, the
+teams they are in to join (see "Sign-in and roles").
 
 ## Pages
 
@@ -24,14 +26,16 @@ Board: https://conyso.com/certamus/radar/ (team members only, Google sign-in).
   (Agenda is the default under 760px). Shows anything Watching, Entering or
   Registered, plus dashed "expected" markers for curated international
   competitions with no confirmed dates yet.
-- **Team** (`team.html`) — invite links to act on and rounds due, across
-  both sections (see "Teams, invite links and rounds" below).
+- **Team** (`team.html`) — for the admin, who is still to join and every
+  team's rounds; for a teammate, their whole view of the site (see "Teams,
+  invite links and rounds" below).
 - **Hosts & archive** (`hosts.html`) — every host seen (live, archived,
   curated international and fest watchlist), searchable and tier-filterable, with a Jan–Dec
   month strip and the latest title; and a searchable list of closed
   competitions, newest first.
 
-A shared nav appears on all six pages.
+A shared nav appears on all six pages for the admin. Teammates see only
+the Team page, with no nav.
 
 ### Sections: Case comps | Hackathons
 
@@ -377,8 +381,12 @@ The whole site is login-only. Every page loads the vendored supabase-js
 - **Signed in, but the Google account is not an active row in `members`:**
   "Not on the team list (<email>)" and a Sign out button. Nothing else
   loads (RLS returns nothing to non-members anyway).
-- **A member:** the page loads; the nav shows their name and **Sign out**.
-  The session lives in this browser's localStorage and refreshes silently;
+- **The admin:** the page loads; the nav shows their name and **Sign out**.
+- **A teammate (role `member`):** whatever page they open, they are sent
+  to `team.html` (`location.replace`, nothing from the address carried
+  over) before anything is read. There the header shows only "Certamus
+  Radar", their name and **Sign out**.
+- The session lives in this browser's localStorage and refreshes silently;
   if it ends (signed out elsewhere, refresh failed) the page goes back to
   the login screen.
 - **github.io:** `krishnachagti-sudo.github.io/certamus-radar/` only shows
@@ -390,18 +398,30 @@ Roles come from `members.role`:
 | Role | Can |
 |---|---|
 | `admin` (Krishna) | everything: statuses, Registered, notes, "Set dates", add an Unstop link (direct writes to `decisions`, `intl_dates`, `manual`, allowed by RLS for `is_admin()` only) |
-| `member` | read every page; mark their own team join; tick their team's rounds done. No other editing controls are shown |
+| `member` (teammates) | one screen (`team.html`): the competitions they are in, to join and joined; tick or undo their own "I've joined". Nothing else: no radar pages, rounds, notes or teammates' statuses |
 
 A decision row is deleted when its status, Registered and note are all
 empty, and upserted otherwise. A refused or failed write (RLS, network)
 shows "Not saved: …" in the banner and the change stays on screen. The
-pages read `listings`, `archive` and `source_status` by section, plus
+admin's pages read `listings`, `archive` and `source_status` by section, plus
 `watch`, `decisions`, `intl_dates` and `manual`; the curated config files
 (`international.json`, `fests.json`, `hack-curated.json`) are still read
 from `./data/`.
 
+The database enforces the teammate's view, not just the pages
+(Resolution 21 of the spec). A teammate can read only their own `members`
+row (so the sign-in can show their name and role), the `teams` rows of
+teams they are in, and their own `team_members` rows (never a teammate's
+join status). Everything else (`listings`, `archive`, `source_status`,
+`watch`, `decisions`, `intl_dates`, `manual`, `rounds`, other people's
+`members` rows) is readable by the admin only. The member screen's one
+read is the `my_joins()` RPC, which returns per team only `listing_id`,
+`section`, title, `regn_close`, `invite_url` and `joined_at`, so no whole
+listing record reaches a teammate. Their only write is `mark_joined` on
+their own row.
+
 Membership is bound to the Google identity, not to the token's email
-claim: `is_member()`, `is_admin()` and `in_team()` join the caller's
+claim: `is_member()`, `is_admin()`, `in_team()` and `is_self()` join the caller's
 `auth.identities` row (provider `google`, matched by `auth.uid()`) to
 `members` on its lowercased email. So the `members.email` must be the
 Google account's address, lowercased.
@@ -419,7 +439,8 @@ The workflow: Krishna finds a competition, registers on Unstop (or
 Devfolio...) and copies its "invite teammates" link; on the competition
 page he records the team; each teammate opens the link, joins, and ticks
 "I've joined"; Krishna sees who he is still waiting on. Rounds track the
-team's own deadlines (prelims deck, video, finals) after registration.
+team's own deadlines (prelims deck, video, finals) after registration;
+they are Krishna's alone (teammates never see them).
 
 - **Competition page, Team section** (between Dates and Team note).
   - No team yet: the admin sees **Create team**: a checkbox per active
@@ -427,38 +448,46 @@ team's own deadlines (prelims deck, video, finals) after registration.
     active member except Akshit; for a hackathon Krishna and Akshit, each
     if they are active members), an https invite-link field and Save.
     Creating the team also ticks **Registered** (the `create_team` RPC
-    does both in one transaction). Members see nothing.
+    does both in one transaction).
   - Team exists: each member with **✓ joined (date)** or **pending**; the
-    invite link (read-only field, **Copy**, Open ↗); the viewer's own row
-    has **I've joined** / **Undo**. Admin: **Edit team** (members and
-    link) and **Delete team** (asks first; deletes members, joins and
-    rounds; Registered stays).
+    invite link (read-only field, **Copy**, Open ↗); the admin's own row
+    has **I've joined** / **Undo**. **Edit team** (members and link) and
+    **Delete team** (asks first; deletes members, joins and rounds;
+    Registered stays).
   - **Rounds:** name, due date, owner (a team member or "Team") and a
-    done box that the admin and team members can tick. Undone rounds past
-    their due date are red. The admin adds, edits and deletes rounds.
-- **Team page** (`team.html`, "Team" in the nav of both sections). A
-  member sees **My joins** (each team they have not joined: title, link,
-  Copy, I've joined) and **My rounds** (undone rounds they own, or owned
-  by nobody in a team they are in, by due date). The admin sees **Waiting
-  on teammates** (everyone else's pending joins, grouped by person) and
-  **All teams** (section, "2/3 joined", the next round due from today and
-  an overdue count), plus their own joins and rounds when there are any.
-  A team whose listing was pruned shows under its archived title.
-- **Board:** above "New since your last visit", a member with pending
-  joins sees **Join these teams (N)** with an inline I've joined; the
-  admin sees **Waiting on teammates (N)** by person. Nothing shows when
-  neither applies.
-- **Calendar:** each dated round of a visible team is a 📝 event (both
+    done box. Undone rounds past their due date are red. The admin adds,
+    edits, deletes and ticks rounds done (`set_round_done` refuses anyone
+    else).
+- **Team page** (`team.html`, "Team" in the admin's nav).
+  - **Admin:** **Waiting on teammates** (everyone else's pending joins,
+    grouped by person) and **All teams** (section, "2/3 joined", the next
+    round due from today and an overdue count), plus their own joins and
+    **My rounds** when there are any. A team whose listing was pruned
+    shows under its archived title.
+  - **Teammate:** the only screen they ever see. **To join (N)**: each
+    competition they are in but have not joined, soonest registration
+    deadline first: the title (plain text, no link), a Case comp /
+    Hackathon label, "Registration closes …" when known, the invite link
+    with **Copy** and **Open ↗**, and a big **I've joined** button.
+    **Joined (N)**: newest first, with the date and a small **Undo**.
+    Empty states: "Nothing to join right now." and "You haven't joined
+    anything yet." Built for a phone (big tap targets).
+- **Board** (admin): above "New since your last visit", the admin's own
+  pending joins (**Join these teams (N)**) and **Waiting on teammates
+  (N)** by person. Nothing shows when neither applies.
+- **Calendar** (admin): each dated round is a 📝 event (both
   sections; the other section's carry the Case/Hack marker). Undone
   rounds count as committed dates in the clash days, but never against
   their own competition or sibling rounds.
 
-Who sees what is decided by RLS, not the page: `teams`, `team_members`
-and `rounds` are readable by the admin and by that team's members only,
-so an invite link never reaches anyone outside the team. Every change goes
-through an RPC that re-checks the caller (`create_team`, `update_team`,
-`delete_team`, `mark_joined`, `upsert_round`, `delete_round`,
-`set_round_done`; see `supabase/v3.sql`); a refusal shows the Postgres
+Who sees what is decided by RLS, not the page: `teams` is readable by the
+admin and by that team's members only, so an invite link never reaches
+anyone outside the team; `team_members` by the admin and, for a teammate,
+their own rows only; `rounds` by the admin only. A teammate's screen reads
+only `my_joins()`. Every change goes through an RPC that re-checks the
+caller (`create_team`, `update_team`, `delete_team`, `upsert_round`,
+`delete_round` and `set_round_done` are admin-only; `mark_joined` is the
+caller's own row in a team they are in; see `supabase/v3.sql`); a refusal shows the Postgres
 message in the banner. Invite links must be `https://` (checked in the
 page and again in the database) and are only ever rendered through
 `safeHref`. Pure rules live in `lib/teams.js`, HTML in `lib/teamview.js`.
