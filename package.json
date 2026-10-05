@@ -7,7 +7,9 @@
   },
   "scripts": {
     "test": "node --test",
-    "fetch": "node fetch/run.js"
+    "start": "node api/server.js",
+    "fetch": "node fetch/run.js",
+    "db:apply": "node db/apply.mjs"
   },
   "dependencies": {
     "pg": "^8.23.1"
