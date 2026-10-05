@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanUrl, isGithubIo, roleCan, radarUrl, RADAR_HOME, hasAuthParams, authError } from '../lib/auth.js';
+import { cleanUrl, isGithubIo, roleCan, radarUrl, RADAR_HOME, hasAuthParams, authError, memberHome, MEMBER_PAGE } from '../lib/auth.js';
 
 test('cleanUrl strips only code and state, keeping id, s and the hash', () => {
   assert.equal(
@@ -44,15 +44,20 @@ test('radarUrl keeps the page, id and section on the conyso.com address', () => 
   assert.equal(radarUrl('not a url'), 'https://conyso.com/certamus/radar/');
 });
 
-test('roleCan: admin edits; members read and mark their own progress', () => {
+test('roleCan: admin does everything; a member only marks their own join', () => {
   const admin = { email: 'a@x.com', name: 'A', role: 'admin' };
   const member = { email: 'm@x.com', name: 'M', role: 'member' };
   for (const action of ['read', 'edit', 'manage_teams', 'mark_joined', 'round_done']) assert.equal(roleCan(admin, action), true, action);
-  assert.equal(roleCan(member, 'read'), true);
   assert.equal(roleCan(member, 'mark_joined'), true);
-  assert.equal(roleCan(member, 'round_done'), true);
-  assert.equal(roleCan(member, 'edit'), false);
-  assert.equal(roleCan(member, 'manage_teams'), false);
+  for (const action of ['read', 'round_done', 'edit', 'manage_teams']) assert.equal(roleCan(member, action), false, action);
+});
+
+test('memberHome: the team page next to the current one, nothing carried over', () => {
+  assert.equal(MEMBER_PAGE, 'team.html');
+  assert.equal(memberHome('https://conyso.com/certamus/radar/c.html?id=5&s=hack#x'), 'https://conyso.com/certamus/radar/team.html');
+  assert.equal(memberHome('https://conyso.com/certamus/radar/'), 'https://conyso.com/certamus/radar/team.html');
+  assert.equal(memberHome({ href: 'http://localhost:8080/calendar.html?s=hack' }), 'http://localhost:8080/team.html');
+  assert.equal(memberHome('not a url'), 'team.html');
 });
 
 test('roleCan: nobody, inactive, unknown roles and unknown actions get nothing', () => {

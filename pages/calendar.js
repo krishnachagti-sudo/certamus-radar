@@ -6,8 +6,8 @@
 // Section (?s=hack): this section's Watching items, plus the Entering and
 // Registered items of BOTH sections (one committed set, one clash rule);
 // the other section's items carry a small section marker.
-// Rounds: the due dates of every team the viewer can see (RLS: the admin
-// sees all teams, a member their own), both sections, marked 📝; undone
+// Admin only (requireMember() sends teammates to team.html).
+// Rounds: the due dates of every team, both sections, marked 📝; undone
 // rounds count as committed dates in the clash days (never against their
 // own competition).
 import { todayIST } from '../dates.js';

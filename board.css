@@ -305,6 +305,21 @@ button.danger { color: var(--out); border-color: var(--out); }
 .team-next { color: var(--ink-2); font-size: .88rem; min-width: 0; overflow-wrap: anywhere; }
 .team-overdue { background: var(--out-bg); color: var(--out); font-weight: 700; font-size: .78rem; border-radius: 999px; padding: 1px 8px; }
 
+/* Team page for teammates (role member): one column, big tap targets */
+.memberpage { padding-top: 20px; max-width: 40rem; }
+.memberpage h1 { margin: 0 0 4px; font-size: 1.6rem; }
+.memberpage h1:focus { outline: none; }
+.mj-list { list-style: none; margin: 0; padding: 0; }
+.mj-row { padding: 12px 0; border-top: 1px solid var(--rule); min-width: 0; }
+.mj-row:first-child { border-top: 0; padding-top: 4px; }
+.mj-title { margin: 0; font-weight: 700; font-size: 1.05rem; overflow-wrap: anywhere; }
+.mj-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 4px 0 0; color: var(--ink-2); font-size: .9rem; }
+.mj .invite input { font-size: .9rem; padding: 10px; }
+.mj .invite button, .mj .invite a { min-height: 44px; display: inline-flex; align-items: center; padding: 0 16px; }
+.mj .invite a { border: 1px solid var(--rule); border-radius: 999px; text-decoration: none; }
+.mj-meta button.sm { min-height: 36px; }
+button.primary.big { display: block; width: 100%; min-height: 48px; font-size: 1rem; margin-top: 4px; }
+
 /* Board: the team panel above "what needs attention" */
 .team-inbox { border-left: 4px solid var(--accent); }
 .team-inbox .inbox-head a { color: var(--accent); font-size: .85rem; font-weight: 600; }

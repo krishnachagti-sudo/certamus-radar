@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   memberName, listingIndex, compOf, teamProgress, pendingByPerson, pendingByComp, myJoins, myRounds,
   isOverdue, roundEvents, roundClashItems, teamSummaries, defaultTeamEmails, roundsOf, membersOf,
-  validInviteUrl, istDay,
+  validInviteUrl, istDay, splitJoins,
 } from '../lib/teams.js';
 
 const today = '2026-10-05';
@@ -183,4 +183,37 @@ test('validInviteUrl: https only, no spaces, at most 1000 characters', () => {
   assert.equal(validInviteUrl('https://a b'), null);
   assert.equal(validInviteUrl(`https://x.com/${'a'.repeat(1000)}`), null);
   assert.equal(validInviteUrl(''), null);
+});
+
+// ---- the member screen: my_joins() rows ---------------------------------------
+
+const J = (o) => ({ listing_id: '1', section: 'case', title: 'T', regn_close: null, invite_url: 'https://u.com/i', joined_at: null, ...o });
+
+test('splitJoins: not joined -> toJoin by deadline (undated last, then title); joined -> newest first', () => {
+  const rows = [
+    J({ listing_id: 'a', title: 'Zed', regn_close: '2026-10-20' }),
+    J({ listing_id: 'b', title: 'Beta', regn_close: null }),
+    J({ listing_id: 'c', title: 'Alpha', regn_close: null }),
+    J({ listing_id: 'd', title: 'Mid', regn_close: '2026-10-08' }),
+    J({ listing_id: 'e', title: 'Same day B', regn_close: '2026-10-08' }),
+    J({ listing_id: 'f', title: 'Old join', joined_at: '2026-09-01T10:00:00Z' }),
+    J({ listing_id: 'g', title: 'New join', joined_at: '2026-10-03T10:00:00Z' }),
+  ];
+  const { toJoin, joined } = splitJoins(rows);
+  assert.deepEqual(toJoin.map(x => x.listing_id), ['d', 'e', 'a', 'c', 'b']);
+  assert.deepEqual(joined.map(x => x.listing_id), ['g', 'f']);
+});
+
+test('splitJoins: normalises ids, sections, titles and bad dates; skips junk', () => {
+  const { toJoin, joined } = splitJoins([
+    J({ listing_id: 1759741, section: 'hack', title: '  ', regn_close: '2026-13-45' }),
+    J({ listing_id: 'x', section: 'weird', title: null, regn_close: 'soon' }),
+    null, 'junk', { title: 'no id' },
+  ]);
+  assert.equal(joined.length, 0);
+  assert.deepEqual(toJoin.map(x => [x.listing_id, x.section, x.title, x.regn_close]), [
+    ['1759741', 'hack', 'Listing 1759741', null],
+    ['x', 'case', 'Listing x', null],
+  ]);
+  assert.deepEqual(splitJoins(undefined), { toJoin: [], joined: [] });
 });

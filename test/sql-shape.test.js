@@ -25,9 +25,9 @@ for (const m of SQL.matchAll(/create or replace function public\.(\w+)\s*\(([^)]
 const statements = SQL.split(';').map(s => s.trim()).filter(Boolean);
 const grantsOf = name => statements.filter(s => new RegExp(`^grant execute on function public\\.${name}\\(`).test(s));
 
-const TEAM_RPCS = ['create_team', 'update_team', 'delete_team', 'mark_joined', 'upsert_round', 'delete_round', 'set_round_done'];
+const TEAM_RPCS = ['create_team', 'update_team', 'delete_team', 'mark_joined', 'upsert_round', 'delete_round', 'set_round_done', 'my_joins'];
 const SERVICE_RPCS = ['sync_section', 'set_status'];
-const HELPERS = ['is_member', 'is_admin', 'in_team'];
+const HELPERS = ['is_member', 'is_admin', 'in_team', 'is_self'];
 
 test('starts by revoking default function execute from public, anon and authenticated', () => {
   assert.equal(statements[0], 'alter default privileges for role postgres in schema public revoke execute on functions from public, anon, authenticated');
@@ -89,18 +89,23 @@ test('idempotent: every create policy is preceded by a drop of the same policy',
   assert.doesNotMatch(SQL, /create schema (?!if not exists)/);
 });
 
-test('policies: members read the shared tables, admin writes the editable ones, teams are team-only', () => {
+test('policies: the admin reads everything; a teammate only their own rows and their teams', () => {
   const policies = [...SQL.matchAll(/create policy "[^"]+" on public\.(\w+) for (\w+) to (\w+) (using|with check) \(([^;]*)\)/g)]
     .map(m => ({ table: m[1], cmd: m[2], role: m[3], expr: m[5] }));
   for (const p of policies) assert.equal(p.role, 'authenticated', `${p.table} ${p.cmd}`);
   const sel = t => policies.filter(p => p.table === t && p.cmd === 'select');
-  for (const t of ['members', 'listings', 'archive', 'source_status', 'watch', 'decisions', 'intl_dates', 'manual']) {
+  for (const t of ['listings', 'archive', 'source_status', 'watch', 'decisions', 'intl_dates', 'manual', 'rounds']) {
     assert.equal(sel(t).length, 1, t);
-    assert.equal(sel(t)[0].expr, '(select public.is_member())', t);
+    assert.equal(sel(t)[0].expr, '(select public.is_admin())', t);
   }
+  assert.equal(sel('members').length, 1);
+  assert.equal(sel('members')[0].expr, '(select public.is_admin()) or public.is_self(email)');
+  assert.equal(sel('team_members').length, 1);
+  assert.equal(sel('team_members')[0].expr, '(select public.is_admin()) or public.is_self(email)', 'own row only');
+  assert.equal(sel('teams').length, 1);
+  assert.equal(sel('teams')[0].expr, '(select public.is_admin()) or public.in_team(listing_id)');
+  assert.doesNotMatch(SQL, /using \(\(select public\.is_member\(\)\)\)/, 'no table is readable by every member');
   for (const t of ['teams', 'team_members', 'rounds']) {
-    assert.equal(sel(t).length, 1, t);
-    assert.equal(sel(t)[0].expr, '(select public.is_admin()) or public.in_team(listing_id)', t);
     assert.equal(policies.filter(p => p.table === t && p.cmd !== 'select').length, 0, `${t}: writes only via RPC`);
   }
   for (const t of ['decisions', 'intl_dates', 'manual']) {
@@ -113,6 +118,15 @@ test('policies: members read the shared tables, admin writes the editable ones, 
   for (const t of ['members', 'listings', 'archive', 'source_status', 'watch']) {
     assert.equal(policies.filter(p => p.table === t && p.cmd !== 'select').length, 0, `${t}: no client writes`);
   }
+});
+
+test('my_joins: member-checked, own rows via the Google identity, only the columns the screen needs', () => {
+  const { body } = functions.get('my_joins');
+  assert.match(body, /returns table \(listing_id text, section text, title text, regn_close date, invite_url text, joined_at timestamptz\)/);
+  assert.match(body, /if not public\.is_member\(\) then raise exception '[^']*' using errcode = '42501'/);
+  assert.match(body, /where tm\.email in \(select public\.google_emails\(\)\)/);
+  assert.match(body, /join public\.members m on m\.email = tm\.email and m\.active/);
+  assert.doesNotMatch(body, /\bnote\b|\bdata\s*,|\.data\s+as\b/, 'no notes, no whole listing records');
 });
 
 test('table grants to authenticated: select everywhere, writes only on the admin-edited tables', () => {
@@ -165,10 +179,11 @@ test('team and round RPCs: security definer, granted to authenticated only, chec
     assert.deepEqual(grantsOf(name).map(g => g.split(' to ')[1]), ['authenticated'], name);
     assert.ok(body.includes("errcode = '42501'"), `${name} raises forbidden`);
   }
-  for (const name of ['create_team', 'update_team', 'delete_team', 'upsert_round', 'delete_round']) {
+  for (const name of ['create_team', 'update_team', 'delete_team', 'upsert_round', 'delete_round', 'set_round_done']) {
     assert.match(functions.get(name).body, /if not public\.is_admin\(\) then raise exception '[^']*' using errcode = '42501'/, name);
   }
-  assert.match(functions.get('set_round_done').body, /public\.is_admin\(\) or public\.in_team\(/);
+  assert.match(functions.get('set_round_done').body, /if not public\.is_admin\(\) then raise exception '[^']*' using errcode = '42501'/);
+  assert.doesNotMatch(functions.get('set_round_done').body, /in_team|is_member/, 'admin only');
   assert.match(functions.get('mark_joined').body, /public\.in_team\(p_listing_id\)/);
   assert.match(functions.get('mark_joined').body, /email in \(select public\.google_emails\(\)\)/);
 });

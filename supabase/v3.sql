@@ -1,6 +1,6 @@
 -- Certamus Radar v3: the private team platform.
 -- Spec: linkedin repo docs/superpowers/specs/2026-10-04-certamus-radar-platform-design.md
--- (Resolutions 1-20 are binding). Idempotent: safe to run twice in the
+-- (Resolutions 1-21 are binding). Idempotent: safe to run twice in the
 -- Supabase SQL Editor. Replaces the v2 schema (public reads plus a #key
 -- editor path through private.editor_key), which it dismantles below.
 -- This Supabase project must hold Radar only: the revokes and default
@@ -9,10 +9,20 @@
 -- Access model:
 --   anon           nothing at all (no table grants, no function execute)
 --   authenticated  any Google account can get this role, so every policy
---                  checks public.is_member(): the caller's linked Google
---                  identity (auth.identities, provider 'google') carries the
+--                  checks the caller's linked Google identity
+--                  (auth.identities, provider 'google'), which must carry the
 --                  email of an active row in public.members. The JWT's own
 --                  email claim is never trusted.
+--     admin        (members.role 'admin') reads every table, writes
+--                  decisions / intl_dates / manual directly and runs every
+--                  team and round RPC.
+--     member       (a teammate; Resolution 21) reads only: their own members
+--                  row; teams they are in; their own team_members rows (not
+--                  teammates' join status); and, through my_joins(), the
+--                  title, section and registration deadline of those teams'
+--                  listings. Writes only mark_joined (their own row). No
+--                  listings, archive, source_status, watch, decisions,
+--                  intl_dates, manual, rounds or other people's rows.
 --   service_role   the GitHub Actions jobs: sync_section / set_status and
 --                  direct reads/writes of listings, archive, watch etc.
 -- Errors: 42501 = forbidden, 22023 = invalid input.
@@ -218,30 +228,46 @@ as $$
       and t.listing_id = p_listing_id);
 $$;
 
+-- "Is this email one of the caller's own, on an active member row?" (the
+-- own-row policies on members and team_members).
+create or replace function public.is_self(p_email text) returns boolean
+language sql stable security definer set search_path = ''
+as $$
+  select exists (
+    select 1 from auth.identities i
+    join public.members m on m.email = lower(i.identity_data ->> 'email')
+    where i.user_id = auth.uid() and i.provider = 'google' and m.active
+      and m.email = lower(p_email));
+$$;
+
 revoke execute on function public.google_emails() from public, anon, authenticated;
 revoke execute on function public.is_member() from public, anon, authenticated;
 revoke execute on function public.is_admin() from public, anon, authenticated;
 revoke execute on function public.in_team(text) from public, anon, authenticated;
+revoke execute on function public.is_self(text) from public, anon, authenticated;
 grant execute on function public.is_member() to authenticated;
 grant execute on function public.is_admin() to authenticated;
 grant execute on function public.in_team(text) to authenticated;
+grant execute on function public.is_self(text) to authenticated;
 
 -- 5. Policies -------------------------------------------------------------------
+-- Reads are the admin's, apart from a teammate's own rows (Resolution 21).
 
+-- Own row for everyone (lib/auth.js reads the caller's name and role).
 drop policy if exists "members read" on public.members;
-create policy "members read" on public.members for select to authenticated using ((select public.is_member()));
+create policy "members read" on public.members for select to authenticated using ((select public.is_admin()) or public.is_self(email));
 
-drop policy if exists "members read" on public.listings;
-create policy "members read" on public.listings for select to authenticated using ((select public.is_member()));
-drop policy if exists "members read" on public.archive;
-create policy "members read" on public.archive for select to authenticated using ((select public.is_member()));
-drop policy if exists "members read" on public.source_status;
-create policy "members read" on public.source_status for select to authenticated using ((select public.is_member()));
-drop policy if exists "members read" on public.watch;
-create policy "members read" on public.watch for select to authenticated using ((select public.is_member()));
+drop policy if exists "admin read" on public.listings;
+create policy "admin read" on public.listings for select to authenticated using ((select public.is_admin()));
+drop policy if exists "admin read" on public.archive;
+create policy "admin read" on public.archive for select to authenticated using ((select public.is_admin()));
+drop policy if exists "admin read" on public.source_status;
+create policy "admin read" on public.source_status for select to authenticated using ((select public.is_admin()));
+drop policy if exists "admin read" on public.watch;
+create policy "admin read" on public.watch for select to authenticated using ((select public.is_admin()));
 
-drop policy if exists "members read" on public.decisions;
-create policy "members read" on public.decisions for select to authenticated using ((select public.is_member()));
+drop policy if exists "admin read" on public.decisions;
+create policy "admin read" on public.decisions for select to authenticated using ((select public.is_admin()));
 drop policy if exists "admin insert" on public.decisions;
 create policy "admin insert" on public.decisions for insert to authenticated with check ((select public.is_admin()));
 drop policy if exists "admin update" on public.decisions;
@@ -249,8 +275,8 @@ create policy "admin update" on public.decisions for update to authenticated usi
 drop policy if exists "admin delete" on public.decisions;
 create policy "admin delete" on public.decisions for delete to authenticated using ((select public.is_admin()));
 
-drop policy if exists "members read" on public.intl_dates;
-create policy "members read" on public.intl_dates for select to authenticated using ((select public.is_member()));
+drop policy if exists "admin read" on public.intl_dates;
+create policy "admin read" on public.intl_dates for select to authenticated using ((select public.is_admin()));
 drop policy if exists "admin insert" on public.intl_dates;
 create policy "admin insert" on public.intl_dates for insert to authenticated with check ((select public.is_admin()));
 drop policy if exists "admin update" on public.intl_dates;
@@ -258,8 +284,8 @@ create policy "admin update" on public.intl_dates for update to authenticated us
 drop policy if exists "admin delete" on public.intl_dates;
 create policy "admin delete" on public.intl_dates for delete to authenticated using ((select public.is_admin()));
 
-drop policy if exists "members read" on public.manual;
-create policy "members read" on public.manual for select to authenticated using ((select public.is_member()));
+drop policy if exists "admin read" on public.manual;
+create policy "admin read" on public.manual for select to authenticated using ((select public.is_admin()));
 drop policy if exists "admin insert" on public.manual;
 create policy "admin insert" on public.manual for insert to authenticated with check ((select public.is_admin()));
 drop policy if exists "admin update" on public.manual;
@@ -267,14 +293,16 @@ create policy "admin update" on public.manual for update to authenticated using 
 drop policy if exists "admin delete" on public.manual;
 create policy "admin delete" on public.manual for delete to authenticated using ((select public.is_admin()));
 
--- Invite links are effectively passwords: admin and that team only.
--- No write policies: teams, team_members and rounds change only via RPCs.
+-- Invite links are effectively passwords: admin and that team only. A
+-- teammate sees only their own team_members rows, never teammates' join
+-- status, and no rounds. No write policies: teams, team_members and rounds
+-- change only via RPCs.
 drop policy if exists "team read" on public.teams;
 create policy "team read" on public.teams for select to authenticated using ((select public.is_admin()) or public.in_team(listing_id));
 drop policy if exists "team read" on public.team_members;
-create policy "team read" on public.team_members for select to authenticated using ((select public.is_admin()) or public.in_team(listing_id));
-drop policy if exists "team read" on public.rounds;
-create policy "team read" on public.rounds for select to authenticated using ((select public.is_admin()) or public.in_team(listing_id));
+create policy "team read" on public.team_members for select to authenticated using ((select public.is_admin()) or public.is_self(email));
+drop policy if exists "admin read" on public.rounds;
+create policy "admin read" on public.rounds for select to authenticated using ((select public.is_admin()));
 
 -- 6. Team and round RPCs (authenticated; each checks the caller) -------------
 
@@ -418,23 +446,53 @@ begin
 end;
 $$;
 
+-- Admin only (Resolution 21: rounds are the admin's).
 create or replace function public.set_round_done(p_id uuid, p_done boolean)
 returns void
 language plpgsql security definer set search_path = ''
 as $$
-declare
-  v_listing text;
 begin
-  if not public.is_member() then raise exception 'forbidden' using errcode = '42501'; end if;
-  select listing_id into v_listing from public.rounds where id = p_id;
-  if not found then raise exception 'no such round' using errcode = '22023'; end if;
-  if not (public.is_admin() or public.in_team(v_listing)) then
-    raise exception 'forbidden' using errcode = '42501';
+  if not public.is_admin() then raise exception 'forbidden' using errcode = '42501'; end if;
+  if not exists (select 1 from public.rounds where id = p_id) then
+    raise exception 'no such round' using errcode = '22023';
   end if;
   update public.rounds
   set done = coalesce(p_done, false),
       done_at = case when coalesce(p_done, false) then coalesce(done_at, now()) end
   where id = p_id;
+end;
+$$;
+
+-- The member screen's one read (Resolution 21): one row per team the caller
+-- is in, with only what the screen shows. The title and deadline come from
+-- the team's listing (its own section first, then the other one; the
+-- deadline from a confirmed intl_dates row when there is one), else the
+-- newest archived edition's title. Other columns of listings, and other
+-- people's join rows, never leave the database. Not a member: forbidden.
+create or replace function public.my_joins()
+returns table (listing_id text, section text, title text, regn_close date, invite_url text, joined_at timestamptz)
+language plpgsql stable security definer set search_path = ''
+as $$
+#variable_conflict use_column
+begin
+  if not public.is_member() then raise exception 'forbidden' using errcode = '42501'; end if;
+  return query
+  select t.listing_id, t.section,
+    coalesce(own.data ->> 'title', oth.data ->> 'title', arc.title),
+    coalesce(d.regn_close, own.regn_close, oth.regn_close),
+    t.invite_url, tm.joined_at
+  from public.team_members tm
+  join public.members m on m.email = tm.email and m.active
+  join public.teams t on t.listing_id = tm.listing_id
+  left join public.listings own on own.section = t.section and own.id = t.listing_id
+  left join public.listings oth on oth.section <> t.section and oth.id = t.listing_id
+  left join public.intl_dates d on d.id = t.listing_id
+  left join lateral (
+    select a.data ->> 'title' as title from public.archive a
+    where a.section = t.section and a.data ->> 'id' = t.listing_id
+    order by a.archived_on desc, a.archive_key desc limit 1) arc on true
+  where tm.email in (select public.google_emails())
+  order by t.listing_id;
 end;
 $$;
 
@@ -446,6 +504,7 @@ revoke execute on function public.mark_joined(text, boolean) from public, anon, 
 revoke execute on function public.upsert_round(uuid, text, text, date, text) from public, anon, authenticated;
 revoke execute on function public.delete_round(uuid) from public, anon, authenticated;
 revoke execute on function public.set_round_done(uuid, boolean) from public, anon, authenticated;
+revoke execute on function public.my_joins() from public, anon, authenticated;
 grant execute on function public.create_team(text, text, text, text[]) to authenticated;
 grant execute on function public.update_team(text, text, text[]) to authenticated;
 grant execute on function public.delete_team(text) to authenticated;
@@ -453,6 +512,7 @@ grant execute on function public.mark_joined(text, boolean) to authenticated;
 grant execute on function public.upsert_round(uuid, text, text, date, text) to authenticated;
 grant execute on function public.delete_round(uuid) to authenticated;
 grant execute on function public.set_round_done(uuid, boolean) to authenticated;
+grant execute on function public.my_joins() to authenticated;
 
 -- 7. Fetcher write path (service_role only) ---------------------------------------
 

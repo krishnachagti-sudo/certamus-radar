@@ -4,7 +4,7 @@ import {
   createDecisionSaver, editable, selectAll, recordsFromRows, decisionWrite,
   readListings, readArchive, readStatus, readWatch, readDecisions, readIntlDates, readManual,
   readMembers, readTeams, readTeamMembers, readRounds, saveDecision, setIntlDates, addManual,
-  createTeam, updateTeam, deleteTeam, markJoined, upsertRound, deleteRound, setRoundDone,
+  createTeam, updateTeam, deleteTeam, markJoined, upsertRound, deleteRound, setRoundDone, readMyJoins,
 } from '../lib/store.js';
 
 // A stand-in for the supabase-js query builder: records every call, answers
@@ -289,4 +289,13 @@ test('an RPC error throws the Postgres message', async () => {
   const c = rpcClient({ data: null, error: { message: 'invite link must be an https:// URL', code: '22023' } });
   await assert.rejects(createTeam({ listingId: 1, section: 'case', inviteUrl: 'x', emails: [] }, c), /^Error: invite link must be an https:\/\/ URL$/);
   await assert.rejects(markJoined('1', true, rpcClient({ data: null, error: { code: '42501' } })), /42501/);
+});
+
+test('readMyJoins: the my_joins RPC, no arguments; [] for a non-array; errors throw', async () => {
+  const rows = [{ listing_id: '1', section: 'case', title: 'A', regn_close: null, invite_url: 'https://u.com/i', joined_at: null }];
+  const c = rpcClient({ data: rows, error: null });
+  assert.deepEqual(await readMyJoins(c), rows);
+  assert.deepEqual(c.calls, [['my_joins', {}]]);
+  assert.deepEqual(await readMyJoins(rpcClient({ data: null, error: null })), []);
+  await assert.rejects(readMyJoins(rpcClient({ data: null, error: { message: 'forbidden', code: '42501' } })), /forbidden/);
 });

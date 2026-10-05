@@ -10,9 +10,10 @@
 // Hackathons (?s=hack, or an id starting df-/mlh-/dp-/hk-): the hackathon
 // rule table, team size, online/place and source; curated hk- rows show the
 // curated facts and the watcher flag. Clashes count both sections.
+// Admin only: requireMember() sends teammates to team.html.
 // Team section (lib/teamview.js): the team, its invite link and rounds, read
-// from Supabase (RLS shows a team only to the admin and its members) and
-// changed only through the team/round RPCs; errors go to the banner.
+// from Supabase and changed only through the team/round RPCs; errors go to
+// the banner.
 import { dayDiff, todayIST } from '../dates.js';
 import {
   STATUSES, sameId, statusOf, isRegistered, committedAcross, clashLabels, expectedText, whoAppliesText, watchChanged,

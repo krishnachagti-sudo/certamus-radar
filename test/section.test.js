@@ -4,7 +4,7 @@ import {
   SECTIONS, sectionFrom, otherSection, pageHref, HACK_TIERS, HACK_BOARD_TIERS, tierLabel,
 } from '../lib/section.js';
 import { compHref } from '../lib/card.js';
-import { navHtml } from '../lib/nav.js';
+import { navHtml, memberNavHtml } from '../lib/nav.js';
 
 test('sectionFrom: ?s=hack is the hackathon section, anything else case comps', () => {
   assert.equal(sectionFrom('?s=hack'), 'hack');
@@ -90,4 +90,11 @@ test('nav has Team in both sections, current on the team page', () => {
   assert.match(navHtml('team', 'case'), /<a href="team.html" aria-current="page">Team<\/a>/);
   assert.match(navHtml('team', 'hack'), /<a href="team.html\?s=hack" aria-current="page">Team<\/a>/);
   assert.match(navHtml('board', 'hack'), /<a href="team.html\?s=hack">Team<\/a>/);
+});
+
+test('memberNavHtml: the title, the name and Sign out; no links, no section switch', () => {
+  const html = memberNavHtml({ email: 'm@x.com', name: 'Riya <R>', role: 'member' });
+  assert.ok(html.startsWith('<strong>Certamus Radar</strong>'));
+  assert.ok(html.includes('Riya &lt;R&gt;') && html.includes('id="signout"'));
+  assert.doesNotMatch(html, /<a |class="sw"|class="pages"/);
 });

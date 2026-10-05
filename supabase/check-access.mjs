@@ -31,6 +31,7 @@ export const RPCS = {
   is_admin: {},
   google_emails: {},
   in_team: { p_listing_id: '1' },
+  is_self: { p_email: NOBODY },
   replace_team_members: { p_listing_id: '1', p_emails: [NOBODY] },
   create_team: { p_listing_id: '1', p_section: 'case', p_invite_url: 'https://example.com/x', p_emails: [NOBODY] },
   update_team: { p_listing_id: '1', p_invite_url: 'https://example.com/x', p_emails: [NOBODY] },
@@ -39,12 +40,13 @@ export const RPCS = {
   upsert_round: { p_id: ZERO_UUID, p_listing_id: '1', p_name: 'x', p_due: '2026-01-01', p_owner_email: null },
   delete_round: { p_id: ZERO_UUID },
   set_round_done: { p_id: ZERO_UUID, p_done: true },
+  my_joins: {},
   sync_section: { p_section: 'case', p_rows: [], p_archive: [], p_status: {} },
   set_status: { p_section: 'case', p_status: {} },
 };
 
-// A non-member asking "am I a member/admin/in this team?" may get `false`.
-const HELPERS = new Set(['is_member', 'is_admin', 'in_team']);
+// A non-member asking "am I a member/admin/in this team/this person?" may get `false`.
+const HELPERS = new Set(['is_member', 'is_admin', 'in_team', 'is_self']);
 
 const REFUSED = new Set([401, 403]);
 
