@@ -1,74 +1,101 @@
-# Handoff: Certamus Radar platform cutover
+# Handoff: Certamus Radar on Railway
 
-Status as of 2026-10-05. Everything is built and tested on the `platform` branch. What is left is the cutover: database migration, auth wiring, secrets, nginx, and merging. Nothing on `main` has changed, so the old public site keeps working until you apply the migration.
+For Rohit. Status as of 2026-10-05. Everything is built and tested on the `railway` branch (`npm test`, no network needed). What is left is the cutover: Railway, Google, secrets, hosting, members, seed, merge. Nothing on `main` has changed, so the old public site keeps working until the merge.
 
-The README is the full reference (see "Data (Supabase)", "Sign-in and roles", "Teams, invite links and rounds", "Setup (once)"). The specs and plans live in the owner's other repo: `docs/superpowers/specs/2026-10-04-certamus-radar-platform-design.md` (the Resolutions section is binding) and `docs/superpowers/plans/2026-10-05-certamus-radar-platform.md`.
+The README is the full reference ("Railway", "Data", "Sign-in and roles", "Teams, invite links and rounds"). The binding design is in the owner's other repo: `docs/superpowers/specs/2026-10-04-certamus-radar-platform-design.md`, Resolutions 21 (teammates' single screen) and 22 (Railway instead of Supabase).
 
-## What exists
+## What it is
 
-| Piece | Where | State |
-|---|---|---|
-| Live site (old, public) | `main` → GitHub Pages `krishnachagti-sudo.github.io/certamus-radar/` | running; Actions commit `data/*.json` twice daily |
-| New platform | branch `platform` | built; 515 tests pass (`npm test`) |
-| Migration | `supabase/v3.sql` | written, idempotent, tested in PGlite (167 checks); **not applied** |
-| Access check | `supabase/check-access.mjs` | run after applying v3 |
-| One-off history seed | `supabase/seed-from-json.mjs` + `supabase/seed/` (gitignored, local only) | run once, right after v3 |
-| Supabase project | `hjgfowgswqafrhlqbuse` (Mumbai, owner's GitHub-login Supabase account) | auth URL config done (see below) |
-| Google Cloud project | "Certamus Radar" (`lofty-shine-510620-k1`, owner's Google account) | consent screen half done (see below) |
+| Piece | Where |
+|---|---|
+| Static pages (`*.html`, `lib/`, `pages/`, `config.js`) | any static host; they call the API cross-origin |
+| API (`api/`, Node 20, `pg`, no framework) | a Railway service built from this repo's root (`npm start`, `railway.json`) |
+| Database (`db/schema.sql`) | Railway Postgres; RLS decides every row |
+| Jobs (`fetch/`, `.github/workflows/fetch.yml`, `watch.yml`) | GitHub Actions, calling the API with a service token |
 
-## Roles (Resolution 21, 2026-10-05)
+Roles: the owner (`krishnachagti@gmail.com`, `admin`) sees everything. Teammates (`member`) get only `team.html` (To join / Joined). The database enforces it.
 
-Only the owner (role `admin`) uses the radar: every page, statuses, teams and rounds. Teammates (role `member`) get one screen, `team.html`: the competitions they are in, split into **To join** (invite link, Copy, Open, a big I've joined) and **Joined** (date, Undo). Any other page sends them there. The database enforces it: a teammate can read only their own `members` row, their own teams, their own `team_members` rows, and `my_joins()`; every other table is admin-only, and `set_round_done` is admin-only like the other round RPCs.
+## Steps, in order
 
-## Already done in dashboards
+Steps 1 to 6 break nothing; the old site keeps running.
 
-- Supabase → Auth → URL configuration: Site URL `https://conyso.com/certamus/radar/`; Redirect URL `https://conyso.com/certamus/radar/**`.
-- Supabase → Auth → Providers: Email provider **disabled**; anonymous sign-ins off; Confirm email on; new sign-ups allowed (needed for first Google sign-in).
-- Google Cloud → Google Auth Platform → project configuration: app name "Certamus Radar", support and contact email set, audience External. **Stopped at the final step** (the "Google API Services: User Data Policy" agreement checkbox and Create). The owner has to accept that.
+1. **Railway project.** New project → add **PostgreSQL**. Then add a service from the GitHub repo `krishnachagti-sudo/certamus-radar`, branch `railway` for now (switch to `main` after the merge), root directory = repo root. Generate a public domain for it (Settings → Networking); call it `API_ORIGIN` below, e.g. `https://certamus-radar-api.up.railway.app`.
 
-## Remaining steps, in order
-
-Do steps 1–4 before step 5. They break nothing.
-
-1. **Google OAuth client.** Finish the consent screen (agree and Create). Then go to Clients → Create client → Web application:
-   - Authorised JavaScript origin: `https://conyso.com`
-   - Authorised redirect URI: `https://hjgfowgswqafrhlqbuse.supabase.co/auth/v1/callback`
-   - Under Audience, either add the five members as test users or publish the app. Basic email/profile scopes need no verification.
-   - Paste the Client ID and secret into Supabase → Auth → Providers → Google, then enable it.
-2. **GitHub secret.** Run `gh secret set SUPABASE_SERVICE_KEY --repo krishnachagti-sudo/certamus-radar` with the Supabase secret key (Settings → API Keys). Never commit it.
-3. **nginx** on the conyso.com server (DigitalOcean; the site is published by `deploy_upload.sh` in the conyso-site repo). Add the block below inside the conyso.com `server {}`, reusing the server's existing `include` line for `nginx-security-headers.conf`, because `add_header` in a location drops the inherited headers. Then run `nginx -t && systemctl reload nginx`.
-   ```nginx
-   location = /certamus/radar { return 301 /certamus/radar/; }
-   location /certamus/radar/ {
-       proxy_pass https://krishnachagti-sudo.github.io/certamus-radar/;
-       proxy_set_header Host krishnachagti-sudo.github.io;
-       proxy_ssl_server_name on;
-       proxy_ssl_name krishnachagti-sudo.github.io;
-       proxy_hide_header Cache-Control;
-       include /path/to/nginx-security-headers.conf;
-       add_header Cache-Control "no-store" always;
-   }
+2. **Schema.** From your machine, with the Postgres service's **public** owner URL (`DATABASE_PUBLIC_URL` on the Postgres service) and a new random password for the API's login role:
+   ```bash
+   npm install
+   DATABASE_URL='<owner public URL>' RADAR_API_PASSWORD="$(openssl rand -base64 33)" node db/apply.mjs
    ```
-4. **Members.** In `v3.sql`, the seed inserts the owner (`krishnachagti@gmail.com`, admin). Add the three case-comp teammates and Akshit as `member`, either by editing the commented `insert` lines before applying, or with SQL afterwards. Use lowercase Gmail addresses; access is tied to the Google identity's email.
-5. **Cutover.** Do these back to back. The old site stops working the moment v3 is applied, because anon read is revoked.
-   1. Refresh the seed export from `origin/main` (commands in README "Data (Supabase)"). `main` keeps committing data until the merge.
-   2. Apply `supabase/v3.sql` in the Supabase SQL editor. This project must be used by Radar only.
-   3. `node supabase/check-access.mjs`: every table and RPC must be refused for anon.
-   4. Run the seed: `SUPABASE_SERVICE_KEY=… node supabase/seed-from-json.mjs` (add `--dry-run` first). This is also the first live check that an `sb_secret_` key in `apikey` is accepted and that `auth.role()` returns `service_role` inside `sync_section`. Both fail safely (401/42501) if wrong.
-   5. Merge `platform` → `main` and push. Run the `fetch` and `watch` workflows by hand and confirm green, with listings populated.
-   6. Check `https://conyso.com/certamus/radar/`: login screen when signed out; owner signs in; every page loads; create and delete a test team. The github.io URL should show the "moved" notice.
-   7. With a teammate's account (or ask one): opening any page lands on "Your teams" with only To join / Joined and no nav; I've joined and Undo work.
+   Keep that password for step 3 only (it goes into Railway, nowhere else). The script is idempotent; later runs without `RADAR_API_PASSWORD` keep the password. It creates the roles `radar_api` (login), `radar_member`, `radar_service`, all tables with RLS, and the owner as admin. This database must hold Radar only.
+
+3. **API variables** (the API service → Variables):
+   - `DATABASE_URL` = `postgresql://radar_api:<password from step 2>@${{Postgres.RAILWAY_PRIVATE_DOMAIN}}:5432/${{Postgres.PGDATABASE}}` (log in as `radar_api`, never the owner; private network, no SSL needed; URL-encode the password if it has `/`, `+` or `=`)
+   - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (step 4)
+   - `RADAR_SERVICE_TOKEN` = `openssl rand -base64 48` (at least 32 characters)
+   - `ALLOWED_ORIGINS` = the site's origin(s), comma-separated, e.g. `https://conyso.com` (add `http://localhost:8080` only while testing locally)
+   - `API_ORIGIN` = the public origin from step 1, no trailing slash
+
+   Deploy. `GET API_ORIGIN/healthz` must answer `{"ok":true}`. A missing or malformed variable stops the service at start with the variable's name in the log (never its value).
+
+4. **Google OAuth client.** Google Cloud project "Certamus Radar" (`lofty-shine-510620-k1`, the owner's account). The consent screen was left at the final step: the **owner** must tick the "Google API Services: User Data Policy" agreement and press Create. Then Clients → Create client → **Web application**:
+   - Authorised redirect URI: `API_ORIGIN/auth/callback` (exactly).
+   - Authorised JavaScript origins: none needed (the browser never talks to Google directly from a page script).
+   - Under Audience, add the five members as test users or publish the app (scopes are only `openid email`; no verification needed).
+   - Put the Client ID and secret into step 3's variables and redeploy.
+
+5. **Site config.** In `config.js`, set `API_URL` to `API_ORIGIN`, and replace `https://certamus-radar-api.up.railway.app` in the CSP `connect-src` of all six `*.html` files with the same origin (`npm test` fails if they differ). Commit on `railway`.
+
+6. **GitHub secrets** (the owner, repo Settings → Secrets and variables → Actions, or `gh secret set`): `RADAR_API_URL` = `API_ORIGIN`, `RADAR_SERVICE_TOKEN` = the same value as in Railway. The old `SUPABASE_SERVICE_KEY` secret can be deleted after cutover.
+
+7. **Static hosting.** Pick one, keep it short:
+   - **conyso.com nginx proxy (as planned before):** the pages stay on GitHub Pages from `main`, and nginx on the conyso.com server serves them under `/certamus/radar/`:
+     ```nginx
+     location = /certamus/radar { return 301 /certamus/radar/; }
+     location /certamus/radar/ {
+         proxy_pass https://krishnachagti-sudo.github.io/certamus-radar/;
+         proxy_set_header Host krishnachagti-sudo.github.io;
+         proxy_ssl_server_name on;
+         proxy_ssl_name krishnachagti-sudo.github.io;
+         proxy_hide_header Cache-Control;
+         include /path/to/nginx-security-headers.conf;   # the server's existing include
+         add_header Cache-Control "no-store" always;
+     }
+     ```
+     then `nginx -t && systemctl reload nginx`. `ALLOWED_ORIGINS` = `https://conyso.com`.
+   - **Cloudways static app:** deploy the repo's static files (everything except `api/`, `db/`, `fetch/`, `test/`, `node_modules/`) and set `ALLOWED_ORIGINS` to that app's origin. Send `Cache-Control: no-store` for `*.html`. If it is not on conyso.com, also change `RADAR_HOME` in `lib/auth.js` (the github.io notice links there).
+
+8. **Members.** As the owner (Railway → Postgres → Data → Query, or `psql` with the owner URL), lowercase Gmail addresses:
+   ```sql
+   insert into public.members (email, name, role) values ('name@gmail.com', 'Name', 'member');
+   ```
+   Add the three case-comp teammates and Akshit. Removing someone: `update public.members set active = false where email = '…';` (their session stops working on the next request).
+
+9. **Access check.** `RADAR_API_URL=API_ORIGIN node db/check-access.mjs`: every table, function and `/auth/me` must be refused (401/403) with no token and with a made-up one.
+
+10. **Seed, then merge.** Back to back, so no fetch runs on an empty database:
+    1. Export the history (README "Data", "Seeding"): the seven `data/*.json` files from `origin/main` into `db/seed/` (git-ignored; never commit it).
+    2. Export the owner's own rows from the old database. Under its old schema those three tables are readable with the old publishable key, which is still in `config.js` on `main`:
+       ```bash
+       OLD=$(git show origin/main:config.js | sed -n "s/.*SUPABASE_URL = '\(.*\)'.*/\1/p")
+       KEY=$(git show origin/main:config.js | sed -n "s/.*SUPABASE_ANON_KEY = '\(.*\)'.*/\1/p")
+       for t in decisions intl_dates manual; do curl -s "$OLD/rest/v1/$t?select=*" -H "apikey: $KEY" > db/seed/$t.json; done
+       ```
+       Check each file is a JSON array before going on.
+    3. `RADAR_API_URL=… RADAR_SERVICE_TOKEN=… DATABASE_URL='<owner public URL>' node db/seed.mjs --dry-run`, then without `--dry-run`.
+    4. Merge `railway` → `main` and push; point the Railway service at `main`. Run the `fetch` and `watch` workflows by hand; both must go green and the board must show listings.
+
+11. **Verify.**
+    - The site, signed out: the login screen. The owner signs in: every page loads; set a status, add and delete a test team, add and tick a round.
+    - A teammate's account (or ask one): any page lands on "Your teams" with only To join / Joined and no nav; I've joined and Undo work; `c.html?id=…` sends them back to the team page.
+    - A Google account not on the list: back on the login screen with "Not on the team list…".
+    - The github.io address shows the "moved" notice.
 
 ## Things to know
 
-- **Owner's private edit link:** the `#key` link is retired by v3, which drops `private.editor_key`. Nothing else uses it.
-- **Secrets:**
-  - The repo is public; never commit secrets.
-  - Seed files stay out of git (`.gitignore`).
-  - Commits before `ce7d372` on `main` contain organisers' contact details in old data files. A history rewrite was offered to the owner and not done.
-- **Sources that don't work from GitHub runners:** Opportunity Desk returns 403 to GitHub runners, so it adds nothing there. The L'Oréal Brandstorm page returns 403 to the watcher. Both are recorded as warnings.
-- **Fetch job colour:** `fetch.yml` goes red only if both sections (case comps and hackathons) fail. Each section has its own status row shown as a banner.
-- **Open review notes (minor, post-cutover):**
-  - pin Actions to commit SHAs;
-  - send `frame-ancestors` from nginx;
-  - teams survive their listing being pruned (by design), shown under the archived title.
+- **Secrets:** the repo is public. Never commit the service token, the Google secret, any database URL or `db/seed/`. Commits before `ce7d372` on `main` contain organisers' contact details in old data files; a history rewrite was offered to the owner and not done.
+- **Sessions:** 30 days, a bearer token in the browser's localStorage, stored hashed (sha256) in `private.sessions`. Sign-in codes live 60 seconds and work once.
+- **No Supabase any more.** The old Supabase project can be paused or deleted after the seed (step 10.2 is the last thing that reads it).
+- **Local demo** outside this repo (the owner's scratchpad, `demo/server.mjs` + `fake-supabase.js`) still fakes the old Supabase client and needs updating for the API before it is used again.
+- **Sources that don't work from GitHub runners:** Opportunity Desk and the L'Oréal Brandstorm page answer 403 there; both are recorded as warnings.
+- **Fetch job colour:** `fetch.yml` goes red only if both sections fail.
+- **Open review notes (minor, post-cutover):** pin Actions to commit SHAs; send `frame-ancestors` from the static host; no rate limiting on the API (tokens and codes are 256-bit random, so guessing is not a risk; add Railway's or nginx's limits if abuse shows up).

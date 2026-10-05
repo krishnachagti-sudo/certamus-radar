@@ -1,4 +1,4 @@
-// lib/api.js: the supabase-js-shaped chain over the Radar API's URLs.
+// lib/api.js: the query chain over the Radar API's URLs.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createClient } from '../lib/api.js';

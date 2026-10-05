@@ -180,7 +180,7 @@ tier except Other.
 ## Hackathons data
 
 The Hackathons section (see "Sections" above) is the `hack` section of the
-Supabase `listings`, `archive` and `source_status` tables (see "Data"
+database's `listings`, `archive` and `source_status` tables (see "Data"
 below), written only by `fetch/hack-run.js` in the same `fetch.yml` job as
 the case comps, with the same merge, 60-day archive, decision and privacy
 rules (shared code in `fetch/pipeline.js`). Each section records its own
@@ -263,13 +263,13 @@ prompt to go check the page by hand, not an automatic date update.
 
 To confirm real dates once you've checked a page: open the competition on
 `c.html`, use **Set dates** (admin) to enter the registration close and
-competition end. That writes the `intl_dates` table in Supabase; the
+competition end. That writes the `intl_dates` table; the
 Competition page shows the dates at once, and the calendar, board and clash
 checks pick them up after the next fetch (the page says so when you save).
 
 ## Archive
 
-Closed competitions are archived (the Supabase `archive` table, per
+Closed competitions are archived (the `archive` table, per
 section) when a fetch prunes them out of the live rows (60 days after they
 close, or 60 days after a committed team ends up entering/registering).
 Curated international entries never get pruned as *hosts*: only a specific
@@ -282,9 +282,10 @@ The board has a "Quizzes and other formats" toggle: records carry
 `format_kind` and `is_case`, and `other` formats (quizzes, article calls,
 coding challenges, robotics...) are hidden by default.
 
-## Data (Supabase)
+## Data (Railway Postgres, through the API)
 
-All generated data lives in Supabase (`supabase/v3.sql`); the repo holds
+All generated data lives in a Railway Postgres database (`db/schema.sql`),
+reached only through the Radar API (`api/`, see "Railway" below); the repo holds
 only code and the hand-edited config files in `data/` (`team.json`,
 `hack-team.json`, `national.json`, `bschools.json`, `corporates.json`,
 `hack-corporates.json`, `international.json`, `fests.json`,
@@ -329,36 +330,41 @@ How a fetch run writes (`fetch/db.js`, `fetch/pipeline.js`):
 The watcher reads the previous hashes from `watch` (a failed read writes
 nothing) and upserts the new ones.
 
-**Service key.** The jobs use the repository secret
-`SUPABASE_SERVICE_KEY` (Settings → Secrets and variables → Actions), the
-project's secret key (`sb_secret_...`, from Project Settings → API Keys).
-It is sent in the `apikey` header only; a legacy JWT `service_role` key is
-also sent as `Authorization: Bearer`. The project URL comes from
-`SUPABASE_URL` if set, else `config.js`. Without the secret every job fails
-without writing.
+**Service token.** The jobs call the API with two repository secrets
+(Settings → Secrets and variables → Actions): `RADAR_API_URL` (the API
+origin) and `RADAR_SERVICE_TOKEN` (the same value as the API's Railway
+variable), sent as `Authorization: Bearer`. The API runs those calls as the
+`radar_service` database role, which can read and write the listings,
+archive, status and watch tables and read decisions / intl_dates / manual,
+and nothing about members, teams or rounds. Without the secrets every job
+fails without writing.
 
-**Seeding (once, at cutover).** `supabase/seed-from-json.mjs` reads the
-last committed data files (`competitions.json`, `hackathons.json`, the two
-status files, the two archives and `watch.json`) from a local
-`supabase/seed/` folder. That folder is git-ignored and must never be
+**Seeding (once, at cutover).** `db/seed.mjs` reads the last committed
+data files (`competitions.json`, `hackathons.json`, the two status files,
+the two archives and `watch.json`) from a local `db/seed/` folder, plus,
+if present, `decisions.json`, `intl_dates.json` and `manual.json` exported
+from the old database. That folder is git-ignored and must never be
 committed: listing data is login-only now. `main` keeps fetching until
-cutover, so export the files from `main` right before seeding, then (after
-`supabase/v3.sql` is applied and `check-access.mjs` passes, before the
-first fetch runs against it) seed:
+cutover, so export the files right before seeding, then (after
+`db/schema.sql` is applied, the API is up and `db/check-access.mjs`
+passes, before the first fetch runs against it) seed:
 
 ```bash
 git fetch origin main
-mkdir -p supabase/seed
+mkdir -p db/seed
 for f in competitions hackathons status hack-status archive hack-archive watch; do
-  git show origin/main:data/$f.json > supabase/seed/$f.json
+  git show origin/main:data/$f.json > db/seed/$f.json
 done
-SUPABASE_SERVICE_KEY=sb_secret_... node supabase/seed-from-json.mjs --dry-run
-SUPABASE_SERVICE_KEY=sb_secret_... node supabase/seed-from-json.mjs
+# the admin's rows (HANDOFF.md has the export commands)
+export RADAR_API_URL=https://... RADAR_SERVICE_TOKEN=... DATABASE_URL=<owner URL>
+node db/seed.mjs --dry-run
+node db/seed.mjs
 ```
 
 It pushes each section through `sync_section` (so `first_seen`,
-`closed_on` and the archive carry over) and upserts the watch rows. It
-refuses a section that already has listings unless given `--force`.
+`closed_on` and the archive carry over), upserts the watch rows, and adds
+the admin's rows whose ids are not there yet. It refuses a section that
+already has listings unless given `--force`.
 
 Listing body text is used to classify each competition but is never stored
 or published: it often carries organisers' personal phone numbers and
@@ -366,32 +372,33 @@ emails.
 
 ## Sign-in and roles
 
-The whole site is login-only. Every page loads the vendored supabase-js
-(`vendor/supabase.js`, pinned; see `vendor/README.md`) and then
+The whole site is login-only. Every page loads its module and then
 `lib/auth.js`, which runs before anything is read:
 
-- **Not signed in:** a "Sign in with Google" screen. Google returns to the
-  same page (Supabase Auth, PKCE flow); the page then removes only the
-  `code` and `state` parameters from the address, so a deep link such as
+- **Not signed in:** a "Sign in with Google" screen. The button goes to
+  the API (`API_URL/auth/google?return=<this page>`), which runs Google's
+  sign-in (authorization code + PKCE), checks the Google-verified email is
+  an active row in `members`, and comes back to the same page with a
+  one-time `?radar_code=` (valid 60 seconds). The page swaps it for a
+  30-day session token (kept in this browser's localStorage) and removes
+  only `radar_code` from the address, so a deep link such as
   `c.html?id=…&s=hack` survives sign-in.
-- **Sign-in failed** (Google or Supabase returned `error`,
-  `error_code`, `error_description`): those parameters are removed from
-  the address and the description shows as a red banner on the login
-  screen.
-- **Signed in, but the Google account is not an active row in `members`:**
-  "Not on the team list (<email>)" and a Sign out button. Nothing else
-  loads (RLS returns nothing to non-members anyway).
-- **The admin:** the page loads; the nav shows their name and **Sign out**.
+- **Sign-in failed** (cancelled at Google, Google error, or the account is
+  not on the team list): the API comes back with `?radar_error=<reason>`;
+  the page removes it and shows the reason on the login screen ("Not on
+  the team list. Ask Krishna to add the Google account you used…").
+- **The admin:** the page loads; the nav shows their name and **Sign out**
+  (which also ends the session on the server).
 - **A teammate (role `member`):** whatever page they open, they are sent
   to `team.html` (`location.replace`, nothing from the address carried
   over) before anything is read. There the header shows only "Certamus
   Radar", their name and **Sign out**.
-- The session lives in this browser's localStorage and refreshes silently;
-  if it ends (signed out elsewhere, refresh failed) the page goes back to
-  the login screen.
+- When the session ends (30 days, signed out in another tab, removed from
+  `members`), the next request gets 401 and the page goes back to the
+  login screen.
 - **github.io:** `krishnachagti-sudo.github.io/certamus-radar/` only shows
   "Radar now lives at https://conyso.com/certamus/radar/" with a link (the
-  Supabase redirect allow-list has only the conyso.com address).
+  API accepts return addresses on the allow-listed origins only).
 
 Roles come from `members.role`:
 
@@ -420,13 +427,15 @@ read is the `my_joins()` RPC, which returns per team only `listing_id`,
 listing record reaches a teammate. Their only write is `mark_joined` on
 their own row.
 
-Membership is bound to the Google identity, not to the token's email
-claim: `is_member()`, `is_admin()`, `in_team()` and `is_self()` join the caller's
-`auth.identities` row (provider `google`, matched by `auth.uid()`) to
-`members` on its lowercased email. So the `members.email` must be the
-Google account's address, lowercased.
+Identity comes from the session, never from the browser: the API looks
+the bearer token up (by its sha256) in `private.sessions`, which holds only
+sessions it issued after Google verified the address, and runs the request
+as the `radar_member` role with `app.email` set to that session's email.
+`is_member()`, `is_admin()`, `in_team()` and `is_self()` read it from there.
+So `members.email` must be the Google account's address, lowercased.
 
-Members are managed in the Supabase SQL Editor (no client writes):
+Members are managed with SQL as the database owner (Railway → Postgres →
+Data, or `psql`; no client writes):
 
 ```sql
 insert into public.members (email, name, role) values ('name@gmail.com', 'Name', 'member');
@@ -487,7 +496,7 @@ their own rows only; `rounds` by the admin only. A teammate's screen reads
 only `my_joins()`. Every change goes through an RPC that re-checks the
 caller (`create_team`, `update_team`, `delete_team`, `upsert_round`,
 `delete_round` and `set_round_done` are admin-only; `mark_joined` is the
-caller's own row in a team they are in; see `supabase/v3.sql`); a refusal shows the Postgres
+caller's own row in a team they are in; see `db/schema.sql`); a refusal shows the Postgres
 message in the banner. Invite links must be `https://` (checked in the
 page and again in the database) and are only ever rendered through
 `safeHref`. Pure rules live in `lib/teams.js`, HTML in `lib/teamview.js`.
@@ -506,41 +515,41 @@ page and again in the database) and are only ever rendered through
 2. Pages: Settings → Pages → Build and deployment → **Deploy from a branch**,
    branch `main`, folder `/ (root)`, proxied by nginx at
    `https://conyso.com/certamus/radar/`.
-3. Supabase. This project (`hjgfowgswqafrhlqbuse`) must hold **Radar
-   only**: `v3.sql` revokes anon and authenticated access across the whole
-   `public` schema and changes the `postgres` role's default privileges,
-   which would break any other app sharing it. `config.js` holds the
-   project URL and the publishable key (public by design: it reads nothing
-   on its own).
+3. The API and database: see "Railway" below and HANDOFF.md.
 
-   **Auth settings to confirm** (Authentication → Sign In / Providers and
-   URL Configuration):
-   - **Email** provider **disabled** (no password or magic-link sign-ups).
-   - **Secure email change** on.
-   - **Anonymous sign-ins** off.
-   - **Google** enabled, with a Google OAuth client whose redirect is
-     `https://hjgfowgswqafrhlqbuse.supabase.co/auth/v1/callback`.
-   - Site URL `https://conyso.com/certamus/radar/`; redirect allow-list
-     `https://conyso.com/certamus/radar/**` only.
+## Railway
 
-   **Cutover order** (no gap between the last two steps: from the moment
-   v3 is applied, `main`'s pages and Actions can no longer read or write):
-   1. Apply `supabase/v3.sql` in the SQL Editor (safe to re-run).
-   2. `node supabase/check-access.mjs`: every table and RPC must be
-      refused to the anonymous caller (a 404 / PGRST202 means v3 is not
-      applied and fails the check). Optionally repeat with
-      `SUPABASE_USER_JWT=<a non-member's access token>`.
-   3. Add the teammates to `members`, then seed (see "Seeding" above:
-      export locally, `--dry-run`, then the real run).
-   4. Merge `platform` into `main` immediately and push, then run the
-      `fetch` and `watch` workflows once by hand.
+The API (`api/`) and its Postgres run on Railway. The service builds from
+this repo's root (`package.json`: `npm start` runs `node api/server.js`;
+`railway.json` sets the start command and the `/healthz` health check).
+The static pages need none of it: they are plain files and can be hosted
+anywhere.
 
-Free-tier note: Supabase pauses a free project after about a week without
-activity. The twice-daily fetch reads and writes the tables, which should
-keep it awake, but if the `fetch` workflow goes red or the board cannot
-load, open the Supabase dashboard and restore the project. While it is
-paused the jobs fail without writing anything; the next run after the
-restore catches up.
+| Variable (API service) | What |
+|---|---|
+| `DATABASE_URL` | Postgres URL logged in as **`radar_api`** (not the owner), e.g. `postgresql://radar_api:<password>@${{Postgres.RAILWAY_PRIVATE_DOMAIN}}:5432/${{Postgres.PGDATABASE}}` |
+| `GOOGLE_CLIENT_ID` | the Google OAuth web client's ID |
+| `GOOGLE_CLIENT_SECRET` | its secret (also keys the sealed sign-in cookie) |
+| `RADAR_SERVICE_TOKEN` | at least 32 random characters; the same value is the GitHub secret of that name |
+| `ALLOWED_ORIGINS` | comma-separated site origins, e.g. `https://conyso.com` (CORS and sign-in return addresses) |
+| `API_ORIGIN` | the API's own public origin, e.g. `https://certamus-radar-api.up.railway.app` (Google redirects to `API_ORIGIN/auth/callback`) |
+| `PORT` | set by Railway |
+
+Endpoints: `GET /healthz`; `GET /auth/google?return=`, `GET /auth/callback`,
+`POST /auth/exchange`, `GET /auth/me`, `POST /auth/signout`;
+`GET|POST|DELETE /db/<table>` (PostgREST-style `select=`, `col=eq.v`,
+`order=`, `offset=`, `limit=` up to 1000; POST upserts on the table's key,
+`?ignore_duplicates=true` to keep existing rows); `POST /rpc/<fn>` with
+named arguments. Only the tables, columns and functions in `api/rest.js`
+exist; all SQL is parameterised; errors are `{ message, code }` with the
+Postgres code (42501 → 403, bad input → 400).
+
+Database roles (`db/schema.sql`, applied by the owner with
+`DATABASE_URL=<owner URL> RADAR_API_PASSWORD=<new password> node db/apply.mjs`):
+`radar_api` (the API's login; owns nothing, holds no table privileges,
+can call the four session functions and switch to the next two),
+`radar_member` (a signed-in person; RLS decides every row) and
+`radar_service` (the jobs). The database must hold Radar only.
 
 ## Tuning
 
@@ -554,19 +563,19 @@ hand-edited. Edit, commit, and the next fetch applies them. `fetch/unstop.js`'s
 ## Develop
 
 ```bash
-npm test            # unit tests
-SUPABASE_SERVICE_KEY=... npm run fetch       # live case-comp fetch, writes Supabase
-SUPABASE_SERVICE_KEY=... node fetch/hack-run.js
-SUPABASE_SERVICE_KEY=... node fetch/watch.js # checks every curated official page
+npm install         # pg, and PGlite for the tests
+npm test            # unit tests, SQL tests (PGlite) and API tests; no network
+RADAR_API_URL=... RADAR_SERVICE_TOKEN=... npm run fetch       # live case-comp fetch through the API
+RADAR_API_URL=... RADAR_SERVICE_TOKEN=... node fetch/hack-run.js
+RADAR_API_URL=... RADAR_SERVICE_TOKEN=... node fetch/watch.js # checks every curated official page
 ```
 
-Tests never touch the network: `fetch/db.js` takes an injected `fetch`, and
-the job tests use an in-memory stand-in for it.
+Tests never touch the network: `fetch/db.js` and `lib/api.js` take an
+injected `fetch`, the job tests use an in-memory stand-in, and
+`db/schema.sql` and the API run against PGlite (Postgres in WASM; see
+`test/helpers/pg.js` for its one gap: SET ROLE permission is checked
+against the session user, a superuser there, so role membership is checked
+with `pg_has_role()` instead).
 
 Unstop's API is undocumented. If the board shows "Data stale", open the
 failed `fetch` run: a shape change means `fetch/unstop.js` needs updating.
-
-After a deploy, GitHub Pages can serve a page's old JS modules for a few
-minutes even once the new ones are live (observed up to about 10 minutes).
-If a page looks stale right after a push, hard-refresh
-(cmd/ctrl+shift+R) before assuming something's broken.
