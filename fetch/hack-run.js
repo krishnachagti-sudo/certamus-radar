@@ -1,12 +1,12 @@
 // Daily job for the Hackathons section: Unstop (hackathons) + Devfolio + MLH
-// + Devpost + the curated list → kind, tier, verdict → merge → write
-// data/hackathons.json, hack-status.json and hack-archive.json. Same merge,
-// archive, Supabase-decision and privacy rules as run.js (fetch/pipeline.js).
+// + Devpost + the curated list → kind, tier, verdict → merge → one
+// sync_section write of the 'hack' section through the API. Same merge, archive,
+// decision and privacy rules as run.js (fetch/pipeline.js).
 //
 // Every source is optional: a failing one is a warning and its previous
 // records pass through unchanged, so merge does not close them. The run fails
-// (files untouched, last_error set) only when every fetched source fails or
-// hackathons.json is unreadable.
+// (only the status written, with last_error) when every fetched source fails
+// or the live records cannot be read.
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { fetchAll } from './unstop.js';
 import { fetchDevfolio, devfolioRecords } from './devfolio.js';
@@ -14,8 +14,8 @@ import { fetchMlh, parseMlh, mlhRecords } from './mlh.js';
 import { fetchDevpost, devpostRecords } from './devpost.js';
 import { hackKind, hackTier, hackVerdict, unstopFacts, curatedHackVerdict } from './hack-classify.js';
 import { ARCHIVE_FIELDS } from './merge.js';
-import { defaultConfig, readTables } from './supabase.js';
-import { dataStore, readDecisions, curatedFromLists, commit } from './pipeline.js';
+import { createDb, readTables } from './db.js';
+import { configStore, readDecisions, curatedFromLists, commit, recordFailure } from './pipeline.js';
 import { todayIST } from '../dates.js';
 
 const DEFAULT_DIR = fileURLToPath(new URL('../data/', import.meta.url));
@@ -44,28 +44,25 @@ function curatedHack(r) {
 }
 
 export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} } = {}) {
-  const store = dataStore(dataDir);
-  const { read, write, readStrict } = store;
-  const { supabase = defaultConfig(), getJson, getText, postJson, pause, backoff } = deps;
-  const status = read('hack-status.json', {});
+  const store = configStore(dataDir);
+  const { read } = store;
+  const { db = createDb(), getJson, getText, postJson, pause, backoff } = deps;
   const stamp = now.toISOString();
-  const fail = (message, warnings = []) => {
-    write('hack-status.json', { last_run: stamp, last_ok: status.last_ok || null, last_error: message, warnings, sources: status.sources || {} });
+  const fail = async (message, warnings = []) => {
+    await recordFailure(db, 'hack', { stamp, message, warnings, sources: {} });
     console.error(`hackathons fetch failed: ${message}`);
     return 1;
   };
 
-  const liveFile = readStrict('hackathons.json');
-  if (liveFile.error || (!liveFile.missing && !Array.isArray(liveFile.value))) {
-    return fail(`hackathons.json ${liveFile.error || 'is not an array'}; not overwritten`);
-  }
-  const existing = liveFile.value || [];
+  // The live records. Unreadable is never "empty": abort, only the status is written.
+  let existing;
+  try { existing = await db.readListings('hack'); } catch (e) { return fail(`live records unreadable (${e.message}); nothing written`); }
   const team = read('hack-team.json', { members: [], can_grow: true });
   const lists = { national: read('national.json', []), bschools: read('bschools.json', []), corporates: read('hack-corporates.json', []) };
 
-  const remote = await readTables(supabase, ['decisions', 'intlDates']);
+  const remote = await readTables(db, ['decisions', 'intlDates']);
   const remoteWarnings = [];
-  const decisions = readDecisions(remote, store, remoteWarnings);
+  const decisions = readDecisions(remote, remoteWarnings);
 
   try {
     const today = todayIST(now);
@@ -120,12 +117,12 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
       r.main = r.tier !== 'other' && r.hack_kind !== 'other';
     }
 
-    commit(store, {
-      existing, records, decisions, today, warnings,
+    await commit(db, 'hack', {
+      existing, records, decisions, today,
       prune: remote.decisions.value !== undefined,
-      liveFile: 'hackathons.json', archiveFile: 'hack-archive.json', archiveFields: HACK_ARCHIVE_FIELDS,
+      archiveFields: HACK_ARCHIVE_FIELDS,
+      status: { last_run: stamp, last_ok: stamp, last_error: null, warnings, sources },
     });
-    write('hack-status.json', { last_run: stamp, last_ok: stamp, last_error: null, warnings, sources });
     console.log(`hackathons ok: ${records.length} records, ${warnings.length} warnings`);
     return 0;
   } catch (e) {

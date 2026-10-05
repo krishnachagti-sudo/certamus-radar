@@ -222,3 +222,109 @@ footer { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; color: 
   .hosts-table td::before { content: attr(data-label) ": "; font-weight: 700; color: var(--ink-2); }
   .aclosed { margin-left: 0; }
 }
+/* Sign-in gate (lib/auth.js) and the signed-in member in the nav. */
+[hidden] { display: none !important; }
+.gate { max-width: 28rem; margin: 48px auto; background: var(--panel); border: 1px solid var(--rule); border-top: 4px solid var(--accent); border-radius: 12px; padding: 28px 24px; }
+.gate h1 { margin: 0 0 8px; font-size: 1.4rem; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.gate p { color: var(--ink-2); margin: 0 0 18px; overflow-wrap: anywhere; }
+.gate a { color: var(--accent); font-weight: 600; }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; padding: 8px 18px; }
+button.primary:disabled { cursor: progress; background: var(--ink-2); border-color: transparent; }
+.gate .gate-msg { margin: 12px 0 0; font-size: 0.9rem; min-height: 1.4em; }
+.gate .gate-error { background: var(--out-bg); color: var(--out); border-radius: 8px; padding: 10px 12px; font-weight: 600; }
+.nav .who { margin-left: auto; display: inline-flex; gap: 10px; align-items: center; font-size: .88rem; color: var(--ink-2); min-width: 0; }
+.nav .who-name { font-weight: 600; overflow-wrap: anywhere; }
+.nav .who button { font-size: .85rem; padding: 2px 10px; }
+
+/* Teams, invite links and rounds (competition page Team section, Team page,
+   Board inbox). Every row wraps (min-width: 0, overflow-wrap) so nothing
+   scrolls sideways at 375px; the invite field shrinks rather than pushing. */
+button.sm { font-size: .85rem; padding: 3px 12px; }
+button.danger { color: var(--out); border-color: var(--out); }
+.small { font-size: .85rem; }
+.muted { color: var(--ink-2); }
+.invite { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0; min-width: 0; }
+.invite input { flex: 1 1 12rem; min-width: 0; font: inherit; font-size: .85rem; padding: 4px 8px; border: 1px solid var(--rule); border-radius: 8px; background: var(--soft); color: var(--ink); }
+.invite a { color: var(--accent); font-weight: 600; font-size: .88rem; white-space: nowrap; }
+.invite-bad { color: var(--out); font-weight: 600; font-size: .9rem; }
+.comp .team h2 .small { font-weight: 600; margin-left: 6px; }
+.tm-list, .rd-list, .join-list, .wait-list, .teams-list { list-style: none; margin: 0; padding: 0; }
+.tm-row { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; padding: 6px 0; border-top: 1px solid var(--rule); min-width: 0; }
+.tm-row:first-child { border-top: 0; }
+.tm-name { flex: 1 1 8rem; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.tm-ok { color: var(--fits); font-weight: 600; font-size: .88rem; }
+.tm-pending { color: var(--check); font-weight: 600; font-size: .88rem; }
+.team-admin { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
+.team-msg { margin: 6px 0 0; min-height: 1.2em; color: var(--ink-2); font-size: .88rem; }
+.team-msg:empty { min-height: 0; }
+.team-form, .round-form { display: grid; gap: 8px; margin: 8px 0; min-width: 0; }
+.team-form fieldset { border: 1px solid var(--rule); border-radius: 8px; padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 6px 14px; min-width: 0; margin: 0; }
+.team-form legend { font-size: .85rem; color: var(--ink-2); padding: 0 4px; }
+.tm-pick { display: inline-flex; gap: 6px; align-items: center; min-width: 0; overflow-wrap: anywhere; }
+.team-form > label, .round-form label { display: grid; gap: 2px; font-size: .85rem; color: var(--ink-2); min-width: 0; }
+.team-form input[type="url"], .round-form input, .round-form select { font: inherit; padding: 5px 8px; border: 1px solid var(--rule); border-radius: 8px; color: var(--ink); background: var(--panel); min-width: 0; width: 100%; }
+.round-form h4 { margin: 4px 0 0; font-size: .9rem; }
+.form-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.rounds { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--rule); }
+.rounds h3 { margin: 0 0 6px; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
+.rd-row { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: center; padding: 6px 8px; border-radius: 8px; min-width: 0; }
+.rd-row + .rd-row { margin-top: 4px; }
+.rd-row.overdue { background: var(--out-bg); color: var(--out); }
+.rd-row.overdue .rd-meta { color: var(--out); font-weight: 600; }
+.rd-row.done .rd-name { text-decoration: line-through; color: var(--ink-2); }
+.rd-done { display: inline-flex; gap: 8px; align-items: center; flex: 1 1 10rem; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.rd-done input { width: 18px; height: 18px; margin: 0; flex: none; accent-color: var(--fits); }
+.rd-name { min-width: 0; }
+.rd-meta { color: var(--ink-2); font-size: .85rem; min-width: 0; overflow-wrap: anywhere; }
+.rd-meta a { color: inherit; }
+.rd-acts { display: inline-flex; gap: 4px; }
+.rd-acts button { font-size: .8rem; padding: 2px 10px; }
+
+/* Team page (team.html) */
+.teampage { padding-top: 20px; }
+.teampage h1 { margin: 0 0 4px; font-size: 1.6rem; }
+.teampage h1:focus { outline: none; }
+.team-sec { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; min-width: 0; }
+.team-sec h2 { font-size: 1rem; margin: 0 0 8px; }
+.team-sec .empty { margin: 4px 0; }
+.join-row { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--rule); min-width: 0; }
+.join-row:first-child { border-top: 0; }
+.join-title { flex: 1 1 100%; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.join-title a, .wait-comps a, .team-title a { color: var(--ink); text-decoration: none; }
+.join-title a:hover, .wait-comps a:hover, .team-title a:hover { text-decoration: underline; }
+.join-row .invite { flex: 1 1 14rem; margin: 0; }
+.wait-row { padding: 8px 0; border-top: 1px solid var(--rule); min-width: 0; }
+.wait-row:first-child { border-top: 0; }
+.wait-name { font-weight: 700; overflow-wrap: anywhere; }
+.wait-comps { margin: 2px 0 0; padding-left: 18px; font-size: .92rem; overflow-wrap: anywhere; }
+.team-row { display: flex; flex-wrap: wrap; gap: 2px 12px; align-items: baseline; padding: 8px 0; border-top: 1px solid var(--rule); min-width: 0; }
+.team-row:first-child { border-top: 0; }
+.team-title { flex: 1 1 100%; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.team-prog { font-weight: 700; color: var(--fits); font-size: .9rem; }
+.team-prog.partial { color: var(--check); }
+.team-next { color: var(--ink-2); font-size: .88rem; min-width: 0; overflow-wrap: anywhere; }
+.team-overdue { background: var(--out-bg); color: var(--out); font-weight: 700; font-size: .78rem; border-radius: 999px; padding: 1px 8px; }
+
+/* Team page for teammates (role member): one column, big tap targets */
+.memberpage { padding-top: 20px; max-width: 40rem; }
+.memberpage h1 { margin: 0 0 4px; font-size: 1.6rem; }
+.memberpage h1:focus { outline: none; }
+.mj-list { list-style: none; margin: 0; padding: 0; }
+.mj-row { padding: 12px 0; border-top: 1px solid var(--rule); min-width: 0; }
+.mj-row:first-child { border-top: 0; padding-top: 4px; }
+.mj-title { margin: 0; font-weight: 700; font-size: 1.05rem; overflow-wrap: anywhere; }
+.mj-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 4px 0 0; color: var(--ink-2); font-size: .9rem; }
+.mj .invite input { font-size: .9rem; padding: 10px; }
+.mj .invite button, .mj .invite a { min-height: 44px; display: inline-flex; align-items: center; padding: 0 16px; }
+.mj .invite a { border: 1px solid var(--rule); border-radius: 999px; text-decoration: none; }
+.mj-meta button.sm { min-height: 36px; }
+button.primary.big { display: block; width: 100%; min-height: 48px; font-size: 1rem; margin-top: 4px; }
+
+/* Board: the team panel above "what needs attention" */
+.team-inbox { border-left: 4px solid var(--accent); }
+.team-inbox .inbox-head a { color: var(--accent); font-size: .85rem; font-weight: 600; }
+.team-inbox .wait-list { margin-bottom: 4px; }
+
+/* Calendar: 📝 round dues */
+.cal .rnd { background: #EEE9FF; color: #4529B0; }
+.cal .rnd.rdone { opacity: .6; text-decoration: line-through; }

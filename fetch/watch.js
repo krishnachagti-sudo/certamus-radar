@@ -1,12 +1,14 @@
 // Weekly watcher: hashes each curated competition's official page so a
-// changed page surfaces on the card and in the digest, without storing the
-// page content itself. Runs in its own Action, before the Monday digest.
+// changed page surfaces on the card, without storing the page content
+// itself. Runs in its own Action; the previous hashes are read from and the
+// new ones upserted into the `watch` table through the API (service token).
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { defaultGetText, defaultPause } from './unstop.js';
 import { todayIST } from '../dates.js';
+import { createDb } from './db.js';
 
 // Strips <script>/<style> blocks (content and all), then every remaining
 // tag, then collapses whitespace, so cosmetic markup/script/css churn never
@@ -24,7 +26,7 @@ export function hashText(text) {
   return crypto.createHash('sha256').update(text).digest('hex');
 }
 
-// `list` is data/international.json plus data/fests.json and data/hack-curated.json; `prev` is the previous data/watch.json
+// `list` is data/international.json plus data/fests.json and data/hack-curated.json; `prev` is the previous watch table
 // (`{ [id]: { hash, changed_on, last_checked, last_error } }`). Only rows
 // with `verified !== false`, a string `id` and a string `watch_url` are
 // checked. A fetch error keeps the previous hash and changed_on, records
@@ -69,7 +71,7 @@ const DEFAULT_DIR = fileURLToPath(new URL('../data/', import.meta.url));
 
 // Tells "missing" apart from "there but broken", for a file we must not
 // silently treat as empty: a bad international.json must never blank
-// watch.json for every already-watched row.
+// the watch rows for every already-watched competition.
 function readList(dataDir, f) {
   let raw;
   try { raw = fs.readFileSync(path.join(dataDir, f), 'utf8'); } catch { return { missing: true }; }
@@ -80,23 +82,25 @@ function readList(dataDir, f) {
 }
 
 export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} } = {}) {
-  const file = f => path.join(dataDir, f);
-  const read = (f, fallback) => {
-    try { return JSON.parse(fs.readFileSync(file(f), 'utf8')); } catch { return fallback; }
-  };
+  const { db = createDb(), ...watchDeps } = deps;
   const listFile = readList(dataDir, 'international.json');
   if (listFile.missing || listFile.error) {
-    console.error(`watch: international.json ${listFile.missing ? 'missing' : listFile.error}; watch.json not written`);
+    console.error(`watch: international.json ${listFile.missing ? 'missing' : listFile.error}; nothing written`);
     return 1;
   }
-  const prev = read('watch.json', {});
+  // Unreadable previous rows are never "empty": every hash would look new.
+  let prev;
+  try { prev = await db.readWatch(); } catch (e) {
+    console.error(`watch: previous rows unreadable (${e.message}); nothing written`);
+    return 1;
+  }
   // Optional curated lists (missing = no rows): the fest watchlist and the
   // hackathon curated list. A broken one keeps its previous entries as they
   // were instead of dropping them.
   const optional = [{ f: 'fests.json', prefix: 'fest-' }, { f: 'hack-curated.json', prefix: 'hk-' }]
     .map(o => ({ ...o, list: readList(dataDir, o.f) }));
   const rows = [...listFile.value, ...optional.flatMap(o => o.list.value || [])];
-  const next = await watchAll(rows, prev, { now, ...deps });
+  const next = await watchAll(rows, prev, { now, ...watchDeps });
   for (const { f, prefix, list } of optional) {
     if (!list.error) continue;
     console.error(`watch: ${f} ${list.error}; previous ${prefix} entries kept`);
@@ -104,7 +108,12 @@ export async function main({ dataDir = DEFAULT_DIR, now = new Date(), deps = {} 
       if (id.startsWith(prefix) && !(id in next)) next[id] = v;
     }
   }
-  fs.writeFileSync(file('watch.json'), JSON.stringify(next, null, 2) + '\n');
+  try {
+    await db.upsertWatch(Object.entries(next).map(([id, data]) => ({ id, data })));
+  } catch (e) {
+    console.error(`watch: write failed (${e.message})`);
+    return 1;
+  }
   const errors = Object.entries(next).filter(([, v]) => v.last_error);
   console.log(`watch: ${Object.keys(next).length} checked, ${errors.length} errors`);
   for (const [id, v] of errors) console.log(`  ${id}: ${v.last_error}`);

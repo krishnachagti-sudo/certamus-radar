@@ -119,65 +119,90 @@ function tmpDataDir(files) {
   }
   return dir;
 }
+// Stand-in for fetch/db.js's watch functions.
+function fakeDb(prev = {}, { readFails, writeFails } = {}) {
+  const db = {
+    rows: structuredClone(prev), upserts: [],
+    async readWatch() { if (readFails) throw readFails; return structuredClone(db.rows); },
+    async upsertWatch(rows) {
+      if (writeFails) throw writeFails;
+      db.upserts.push(rows);
+      for (const { id, data } of rows) db.rows[id] = data;
+    },
+  };
+  return db;
+}
+const run = (dir, db, getText = async () => 'text') => main({ dataDir: dir, now: '2026-09-29', deps: { getText, pause: async () => {}, db } });
+const written = db => Object.fromEntries((db.upserts.at(-1) || []).map(({ id, data }) => [id, data]));
 
-test('main writes watch.json when international.json is a valid array', async () => {
+test('main upserts watch rows when international.json is a valid array', async () => {
   const dir = tmpDataDir({ 'international.json': [row('intl-a')] });
-  const code = await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async () => 'text', pause: async () => {} } });
-  assert.equal(code, 0);
-  const written = JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8'));
-  assert.ok(written['intl-a']);
+  const db = fakeDb();
+  assert.equal(await run(dir, db), 0);
+  assert.equal(db.upserts.length, 1);
+  assert.equal(written(db)['intl-a'].hash, sha256('text'));
+  assert.equal(fs.existsSync(path.join(dir, 'watch.json')), false);
 });
 
-test('main errors and does not write watch.json when international.json is missing', async () => {
-  const dir = tmpDataDir({});
-  fs.writeFileSync(path.join(dir, 'watch.json'), JSON.stringify({ old: true }));
-  const code = await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async () => 'text', pause: async () => {} } });
-  assert.equal(code, 1);
-  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8')), { old: true });
+test('main carries the previous hash from the watch table, so a change is dated', async () => {
+  const dir = tmpDataDir({ 'international.json': [row('intl-a')] });
+  const db = fakeDb({ 'intl-a': { hash: 'old', changed_on: null, last_checked: '2026-09-22' } });
+  assert.equal(await run(dir, db), 0);
+  assert.equal(written(db)['intl-a'].changed_on, '2026-09-29');
 });
 
-test('main errors and does not write watch.json when international.json is unparseable', async () => {
-  const dir = tmpDataDir({ 'international.json': '{not json' });
-  fs.writeFileSync(path.join(dir, 'watch.json'), JSON.stringify({ old: true }));
-  const code = await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async () => 'text', pause: async () => {} } });
-  assert.equal(code, 1);
-  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8')), { old: true });
+test('main: an unreadable watch table means nothing is fetched or written', async () => {
+  const dir = tmpDataDir({ 'international.json': [row('intl-a')] });
+  const db = fakeDb({}, { readFails: new Error('API watch: HTTP 503') });
+  let fetched = false;
+  assert.equal(await run(dir, db, async () => { fetched = true; return 'text'; }), 1);
+  assert.equal(fetched, false);
+  assert.equal(db.upserts.length, 0);
 });
 
-test('main errors and does not write watch.json when international.json is not an array', async () => {
-  const dir = tmpDataDir({ 'international.json': { not: 'an array' } });
-  fs.writeFileSync(path.join(dir, 'watch.json'), JSON.stringify({ old: true }));
-  const code = await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async () => 'text', pause: async () => {} } });
-  assert.equal(code, 1);
-  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8')), { old: true });
+test('main: a failed upsert fails the run', async () => {
+  const dir = tmpDataDir({ 'international.json': [row('intl-a')] });
+  assert.equal(await run(dir, fakeDb({}, { writeFails: new Error('HTTP 500') })), 1);
 });
+
+for (const [label, files] of [
+  ['missing', {}],
+  ['unparseable', { 'international.json': '{not json' }],
+  ['not an array', { 'international.json': { not: 'an array' } }],
+]) {
+  test(`main errors and writes nothing when international.json is ${label}`, async () => {
+    const dir = tmpDataDir(files);
+    const db = fakeDb({ old: { hash: 'h' } });
+    assert.equal(await run(dir, db), 1);
+    assert.equal(db.upserts.length, 0);
+  });
+}
 
 // ---- fest watchlist (data/fests.json) --------------------------------------
 
 test('main watches fests.json rows alongside international.json', async () => {
   const dir = tmpDataDir({ 'international.json': [row('intl-a')], 'fests.json': [row('fest-a'), row('fest-b', 'https://example.com/b', false)] });
   const seen = [];
-  const code = await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async u => { seen.push(u); return 'text'; }, pause: async () => {} } });
-  assert.equal(code, 0);
-  const written = JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8'));
-  assert.deepEqual(Object.keys(written).sort(), ['fest-a', 'intl-a']);
+  const db = fakeDb();
+  assert.equal(await run(dir, db, async u => { seen.push(u); return 'text'; }), 0);
+  assert.deepEqual(Object.keys(written(db)).sort(), ['fest-a', 'intl-a']);
   assert.deepEqual(seen, ['https://example.com/intl-a', 'https://example.com/fest-a']);
 });
 
 test('main: a missing fests.json just means no fest rows', async () => {
   const dir = tmpDataDir({ 'international.json': [row('intl-a')] });
-  assert.equal(await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async () => 'text', pause: async () => {} } }), 0);
-  assert.deepEqual(Object.keys(JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8'))), ['intl-a']);
+  const db = fakeDb();
+  assert.equal(await run(dir, db), 0);
+  assert.deepEqual(Object.keys(written(db)), ['intl-a']);
 });
 
 test('main: a broken fests.json keeps the previous fest- entries and still watches international', async () => {
   for (const bad of ['{not json', '{"a":1}']) {
-    const dir = tmpDataDir({ 'international.json': [row('intl-a')], 'fests.json': bad,
-      'watch.json': { 'fest-a': { hash: 'h1', changed_on: '2026-09-01', last_checked: '2026-09-22' }, 'intl-a': { hash: 'old', changed_on: null, last_checked: '2026-09-22' } } });
-    assert.equal(await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async () => 'text', pause: async () => {} } }), 0);
-    const written = JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8'));
-    assert.deepEqual(written['fest-a'], { hash: 'h1', changed_on: '2026-09-01', last_checked: '2026-09-22' });
-    assert.equal(written['intl-a'].hash, sha256('text'));
+    const dir = tmpDataDir({ 'international.json': [row('intl-a')], 'fests.json': bad });
+    const db = fakeDb({ 'fest-a': { hash: 'h1', changed_on: '2026-09-01', last_checked: '2026-09-22' }, 'intl-a': { hash: 'old', changed_on: null, last_checked: '2026-09-22' } });
+    assert.equal(await run(dir, db), 0);
+    assert.deepEqual(written(db)['fest-a'], { hash: 'h1', changed_on: '2026-09-01', last_checked: '2026-09-22' });
+    assert.equal(written(db)['intl-a'].hash, sha256('text'));
   }
 });
 
@@ -187,17 +212,16 @@ test('main watches hack-curated.json rows too, skipping unverified rows and rows
   const dir = tmpDataDir({ 'international.json': [row('intl-a')], 'fests.json': [row('fest-a')],
     'hack-curated.json': [row('hk-a'), row('hk-b', 'https://example.com/hk-b', false), { id: 'hk-c', watch_url: null, verified: true }] });
   const seen = [];
-  assert.equal(await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async u => { seen.push(u); return 'text'; }, pause: async () => {} } }), 0);
-  const written = JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8'));
-  assert.deepEqual(Object.keys(written).sort(), ['fest-a', 'hk-a', 'intl-a']);
+  const db = fakeDb();
+  assert.equal(await run(dir, db, async u => { seen.push(u); return 'text'; }), 0);
+  assert.deepEqual(Object.keys(written(db)).sort(), ['fest-a', 'hk-a', 'intl-a']);
   assert.deepEqual(seen, ['https://example.com/intl-a', 'https://example.com/fest-a', 'https://example.com/hk-a']);
 });
 
 test('main: a broken hack-curated.json keeps the previous hk- entries; fests and international still watched', async () => {
-  const dir = tmpDataDir({ 'international.json': [row('intl-a')], 'fests.json': [row('fest-a')], 'hack-curated.json': '{bad',
-    'watch.json': { 'hk-a': { hash: 'h1', changed_on: null, last_checked: '2026-09-22' } } });
-  assert.equal(await main({ dataDir: dir, now: '2026-09-29', deps: { getText: async () => 'text', pause: async () => {} } }), 0);
-  const written = JSON.parse(fs.readFileSync(path.join(dir, 'watch.json'), 'utf8'));
-  assert.deepEqual(written['hk-a'], { hash: 'h1', changed_on: null, last_checked: '2026-09-22' });
-  assert.ok(written['fest-a'] && written['intl-a']);
+  const dir = tmpDataDir({ 'international.json': [row('intl-a')], 'fests.json': [row('fest-a')], 'hack-curated.json': '{bad' });
+  const db = fakeDb({ 'hk-a': { hash: 'h1', changed_on: null, last_checked: '2026-09-22' } });
+  assert.equal(await run(dir, db), 0);
+  assert.deepEqual(written(db)['hk-a'], { hash: 'h1', changed_on: null, last_checked: '2026-09-22' });
+  assert.ok(written(db)['fest-a'] && written(db)['intl-a']);
 });

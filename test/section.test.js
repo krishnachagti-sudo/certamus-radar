@@ -4,7 +4,7 @@ import {
   SECTIONS, sectionFrom, otherSection, pageHref, HACK_TIERS, HACK_BOARD_TIERS, tierLabel,
 } from '../lib/section.js';
 import { compHref } from '../lib/card.js';
-import { navHtml } from '../lib/nav.js';
+import { navHtml, memberNavHtml } from '../lib/nav.js';
 
 test('sectionFrom: ?s=hack is the hackathon section, anything else case comps', () => {
   assert.equal(sectionFrom('?s=hack'), 'hack');
@@ -27,13 +27,9 @@ test('otherSection flips', () => {
   assert.equal(otherSection('hack'), 'case');
 });
 
-test('data files per section', () => {
-  assert.deepEqual(SECTIONS.case.files, {
-    items: 'competitions.json', status: 'status.json', archive: 'archive.json', curated: ['international.json', 'fests.json'],
-  });
-  assert.deepEqual(SECTIONS.hack.files, {
-    items: 'hackathons.json', status: 'hack-status.json', archive: 'hack-archive.json', curated: ['hack-curated.json'],
-  });
+test('curated config files per section (listings, status and archive are database rows)', () => {
+  assert.deepEqual(SECTIONS.case.files, { curated: ['international.json', 'fests.json'] });
+  assert.deepEqual(SECTIONS.hack.files, { curated: ['hack-curated.json'] });
 });
 
 test('hackathon tiers: board default and labels', () => {
@@ -78,8 +74,27 @@ test('nav: the section switch marks the current section and keeps the page', () 
   assert.match(caseHtml, /<a href="all.html">All case comps<\/a>/);
 });
 
+test('nav: the signed-in member and Sign out, escaped', () => {
+  const html = navHtml('board', 'case', { email: 'k@x.com', name: 'Krishna <K>', role: 'admin' });
+  assert.match(html, /<span class="who"><span class="who-name">Krishna &lt;K&gt;<\/span><button type="button" class="ghost" id="signout">Sign out<\/button><\/span>/);
+  assert.doesNotMatch(navHtml('board', 'case'), /signout/);
+});
+
 test('nav on the competition page: the switch goes to the other Board', () => {
   const html = navHtml(null, 'hack');
   assert.match(html, /<a href="index.html">Case comps<\/a>/);
   assert.match(html, /<a href="index.html\?s=hack" aria-current="true">Hackathons<\/a>/);
+});
+
+test('nav has Team in both sections, current on the team page', () => {
+  assert.match(navHtml('team', 'case'), /<a href="team.html" aria-current="page">Team<\/a>/);
+  assert.match(navHtml('team', 'hack'), /<a href="team.html\?s=hack" aria-current="page">Team<\/a>/);
+  assert.match(navHtml('board', 'hack'), /<a href="team.html\?s=hack">Team<\/a>/);
+});
+
+test('memberNavHtml: the title, the name and Sign out; no links, no section switch', () => {
+  const html = memberNavHtml({ email: 'm@x.com', name: 'Riya <R>', role: 'member' });
+  assert.ok(html.startsWith('<strong>Certamus Radar</strong>'));
+  assert.ok(html.includes('Riya &lt;R&gt;') && html.includes('id="signout"'));
+  assert.doesNotMatch(html, /<a |class="sw"|class="pages"/);
 });

@@ -4,14 +4,17 @@ Open case competitions and business events at IITs, IIMs, NITs / IIITs and
 other national institutes, top B-schools and colleges, flagship corporates and
 the international circuit, checked against the Certamus team (four IIM
 Sirmaur BMS students, graduating 2029).
-Board: https://krishnachagti-sudo.github.io/certamus-radar/
+Board: https://conyso.com/certamus/radar/ (team members only, Google sign-in).
+The radar itself is Krishna's (the admin); teammates get one screen, the
+teams they are in to join (see "Sign-in and roles").
 
 ## Pages
 
 - **Board** (`index.html`) — top hosts only (IIT / IIM / NIT, IIIT and
   national institutes / B-school and top college / Corporate /
   International), case competitions and business events only (see "What
-  gets fetched" below). Edit statuses here, add an Unstop link by hand.
+  gets fetched" below). The admin edits statuses here and adds Unstop links
+  by hand.
 - **All case comps** (`all.html`) — every host and tier, including Other and
   startup contests (labelled "Startup contest, not a case"), with a text
   search over title and host.
@@ -23,12 +26,16 @@ Board: https://krishnachagti-sudo.github.io/certamus-radar/
   (Agenda is the default under 760px). Shows anything Watching, Entering or
   Registered, plus dashed "expected" markers for curated international
   competitions with no confirmed dates yet.
+- **Team** (`team.html`) — for the admin, who is still to join and every
+  team's rounds; for a teammate, their whole view of the site (see "Teams,
+  invite links and rounds" below).
 - **Hosts & archive** (`hosts.html`) — every host seen (live, archived,
   curated international and fest watchlist), searchable and tier-filterable, with a Jan–Dec
   month strip and the latest title; and a searchable list of closed
   competitions, newest first.
 
-A shared nav appears on all five pages.
+A shared nav appears on all six pages for the admin. Teammates see only
+the Team page, with no nav.
 
 ### Sections: Case comps | Hackathons
 
@@ -43,7 +50,7 @@ as a hackathon when its id starts `df-`, `mlh-`, `dp-` or `hk-`
 (`lib/section.js` holds the data files, wording, tiers, rule table and link
 builder for each section).
 
-The Hackathons side has the same five pages over `hackathons.json`,
+The Hackathons side has the same pages over `hackathons.json`,
 `hack-status.json`, `hack-archive.json` and `hack-curated.json`:
 
 - **Cards** show a kind chip (**Build** or **Ideathon**), where it happens
@@ -67,7 +74,7 @@ The Hackathons side has the same five pages over `hackathons.json`,
   record is one with a team decision, else curated, Unstop, Devfolio, MLH,
   Devpost in that order; it takes the most specific tier of the group.
 - **What needs attention** works per section with its own "seen" list
-  (`certamus-radar.seen.hack`), same rules; in-person-abroad items are left
+  (`certamus-radar.seen.hack.<email>`), same rules; in-person-abroad items are left
   out of both lists unless the abroad toggle is on.
 - **Clashes use one committed set across both sections**: anything
   Entering or Registered in either section clashes with the other, and the
@@ -90,7 +97,7 @@ The Hackathons side has the same five pages over `hackathons.json`,
 Unstop covers about 75–80% of what the team would enter; the other four
 sources fill the gaps it can't see. Every non-Unstop record carries a
 `source` and its own tier and verdict (classify is not run on it), and a
-failure in any of them is a warning in `status.json`, never a failed run:
+failure in any of them is a warning in the run status, never a failed run:
 that source's previous records pass through unchanged.
 
 | Source | Where | Tier | What it adds |
@@ -167,21 +174,21 @@ The Board's "Quizzes and other formats" toggle shows the rest.
 | `corporate` | Corporate | `data/corporates.json` |
 | `other` | Other | everything else |
 
-The Board, the "What needs attention" panel and the digest cover every
+The Board and the "What needs attention" panel cover every
 tier except Other.
 
 ## Hackathons data
 
-The Hackathons section (see "Sections" above) reads `data/hackathons.json`,
-`data/hack-status.json` and `data/hack-archive.json`, written only by
-`fetch/hack-run.js` in the same `fetch.yml` job as the case comps, with the
-same merge, 60-day archive, Supabase-decision and privacy rules (shared
-code in `fetch/pipeline.js`). Each run records its own result in its own
-status file; the job goes red only when both sections fail. Every source is
-optional: a failing one is a warning in `hack-status.json` (which also
+The Hackathons section (see "Sections" above) is the `hack` section of the
+database's `listings`, `archive` and `source_status` tables (see "Data"
+below), written only by `fetch/hack-run.js` in the same `fetch` cron job as
+the case comps, with the same merge, 60-day archive, decision and privacy
+rules (shared code in `fetch/pipeline.js`). Each section records its own
+status; the job goes red only when both sections fail. Every source is
+optional: a failing one is a warning in the hack status (which also
 carries a per-source `sources` count) and its previous records pass
-through. The run fails, leaving the files alone, only when all four fetched
-sources fail or `hackathons.json` is unreadable.
+through. The run fails, writing only its status, when all four fetched
+sources fail or the live hackathon rows cannot be read.
 
 | Source | id | Tier | Notes |
 |---|---|---|---|
@@ -222,9 +229,9 @@ eligibility blob are read in memory and dropped.
 ## Registered ✓
 
 Independent of Watching / Entering / Skipped: a competition can be marked
-**Registered** with any status, or none. Toggle it from a card (edit mode)
+**Registered** with any status, or none. Toggle it from a card (admin)
 or the Competition page panel. The "committed" set used for clash checking,
-the digest and the calendar is *Entering OR Registered* — so a competition
+and the calendar is *Entering OR Registered* — so a competition
 you've registered for still shows clashes even if its status is Watching.
 The Board's status filter has a separate "Registered only" toggle.
 
@@ -248,126 +255,339 @@ two sources:
 
 ### Weekly official-page watcher
 
-A weekly Action (`fetch/watch.js`, Mondays 05:00 IST) fetches each curated
+A weekly Railway cron job (`fetch/watch.js`, Mondays 05:00 IST) fetches each curated
 competition's official watch page (international and fest watchlist alike), strips it down to text and hashes it. A
 changed hash shows **"Official page changed on \<date>, new edition?"** on
-the card (and in the digest, when it is built by hand) — a
+the card — a
 prompt to go check the page by hand, not an automatic date update.
 
 To confirm real dates once you've checked a page: open the competition on
-`c.html`, use **Set dates** (edit mode) to enter the registration close and
-competition end. That writes the `intl_dates` table in Supabase; the
+`c.html`, use **Set dates** (admin) to enter the registration close and
+competition end. That writes the `intl_dates` table; the
 Competition page shows the dates at once, and the calendar, board and clash
 checks pick them up after the next fetch (the page says so when you save).
 
 ## Archive
 
-Closed competitions are appended to `data/archive.json` when `fetch/run.js`
-prunes them out of the live file (60 days after they close, or 60 days
-after a committed team ends up entering/registering). Curated international
-entries never get pruned as *hosts* — only a specific edition's confirmed
-dates close, so it archives by `id@regn_close`, one entry per edition. The
-Hosts & archive page lists it, newest first, searchable; while it holds
-under 30 days of history it says so plainly rather than looking empty by
-mistake.
+Closed competitions are archived (the `archive` table, per
+section) when a fetch prunes them out of the live rows (60 days after they
+close, or 60 days after a committed team ends up entering/registering).
+Curated international entries never get pruned as *hosts*: only a specific
+edition's confirmed dates close, so it archives by `id@regn_close`, one
+entry per edition. The Hosts & archive page lists it, newest first,
+searchable; while it holds under 30 days of history it says so plainly
+rather than looking empty by mistake.
 
-- **Daily 06:00 IST** `fetch` workflow → `data/competitions.json`,
-  `data/status.json`, `data/archive.json`.
-- **Monday 05:00 IST** `watch` workflow → `data/watch.json`.
-- **Manual only** `digest` workflow → `data/digest-latest.json`,
-  `data/digest-state.json` (the Monday schedule was retired on 2026-09-30).
-- **Board / Competition** edits (Watching / Entering / Skipped, Registered,
-  notes, add an Unstop link, Set dates) write the Supabase tables
-  `decisions`, `manual` and `intl_dates` (see "Editing" below).
-  The board has a "Quizzes and other formats" toggle: records carry
-  `format_kind` and `is_case`, and `other` formats (quizzes, article calls,
-  coding challenges, robotics...) are hidden by
-  default and never appear in the digest.
+The board has a "Quizzes and other formats" toggle: records carry
+`format_kind` and `is_case`, and `other` formats (quizzes, article calls,
+coding challenges, robotics...) are hidden by default.
 
-Each piece of data has exactly one writer, so the jobs and the board never
-conflict:
+## Data (Railway Postgres, through the API)
 
-| Data | Written by |
+All generated data lives in a Railway Postgres database (`db/schema.sql`),
+reached only through the Radar API (`api/`, see "Railway" below); the repo holds
+only code and the hand-edited config files in `data/` (`team.json`,
+`hack-team.json`, `national.json`, `bschools.json`, `corporates.json`,
+`hack-corporates.json`, `international.json`, `fests.json`,
+`hack-curated.json`). Nothing commits data to the repo any more, and the
+email digest is gone (retired 2026-09-30; the Board's "What needs
+attention" panel replaced it).
+
+- **Daily 06:00 and 18:00 IST** the `fetch` cron service
+  (`npm run job:fetch`): `fetch/run.js` (section `case`), then
+  `fetch/hack-run.js` (section `hack`). It exits 1 (a failed run on
+  Railway) only when both sections failed; one section's failure is already
+  on the board through its status.
+- **Monday 05:00 IST** the `watch` cron service (`npm run job:watch`):
+  `fetch/watch.js`.
+
+Both are Railway cron services (see "Railway" below); nothing runs on
+GitHub Actions any more.
+
+| Table | Written by |
 |---|---|
-| `data/competitions.json`, `data/status.json` | `fetch/run.js` |
-| `data/archive.json` | `fetch/run.js` |
-| `data/watch.json` | `fetch/watch.js` |
-| Supabase `decisions` (status, Registered, note) | the board, All case comps and Competition pages (edit link) |
-| Supabase `manual` (hand-added Unstop links) | the board's Add form (edit link) |
-| Supabase `intl_dates` (confirmed international dates) | the Competition page's "Set dates" (edit link) |
-| `data/international.json`, `data/fests.json` | hand-edited only; nothing writes them |
-| `data/digest-state.json` | the digest job |
+| `listings` (one row per competition, keyed `(section, id)`; the record is in `data`) | the fetch jobs, through `sync_section` |
+| `archive` (keyed `(section, archive_key)`) | the fetch jobs, through `sync_section` |
+| `source_status` (one row per section: last run, last ok, error, warnings, sources) | the fetch jobs (`sync_section` on success, `set_status` on failure) |
+| `watch` (official-page hashes) | `fetch/watch.js` (upsert) |
+| `decisions`, `manual`, `intl_dates` | the board (admin) |
 
-The fetch and digest jobs only read the Supabase tables. If Supabase is
-not configured or a read fails, they carry on with a warning: decisions and
-links fall back to the old `data/decisions.json` / `data/manual.json` if
-present (they are retired, so normally none), curated international records
-keep yesterday's dates, and the digest puts a warning line at the top.
+How a fetch run writes (`fetch/db.js`, `fetch/pipeline.js`):
+
+1. Read the section's live rows (`listings`). If that read fails the run
+   stops: it is never treated as empty, and only the error status is
+   written.
+2. Read `decisions`, `manual` and `intl_dates`. A failed read is a warning:
+   decisions are then empty **and nothing is pruned** (an entered record
+   would otherwise look expired), hand-added links are skipped, curated
+   records keep yesterday's dates.
+3. Fetch every source. A failing source passes its previous records
+   through unchanged (case: Opportunity Desk, InsideIIM, the curated lists;
+   hackathons: every source, and the run fails only if all four fetched
+   sources fail).
+4. Merge, then **one** `sync_section(section, rows, archive, status)` call,
+   one transaction: insert the pruned records' archive entries, upsert the
+   rows, delete that section's rows not in `rows`, record the status. It
+   refuses an empty `rows` while the section has listings.
+5. On any failure: read the previous status and call `set_status` with the
+   error, carrying the previous `last_ok` and `sources` (or `last_ok: null`
+   if the previous status is unreadable), so the banner says how old the
+   data is.
+
+The watcher reads the previous hashes from `watch` (a failed read writes
+nothing) and upserts the new ones.
+
+**Service token.** The jobs call the API with two variables on each cron
+service: `RADAR_API_URL` (the API's address) and `RADAR_SERVICE_TOKEN` (the
+same value as the API service's, best as a reference
+`${{<api service>.RADAR_SERVICE_TOKEN}}`), sent as `Authorization: Bearer`. The API runs those calls as the
+`radar_service` database role, which can read and write the listings,
+archive, status and watch tables and read decisions / intl_dates / manual,
+and nothing about members, teams or rounds. Without the variables every job
+fails without writing.
+
+**Seeding (once, at cutover).** `db/seed.mjs` reads the last committed
+data files (`competitions.json`, `hackathons.json`, the two status files,
+the two archives and `watch.json`) from a local `db/seed/` folder, plus,
+if present, `decisions.json`, `intl_dates.json` and `manual.json` exported
+from the old database. That folder is git-ignored and must never be
+committed: listing data is login-only now. `main` keeps fetching until
+cutover, so export the files right before seeding, then (after
+`db/schema.sql` is applied, the API is up and `db/check-access.mjs`
+passes, before the first fetch runs against it) seed:
+
+```bash
+git fetch origin main
+mkdir -p db/seed
+for f in competitions hackathons status hack-status archive hack-archive watch; do
+  git show origin/main:data/$f.json > db/seed/$f.json
+done
+# the admin's rows (HANDOFF.md has the export commands)
+export RADAR_API_URL=https://... RADAR_SERVICE_TOKEN=... DATABASE_URL=<owner URL>
+node db/seed.mjs --dry-run
+node db/seed.mjs
+```
+
+It pushes each section through `sync_section` (so `first_seen`,
+`closed_on` and the archive carry over), upserts the watch rows, and adds
+the admin's rows whose ids are not there yet. It refuses a section that
+already has listings unless given `--force`.
 
 Listing body text is used to classify each competition but is never stored
 or published: it often carries organisers' personal phone numbers and
 emails.
 
-## Setup (once)
+## Sign-in and roles
 
-1. What needs attention: there is no Monday email any more (retired
-   2026-09-30). The top of the Board has a panel with two lists: **New since
-   your last visit** (top-tier case competitions, not Out, not Skipped, not
-   Registered, that this device has not seen; on a device's first visit,
-   anything first seen in the last 7 days) and **Closing within 10 days, not
-   registered yet**. "Mark all seen" is remembered in this browser's
-   localStorage (`certamus-radar.seen`; the Hackathons Board keeps its own in
-   `certamus-radar.seen.hack`), so each device keeps its own list.
-   With the edit link, each row has a Registered checkbox. Nothing to set up.
-   The digest can still be built by hand: `node digest/email.js` prints it,
-   and the `digest` workflow can be run manually from the Actions tab.
-2. Pages: Settings → Pages → Build and deployment → **Deploy from a branch**,
-   branch `main`, folder `/ (root)`.
-3. Editing: see below.
+The whole site is login-only. Every page loads its module and then
+`lib/auth.js`, which runs before anything is read:
 
-## Editing (private edit link)
+- **Not signed in:** a "Sign in with Google" screen. The button goes to
+  the API (`API_URL/auth/google?return=<this page>`), which runs Google's
+  sign-in (authorization code + PKCE), checks the Google-verified email is
+  an active row in `members`, and comes back to the same page with a
+  one-time `?radar_code=` (valid 60 seconds, and only together with a
+  random value this tab put in its sessionStorage before leaving, whose
+  hash went to the API: a code planted from another browser is useless). The page swaps it for a
+  30-day session token (kept in this browser's localStorage) and removes
+  only `radar_code` from the address, so a deep link such as
+  `c.html?id=…&s=hack` survives sign-in.
+- **Sign-in failed** (cancelled at Google, Google error, or the account is
+  not on the team list): the API comes back with `?radar_error=<reason>`;
+  the page removes it and shows the reason on the login screen ("Not on
+  the team list. Ask Krishna to add the Google account you used…").
+- **The admin:** the page loads; the nav shows their name and **Sign out**
+  (which also ends the session on the server).
+- **A teammate (role `member`):** whatever page they open, they are sent
+  to `team.html` (`location.replace`, nothing from the address carried
+  over) before anything is read. There the header shows only "Certamus
+  Radar", their name and **Sign out**.
+- When the session ends (30 days, signed out in another tab, removed from
+  `members`), the next request gets 401 and the page goes back to the
+  login screen.
+- **github.io:** `krishnachagti-sudo.github.io/certamus-radar/` only shows
+  "Radar now lives at https://conyso.com/certamus/radar/" with a link (the
+  API accepts return addresses on the allow-listed origins only).
 
-Only the owner edits, with no login. Everyone can read the team's
-decisions; a secret **editor key** unlocks editing on a device.
+Roles come from `members.role`:
 
-1. Create a Supabase project (free tier). In its SQL Editor, run
-   `supabase/schema.sql` once. It creates the three tables (public read, no
-   direct writes) and the write functions `set_decision`, `add_manual` and
-   `set_intl_dates`, which refuse any call without the right key.
-2. Put the project's URL and anon (public) key in `config.js` and commit.
-   Until both are filled in, the site is read-only with a quiet "Editing not
-   configured yet" banner, and the jobs fall back as described above.
-3. Keep the private link
-   `https://krishnachagti-sudo.github.io/certamus-radar/#key=<your 64-hex key>`
-   somewhere safe (a password manager). Open it once on each device you
-   edit from: the page moves the key into that browser's storage, removes it
-   from the address bar, and checks it with the server. A wrong key shows
-   "That edit link isn't valid". **Stop editing on this device** (footer)
-   forgets it.
+| Role | Can |
+|---|---|
+| `admin` (Krishna) | everything: statuses, Registered, notes, "Set dates", add an Unstop link (direct writes to `decisions`, `intl_dates`, `manual`, allowed by RLS for `is_admin()` only) |
+| `member` (teammates) | one screen (`team.html`): the competitions they are in, to join and joined; tick or undo their own "I've joined". Nothing else: no radar pages, rounds, notes or teammates' statuses |
 
-The key itself is never in the repo. Only its SHA-256 is, in
-`supabase/schema.sql` (the `private.editor_key` table); the server hashes
-whatever key a page sends and compares.
+A decision row is deleted when its status, Registered and note are all
+empty, and upserted otherwise. A refused or failed write (RLS, network)
+shows "Not saved: …" in the banner and the change stays on screen. The
+admin's pages read `listings`, `archive` and `source_status` by section, plus
+`watch`, `decisions`, `intl_dates` and `manual`; the curated config files
+(`international.json`, `fests.json`, `hack-curated.json`) are still read
+from `./data/`.
 
-To rotate the key (lost device, link shared by mistake):
+The database enforces the teammate's view, not just the pages
+(Resolution 21 of the spec). A teammate can read only their own `members`
+row (so the sign-in can show their name and role), the `teams` rows of
+teams they are in, and their own `team_members` rows (never a teammate's
+join status). Everything else (`listings`, `archive`, `source_status`,
+`watch`, `decisions`, `intl_dates`, `manual`, `rounds`, other people's
+`members` rows) is readable by the admin only. The member screen's one
+read is the `my_joins()` RPC, which returns per team only `listing_id`,
+`section`, title, `regn_close`, `invite_url` and `joined_at`, so no whole
+listing record reaches a teammate. Their only write is `mark_joined` on
+their own row.
 
-```bash
-KEY=$(openssl rand -hex 32); echo "$KEY"             # the new key: keep it
-printf %s "$KEY" | shasum -a 256 | cut -d' ' -f1   # its hash
+Identity comes from the session, never from the browser: the API looks
+the bearer token up (by its sha256) in `private.sessions`, which holds only
+sessions it issued after Google verified the address, and runs the request
+as the `radar_member` role with `app.email` set to that session's email.
+`is_member()`, `is_admin()`, `in_team()` and `is_self()` read it from there.
+So `members.email` must be the Google account's address, lowercased.
+
+Members are managed with SQL as the database owner (Railway → Postgres →
+Data, or `psql`; no client writes):
+
+```sql
+insert into public.members (email, name, role) values ('name@gmail.com', 'Name', 'member');
+update public.members set active = false where email = 'name@gmail.com';  -- loses access on the next request
 ```
 
-then in the Supabase SQL Editor:
-`update private.editor_key set hash = '<new hash>';`
-(and update the hash in `supabase/schema.sql` so a rebuild matches). Every
-device holding the old key gets "edit link was rejected" on its next save
-and drops back to read-only; open the new link on the devices you keep.
+## Teams, invite links and rounds
 
-Free-tier note: Supabase pauses a free project after about a week without
-activity. The daily fetch reads the tables, which should keep it awake, but
-if the board shows "Could not load team data" or the fetch status warns
-about Supabase, open the Supabase dashboard and restore the project. While
-it is paused the site still works read-only and the jobs carry on with
-their fallbacks.
+The workflow: Krishna finds a competition, registers on Unstop (or
+Devfolio...) and copies its "invite teammates" link; on the competition
+page he records the team; each teammate opens the link, joins, and ticks
+"I've joined"; Krishna sees who he is still waiting on. Rounds track the
+team's own deadlines (prelims deck, video, finals) after registration;
+they are Krishna's alone (teammates never see them).
+
+- **Competition page, Team section** (between Dates and Team note).
+  - No team yet: the admin sees **Create team**: a checkbox per active
+    member (ticked by default: for a case comp the case roster, i.e. every
+    active member except Akshit; for a hackathon Krishna and Akshit, each
+    if they are active members), an https invite-link field and Save.
+    Creating the team also ticks **Registered** (the `create_team` RPC
+    does both in one transaction).
+  - Team exists: each member with **✓ joined (date)** or **pending**; the
+    invite link (read-only field, **Copy**, Open ↗); the admin's own row
+    has **I've joined** / **Undo**. **Edit team** (members and link) and
+    **Delete team** (asks first; deletes members, joins and rounds;
+    Registered stays).
+  - **Rounds:** name, due date, owner (a team member or "Team") and a
+    done box. Undone rounds past their due date are red. The admin adds,
+    edits, deletes and ticks rounds done (`set_round_done` refuses anyone
+    else).
+- **Team page** (`team.html`, "Team" in the admin's nav).
+  - **Admin:** **Waiting on teammates** (everyone else's pending joins,
+    grouped by person) and **All teams** (section, "2/3 joined", the next
+    round due from today and an overdue count), plus their own joins and
+    **My rounds** when there are any. A team whose listing was pruned
+    shows under its archived title.
+  - **Teammate:** the only screen they ever see. **To join (N)**: each
+    competition they are in but have not joined, soonest registration
+    deadline first: the title (plain text, no link), a Case comp /
+    Hackathon label, "Registration closes …" when known, the invite link
+    with **Copy** and **Open ↗**, and a big **I've joined** button.
+    **Joined (N)**: newest first, with the date and a small **Undo**.
+    Empty states: "Nothing to join right now." and "You haven't joined
+    anything yet." Built for a phone (big tap targets).
+- **Board** (admin): above "New since your last visit", the admin's own
+  pending joins (**Join these teams (N)**) and **Waiting on teammates
+  (N)** by person. Nothing shows when neither applies.
+- **Calendar** (admin): each dated round is a 📝 event (both
+  sections; the other section's carry the Case/Hack marker). Undone
+  rounds count as committed dates in the clash days, but never against
+  their own competition or sibling rounds.
+
+Who sees what is decided by RLS, not the page: `teams` is readable by the
+admin and by that team's members only, so an invite link never reaches
+anyone outside the team; `team_members` by the admin and, for a teammate,
+their own rows only; `rounds` by the admin only. A teammate's screen reads
+only `my_joins()`. Every change goes through an RPC that re-checks the
+caller (`create_team`, `update_team`, `delete_team`, `upsert_round`,
+`delete_round` and `set_round_done` are admin-only; `mark_joined` is the
+caller's own row in a team they are in; see `db/schema.sql`); a refusal shows the Postgres
+message in the banner. Invite links must be `https://` (checked in the
+page and again in the database) and are only ever rendered through
+`safeHref`. Pure rules live in `lib/teams.js`, HTML in `lib/teamview.js`.
+
+## Setup (once)
+
+1. What needs attention: the top of the Board has a panel with two lists:
+   **New since your last visit** (top-tier case competitions, not Out, not
+   Skipped, not Registered, that this person has not seen on this device;
+   on a first visit, anything first seen in the last 7 days) and **Closing
+   within 10 days, not registered yet**. "Mark all seen" is remembered in
+   this browser's localStorage per signed-in user
+   (`certamus-radar.seen.<email>`; the Hackathons Board keeps its own in
+   `certamus-radar.seen.hack.<email>`). For the admin each row has a
+   Registered checkbox. Nothing to set up.
+2. Pages: Settings → Pages → Build and deployment → **Deploy from a branch**,
+   branch `main`, folder `/ (root)`, proxied by nginx at
+   `https://conyso.com/certamus/radar/`.
+3. The API and database: see "Railway" below and HANDOFF.md.
+
+## Railway
+
+The API (`api/`) and its Postgres run on Railway. The service builds from
+this repo's root (`package.json`: `npm start` runs `node api/server.js`;
+`railway.json` sets the start command and the `/healthz` health check).
+The static pages need none of it: they are plain files and can be hosted
+anywhere.
+
+| Variable (API service) | What |
+|---|---|
+| `DATABASE_URL` | Postgres URL logged in as **`radar_api`** (not the owner), e.g. `postgresql://radar_api:<password>@${{Postgres.RAILWAY_PRIVATE_DOMAIN}}:5432/${{Postgres.PGDATABASE}}` |
+| `GOOGLE_CLIENT_ID` | the Google OAuth web client's ID |
+| `GOOGLE_CLIENT_SECRET` | its secret (also keys the sealed sign-in cookie) |
+| `RADAR_SERVICE_TOKEN` | at least 32 random characters; the cron services reference it |
+| `ALLOWED_ORIGINS` | comma-separated site origins, e.g. `https://conyso.com` (CORS and sign-in return addresses); `http:` ones are refused next to an https API unless `RADAR_DEV_ALLOW_HTTP=1` (local testing only) |
+| `RETURN_PATH_PREFIXES` | optional, default `/certamus/radar/`: the paths sign-in may return to (comma-separated, each starting and ending with `/`) |
+| `API_ORIGIN` | the API's own public origin, e.g. `https://certamus-radar-api.up.railway.app` (Google redirects to `API_ORIGIN/auth/callback`) |
+| `PORT` | set by Railway |
+
+Endpoints: `GET /healthz`; `GET /auth/google?return=`, `GET /auth/callback`,
+`POST /auth/exchange`, `GET /auth/me`, `POST /auth/signout`;
+`GET|POST|DELETE /db/<table>` (PostgREST-style `select=`, `col=eq.v`,
+`order=`, `offset=`, `limit=` up to 1000; POST upserts on the table's key,
+`?ignore_duplicates=true` to keep existing rows); `POST /rpc/<fn>` with
+named arguments. Only the tables, columns and functions in `api/rest.js`
+exist; all SQL is parameterised; errors are `{ message, code }` with the
+Postgres code (42501 → 403, bad input → 400).
+
+Database roles (`db/schema.sql`, applied by the owner with
+`DATABASE_URL=<owner URL> RADAR_API_PASSWORD=<new password> node db/apply.mjs`):
+`radar_api` (the API's login; owns nothing, holds no table privileges,
+can call the four session functions and switch to the next two),
+`radar_member` (a signed-in person; RLS decides every row) and
+`radar_service` (the jobs). The database must hold Radar only.
+
+### Cron services (the scheduled jobs)
+
+Two more services in the same Railway project, built from the same repo
+and branch as the API. Each has its own config file, which replaces
+`railway.json` for that service (Settings → Config-as-code → Railway Config
+File):
+
+| Service | Config file | Start command | Cron (UTC) | IST |
+|---|---|---|---|---|
+| `fetch` | `/railway/fetch.json` | `npm run job:fetch` | `30 0,12 * * *` | 06:00 and 18:00 daily |
+| `watch` | `/railway/watch.json` | `npm run job:watch` | `30 23 * * 0` | Monday 05:00 |
+
+Both use `restartPolicyType: NEVER` (a failed run waits for the next
+schedule rather than retrying in a loop) and no health check (they serve
+nothing). Each run starts, does its work and exits; Railway shows the exit
+code. Railway skips a scheduled run while the previous one is still
+running.
+
+| Variable (each cron service) | What |
+|---|---|
+| `RADAR_SERVICE_TOKEN` | `${{<api service>.RADAR_SERVICE_TOKEN}}` (a reference, so it follows the API's) |
+| `RADAR_API_URL` | either the public origin, `https://${{<api service>.RAILWAY_PUBLIC_DOMAIN}}`, or the private network, `http://${{<api service>.RAILWAY_PRIVATE_DOMAIN}}:${{<api service>.PORT}}` (the private form needs `PORT` set explicitly on the API service, e.g. `8080`, so it can be referenced) |
+
+Run one by hand: Railway's "Run now" on the cron service's latest
+deployment if your dashboard shows it; otherwise locally with the same two
+variables, `RADAR_API_URL=… RADAR_SERVICE_TOKEN=… npm run job:fetch` (or
+`job:watch`), which writes through the API exactly as the cron does.
 
 ## Tuning
 
@@ -381,19 +601,20 @@ hand-edited. Edit, commit, and the next fetch applies them. `fetch/unstop.js`'s
 ## Develop
 
 ```bash
-npm test            # unit tests
-npm run fetch       # live fetch into data/
-npm run digest      # print the digest without sending
-node fetch/watch.js # live watcher run (checks every curated official page)
+npm install         # pg, and PGlite for the tests
+npm test            # unit tests, SQL tests (PGlite) and API tests; no network
+RADAR_API_URL=... RADAR_SERVICE_TOKEN=... npm run fetch       # live case-comp fetch through the API
+RADAR_API_URL=... RADAR_SERVICE_TOKEN=... node fetch/hack-run.js
+RADAR_API_URL=... RADAR_SERVICE_TOKEN=... node fetch/watch.js # checks every curated official page
+RADAR_API_URL=... RADAR_SERVICE_TOKEN=... npm run job:fetch   # what the fetch cron runs (both sections)
 ```
 
-If the digest's final push fails, `data/digest-state.json` isn't updated and
-next week's digest may repeat items.
+Tests never touch the network: `fetch/db.js` and `lib/api.js` take an
+injected `fetch`, the job tests use an in-memory stand-in, and
+`db/schema.sql` and the API run against PGlite (Postgres in WASM; see
+`test/helpers/pg.js` for its one gap: SET ROLE permission is checked
+against the session user, a superuser there, so role membership is checked
+with `pg_has_role()` instead).
 
 Unstop's API is undocumented. If the board shows "Data stale", open the
-failed `fetch` run: a shape change means `fetch/unstop.js` needs updating.
-
-After a deploy, GitHub Pages can serve a page's old JS modules for a few
-minutes even once the new ones are live (observed up to about 10 minutes).
-If a page looks stale right after a push, hard-refresh
-(cmd/ctrl+shift+R) before assuming something's broken.
+`fetch` cron service's latest run log on Railway: a shape change means `fetch/unstop.js` needs updating.

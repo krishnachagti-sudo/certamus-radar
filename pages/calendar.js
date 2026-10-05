@@ -2,20 +2,26 @@
 // (mock C). Read-only. Shows competitions that are Watching, Entering or
 // Registered: ⏰ registration closes, 🏁 competition ends, clash days tinted,
 // and dashed "expected" markers for curated international items (§9.10).
-// Decisions load like the Board: live from the store (public reads).
+// Listings, status and decisions load from the API after requireMember().
 // Section (?s=hack): this section's Watching items, plus the Entering and
 // Registered items of BOTH sections (one committed set, one clash rule);
 // the other section's items carry a small section marker.
+// Admin only (requireMember() sends teammates to team.html).
+// Rounds: the due dates of every team, both sections, marked 📝; undone
+// rounds count as committed dates in the clash days (never against their
+// own competition).
 import { todayIST } from '../dates.js';
-import { committedSet, expectedText, monthsText, pagesJson, sameId, recordSection } from '../lib/data.js';
-import { initEditor } from '../lib/editor.js';
-import { esc, recordHref } from '../lib/card.js';
+import { committedSet, expectedText, monthsText, sameId, recordSection } from '../lib/data.js';
+import { requireMember } from '../lib/auth.js';
+import { readListings, readStatus, readDecisions, readTeams, readRounds } from '../lib/store.js';
+import { esc, recordHref, compHref } from '../lib/card.js';
+import { listingIndex, roundEvents, roundClashItems } from '../lib/teams.js';
 import { SECTIONS, currentSection, otherSection, pageHref, sectionOf } from '../lib/section.js';
 import { captureFocus } from '../lib/focus.js';
 import { mountNav } from '../lib/nav.js';
-import { loadDecisions, bannersHtml, istTime } from '../lib/session.js';
+import { guardLoad, bannersHtml, istTime } from '../lib/session.js';
 import {
-  monthCells, addMonths, monthTitle, calendarEvents, eventsByDay, clashDays, agendaGroups,
+  monthCells, addMonths, monthTitle, calendarEvents, groupByDay, clashDays, agendaGroups,
   expectedItems, expectedMarkers, onCalendar, toneOf, statusLabel,
 } from '../lib/calendar.js';
 
@@ -23,7 +29,7 @@ const VIEW_KEY = 'certamus-radar.calview';
 const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const WEEKDAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const KIND = { close: ['⏰', 'Registration closes'], end: ['🏁', 'Competition ends'] };
+const KIND = { close: ['⏰', 'Registration closes'], end: ['🏁', 'Competition ends'], round: ['📝', 'Round due'] };
 
 function storedView() {
   try {
@@ -44,15 +50,16 @@ const startMonth = () => {
 const sec = sectionOf(currentSection());
 const other = sectionOf(otherSection(sec.key));
 
-const state = { comps: [], own: [], otherItems: [], status: {}, decisions: {}, error: null, notice: null, view: storedView(), ...startMonth() };
+const state = {
+  comps: [], own: [], otherItems: [], status: null, decisions: {}, teams: [], rounds: [], error: null,
+  view: storedView(), ...startMonth(),
+};
 
 async function load() {
-  state.error = null;
-  [state.own, state.status, state.otherItems] = await Promise.all([
-    pagesJson(sec.files.items, []), pagesJson(sec.files.status, {}), pagesJson(other.files.items, [])]);
-  if (!Array.isArray(state.own)) state.own = [];
-  if (!Array.isArray(state.otherItems)) state.otherItems = [];
-  await loadDecisions(state);
+  await guardLoad(state, async () => {
+    [state.own, state.status, state.otherItems, state.decisions, state.teams, state.rounds] = await Promise.all([
+      readListings(sec.key), readStatus(sec.key), readListings(other.key), readDecisions(), readTeams(), readRounds()]);
+  });
   // The other section contributes only what the team is entering or registered for.
   state.comps = [...state.own, ...committedSet(state.otherItems, state.decisions)];
   render();
@@ -88,9 +95,27 @@ function clashTitle(pairs) {
 const compById = id => state.comps.find(c => sameId(c.id, id));
 const statusOfId = id => { const c = compById(id); return c ? statusLabel(state.decisions, c) : 'committed'; };
 
+// Round dues (📝) and the committed set the clash days use: competitions
+// Entering or Registered, plus every undone dated round.
+const roundIndex = () => listingIndex({ [sec.key]: state.own, [other.key]: state.otherItems });
+const rounds = () => roundEvents(state.teams, state.rounds, roundIndex());
+const committedWithRounds = () => [
+  ...committedSet(state.comps, state.decisions), ...roundClashItems(state.teams, state.rounds, roundIndex())];
+const allEvents = () => [...calendarEvents(state.comps, state.decisions), ...rounds()]
+  .sort((a, b) => (a.date === b.date ? String(a.title ?? '').localeCompare(String(b.title ?? '')) : a.date < b.date ? -1 : 1));
+const roundForeign = e => e.section !== sec.key;
+const roundMark = e => (roundForeign(e)
+  ? `<span class="secmark" aria-hidden="true">${SHORT[e.section]}</span><span class="sr"> (${esc(SECTIONS[e.section].noun)})</span>` : '');
+const roundTip = e => `Round due: ${e.title}${roundForeign(e) ? ` (${SECTIONS[e.section].noun})` : ''}${e.done ? ' (done)' : ''}`;
+
 // ---- month grid -----------------------------------------------------------
 
+function roundLink(e) {
+  return `<a class="ev tag rnd${e.done ? ' rdone' : ''}" href="${esc(compHref(e.listing_id, e.section))}" title="${esc(roundTip(e))}"><span aria-hidden="true">📝</span> <span class="sr">Round due: </span>${roundMark(e)}<span class="t">${esc(e.title)}</span>${e.done ? '<span class="sr"> (done)</span>' : ''}</a>`;
+}
+
 function eventLink(e) {
+  if (e.kind === 'round') return roundLink(e);
   const [icon, kind] = KIND[e.kind];
   const tip = `${kind}: ${titleWithSection(e.c, e.title)} (${e.status})`;
   return `<a class="ev tag ${e.tone}${e.kind === 'close' ? ' deadline' : ''}" href="${esc(recordHref(e.c))}" title="${esc(tip)}"><span aria-hidden="true">${icon}</span> <span class="sr">${esc(kind)}: </span>${secMark(e.c)}<span class="t">${esc(e.title)}</span><span class="sr"> (${esc(e.status)})</span></a>`;
@@ -105,8 +130,8 @@ const clashLabel = pairs => {
 
 function gridHtml(today) {
   const { year, month } = state;
-  const byDay = eventsByDay(state.comps, state.decisions);
-  const { pairs } = clashDays(committedSet(state.comps, state.decisions), today);
+  const byDay = groupByDay(allEvents());
+  const { pairs } = clashDays(committedWithRounds(), today);
   const expected = expectedMarkers(state.comps, state.decisions, year, month);
   const prefix = `${year}-${String(month).padStart(2, '0')}`;
   const cells = monthCells(year, month).map(d => {
@@ -121,7 +146,7 @@ function gridHtml(today) {
     ].join('');
     return `<div class="${cls}" role="listitem"${d === today ? ' aria-current="date"' : ''}><span class="n"><span class="sr">${p.weekday} </span>${p.day}<span class="sr"> ${p.mon}${d === today ? ', today' : ''}</span></span>${items}</div>`;
   }).join('');
-  return `<div class="legend" aria-hidden="true"><span class="tag reg">✓ Registered</span><span class="tag ent">Entering</span><span class="tag wat">Watching</span><span class="tag exp">Expected (international)</span><span class="tag clashc">⚠ Clash</span><span><span class="secmark">${SHORT[other.key]}</span> = ${esc(other.noun)}, entering or registered</span><span>⏰ registration closes · 🏁 competition ends</span></div>
+  return `<div class="legend" aria-hidden="true"><span class="tag reg">✓ Registered</span><span class="tag ent">Entering</span><span class="tag wat">Watching</span><span class="tag exp">Expected (international)</span><span class="tag rnd">📝 Round due</span><span class="tag clashc">⚠ Clash</span><span><span class="secmark">${SHORT[other.key]}</span> = ${esc(other.noun)}, entering or registered</span><span>⏰ registration closes · 🏁 competition ends</span></div>
     <div class="grid" role="list" aria-label="${esc(monthTitle(year, month))}">${DOW.map(d => `<div class="dow" aria-hidden="true">${d}</div>`).join('')}${cells}</div>`;
 }
 
@@ -133,10 +158,25 @@ const chip = tone => (tone === 'reg' ? '<span class="tag reg">✓ Registered</sp
 
 function clashText(e, pairs) {
   const mine = (pairs.get(e.date) || []).filter(p => sameId(p.id, e.id));
-  return mine.map(p => `⚠ Clashes with ${titleWithSection(compById(p.otherId), p.other)} (${plural(p.apart, 'day')} apart). ${p.other} is ${statusOfId(p.otherId)}, ${p.title} is ${e.status}.`);
+  return mine.map(p => (String(p.otherId).startsWith('round-')
+    ? `⚠ Within ${plural(p.apart, 'day')} of the round ${p.other}.`
+    : `⚠ Clashes with ${titleWithSection(compById(p.otherId), p.other)} (${plural(p.apart, 'day')} apart). ${p.other} is ${statusOfId(p.otherId)}, ${p.title} is ${e.status}.`));
+}
+
+function roundRow(e, pairs) {
+  const p = dayParts(e.date);
+  const warns = (pairs.get(e.date) || []).filter(x => sameId(x.id, e.id))
+    .map(x => `⚠ Within ${plural(x.apart, 'day')} of ${titleWithSection(compById(x.otherId), x.other)}.`);
+  return `<li class="item">
+      <div class="date">${p.day} ${p.mon}<small>${p.weekday}</small></div>
+      <div class="what"><a href="${esc(compHref(e.listing_id, e.section))}">${roundMark(e)}📝 ${esc(e.name)}</a><small>Round due · ${esc(e.comp)}</small></div>
+      <span class="tag rnd${e.done ? ' rdone' : ''}">${e.done ? '✓ Done' : 'Round'}</span>
+      ${warns.map(w => `<p class="warn">${esc(w)}</p>`).join('')}
+    </li>`;
 }
 
 function agendaRow(e, pairs) {
+  if (e.kind === 'round') return roundRow(e, pairs);
   const p = dayParts(e.date);
   const warns = clashText(e, pairs);
   return `<li class="item">
@@ -164,8 +204,8 @@ function expectedRow(c) {
 // "Nothing dated from today onward." line — that pairing is the two-message
 // empty state bug.
 function agendaHtml(today, marked) {
-  const pairs = clashDays(committedSet(state.comps, state.decisions), today).pairs;
-  const groups = agendaGroups(calendarEvents(state.comps, state.decisions), today);
+  const pairs = clashDays(committedWithRounds(), today).pairs;
+  const groups = agendaGroups(allEvents(), today);
   const expected = expectedItems(state.comps, state.decisions);
   const weeks = groups.map(g => `<section class="wk" aria-label="${esc(g.label)}"><h2>${esc(g.label)}</h2>
     <ul>${g.events.map(e => agendaRow(e, pairs)).join('')}</ul></section>`).join('');
@@ -183,14 +223,14 @@ function render() {
   const focus = captureFocus();
   const today = todayIST();
   const grid = state.view === 'grid';
-  const marked = state.comps.some(c => c && onCalendar(state.decisions, c));
-  const anything = calendarEvents(state.comps, state.decisions).length || expectedItems(state.comps, state.decisions).length;
+  const marked = state.comps.some(c => c && onCalendar(state.decisions, c)) || rounds().length > 0;
+  const anything = allEvents().length || expectedItems(state.comps, state.decisions).length;
   const monthNav = grid ? `<div class="monthnav" role="group" aria-label="Month">
         <button type="button" id="prev" aria-label="Previous month">‹</button>
         <button type="button" id="today">Today</button>
         <button type="button" id="next" aria-label="Next month">›</button>
       </div>` : '';
-  document.getElementById('app').innerHTML = `<div id="banners">${bannersHtml(state.status, state.error, state.notice)}</div>
+  document.getElementById('app').innerHTML = `<div id="banners">${bannersHtml(state.status, state.error)}</div>
     <div class="cal">
       <div class="cal-bar">
         <h1>${grid ? esc(monthTitle(state.year, state.month)) : 'Coming up'}</h1>
@@ -217,5 +257,8 @@ document.addEventListener('click', e => {
   render();
 });
 
-mountNav('calendar');
-initEditor().then(notice => { state.notice = notice; return load(); });
+requireMember().then(who => {
+  if (!who) return null;
+  mountNav('calendar', who.member);
+  return load();
+});

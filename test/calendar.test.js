@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   monthCells, addMonths, weekStart, calendarEvents, eventsByDay, clashDays, agendaGroups,
-  expectedItems, expectedMarkers, toneOf, statusLabel, monthTitle,
+  expectedItems, expectedMarkers, toneOf, statusLabel, monthTitle, groupByDay,
 } from '../lib/calendar.js';
 
 const today = '2026-09-29'; // a Tuesday
@@ -187,4 +187,21 @@ test('expectedMarkers: on the 1st of the displayed month only; null months give 
   ]);
   assert.deepEqual(expectedMarkers(list, d, 2027, 1).map(m => [m.date, m.kind]), [['2027-01-01', 'finals']]);
   assert.deepEqual(expectedMarkers(list, d, 2026, 12), []);
+});
+
+test('clashDays: items sharing team_of (a round and its competition) never clash with each other', () => {
+  const comp = { id: 101, title: 'Alpha', regn_close: '2026-10-10' };
+  const own = { id: 'round-r1', title: 'Deck (Alpha)', regn_close: '2026-10-09', team_of: '101' };
+  const sib = { id: 'round-r2', title: 'Video (Alpha)', regn_close: '2026-10-11', team_of: '101' };
+  assert.equal(clashDays([comp, own, sib], today).days.size, 0);
+  const other = { id: 202, title: 'Beta', regn_close: '2026-10-12' };
+  const { days, pairs } = clashDays([comp, own, other], today);
+  assert.ok(days.has('2026-10-09'));
+  assert.deepEqual(pairs.get('2026-10-09').map(p => [p.id, p.otherId]), [['round-r1', 202]]);
+});
+
+test('groupByDay groups any dated events', () => {
+  const m = groupByDay([{ date: '2026-10-01', t: 1 }, { date: '2026-10-01', t: 2 }, { date: '2026-10-02', t: 3 }]);
+  assert.deepEqual([...m.keys()], ['2026-10-01', '2026-10-02']);
+  assert.equal(m.get('2026-10-01').length, 2);
 });

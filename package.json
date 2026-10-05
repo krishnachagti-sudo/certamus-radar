@@ -2,11 +2,23 @@
   "name": "certamus-radar",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "test": "node --test",
+    "start": "node api/server.js",
     "fetch": "node fetch/run.js",
-    "digest": "node digest/email.js"
+    "db:apply": "node db/apply.mjs",
+    "db:check": "node db/check-access.mjs",
+    "db:seed": "node db/seed.mjs",
+    "job:fetch": "node fetch/job.js fetch",
+    "job:watch": "node fetch/job.js watch"
   },
-  "dependencies": { "nodemailer": "^6.9.14" }
+  "dependencies": {
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8"
+  }
 }
